@@ -2,10 +2,19 @@
 #include <Framework/Window.h>
 #include <Framework/Program.h>
 
+#include <Framework/Application.h>
+#include <Framework/DeferredRenderer.h>
+
 #include <GL/glew.h>
 
 int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
 	
+	Application app(new DeferredRenderer());
+	while (app.IsRunning())
+	{
+		
+	}
+
 	Window window(800, 600, "Framework");
 	window.MakeCurrent();
 
