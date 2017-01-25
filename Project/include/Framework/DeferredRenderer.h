@@ -11,6 +11,10 @@ public:
 	~DeferredRenderer();
 
 	//public methodsS
+	bool Initialize();
+	void Finalize();
 	void RenderScene(Scene const & scene) const;
+
+private:
 
 };

@@ -4,6 +4,10 @@
 #include <Framework/Scene.h>
 #include <Framework/IRenderer.h>
 
+#include <Windows.h>
+
+#include <map>
+
 class Application
 {
 public:
@@ -12,21 +16,26 @@ public:
 	Application(IRenderer * renderer);
 	~Application();
 
-	//events
-	void MouseDown();
-	void MouseUp();
-	void MouseMove();
-	void KeyDown();
-	void KeyUp();
-
+	//public methods
 	void RenderFrame() const;
+	int Run();
 
-	void Run() const;
+	float dt() const;
 
 private:
+
+	//static functions/data
+	static LRESULT CALLBACK WndProcRouter(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	static std::map<HWND, Application*> s_applicationDictionary;
+
+	LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 	Window * m_window;
 	Scene * m_scene;
 	IRenderer * m_renderer;
+
+	bool m_running;
+
+	
 
 };

@@ -4,6 +4,8 @@
 #include <Framework/Camera.h>
 #include <Framework/Program.h>
 
+#include <glm/glm.hpp>
+
 class Scene
 {
 public:
@@ -16,10 +18,9 @@ public:
 	Camera & GetCamera();
 	Camera const & GetCamera() const;
 
-	//public methods
-	void RenderScene() const;
-
 private:
+
+	//private methods
 	
 	Camera m_camera;
 	Object m_rootObject;

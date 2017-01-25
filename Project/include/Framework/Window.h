@@ -8,25 +8,24 @@ class Window
 public:
 
 	//constructors/destructors
-	Window(int width, int height, char const * title);
+	Window(LRESULT(CALLBACK * WndProc)(HWND, UINT, WPARAM, LPARAM));
 	~Window();
 
 	//public methods
 	void MakeCurrent() const;
 	void SwapBuffers() const;
+	bool Create(int width, int height, char const * title);
+	void Destroy();
+
+	//getters
+	HWND const & GetHandle() const;
 
 private:
 
 	//static data
 	static char const * const		s_windowClassName;
 	static WNDCLASSEX				s_windowClass;
-	static std::map<HWND, Window*>	s_windows;
-
-	//static wndproc router
-	static LRESULT CALLBACK WndProcRouter(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
-	//private methods
-	LRESULT WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	static bool                     s_windowClassIsRegistered;
 
 	//managed objects
 	HWND		m_handle;

@@ -26,11 +26,6 @@ Camera const & Scene::GetCamera() const
 
 #pragma endregion
 
-#pragma region "Public Methods"
-
-void Scene::RenderScene() const
-{
-
-}
+#pragma region "Setters"
 
 #pragma endregion
