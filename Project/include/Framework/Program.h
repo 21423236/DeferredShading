@@ -16,16 +16,16 @@ public:
 	~Program();
 
 	//public methods
-	void Use();
-	void Unuse();
+	void Use() const;
+	void Unuse() const;
 
-	void SetUniform(char const * name, glm::mat4 const & matrix);
-	void SetUniform(char const * name, glm::mat3 const & matrix);
-	void SetUniform(char const * name, glm::vec4 const & vector);
-	void SetUniform(char const * name, glm::vec3 const & vector);
-	void SetUniform(char const * name, glm::vec2 const & vector);
-	void SetUniform(char const * name, float const & value);
-	void SetUniform(char const * name, int const & value);
+	void SetUniform(char const * name, glm::mat4 const & matrix) const;
+	void SetUniform(char const * name, glm::mat3 const & matrix) const;
+	void SetUniform(char const * name, glm::vec4 const & vector) const;
+	void SetUniform(char const * name, glm::vec3 const & vector) const;
+	void SetUniform(char const * name, glm::vec2 const & vector) const;
+	void SetUniform(char const * name, float const & value) const;
+	void SetUniform(char const * name, int const & value) const;
 
 	void CreateHandle();
 	void DestroyHandle();

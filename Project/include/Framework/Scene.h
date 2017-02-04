@@ -1,13 +1,18 @@
 #pragma once
 
-#include <Framework/Object.h>
 #include <Framework/Camera.h>
-#include <Framework/Program.h>
-
 #include <glm/glm.hpp>
+#include <vector>
+
+class Node;
+class Mesh;
+class Material;
+class Object;
+class Light;
 
 class Scene
 {
+
 public:
 
 	//constructors/destructor
@@ -18,12 +23,23 @@ public:
 	Camera & GetCamera();
 	Camera const & GetCamera() const;
 
+	//public methods
+	Mesh * CreateMesh(char const * objPath);
+	Material * CreateMaterial(glm::vec3 const & kd, glm::vec3 const & ks, float const & alpha);
+	Object * CreateObject();
+	Light * CreateLight();
+
+
 private:
 
-	//private methods
-	
+	Node * m_rootNode;
+
 	Camera m_camera;
-	Object m_rootObject;
+
+	std::vector<Mesh *> m_meshes;
+	std::vector<Material *> m_materials;
+	std::vector<Object *> m_objects;
+	std::vector<Light *> m_lights;
 
 };
 
