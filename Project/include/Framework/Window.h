@@ -7,6 +7,8 @@ class Window
 {
 public:
 
+	friend class Application;
+
 	//constructors/destructors
 	Window(LRESULT(CALLBACK * WndProc)(HWND, UINT, WPARAM, LPARAM));
 	~Window();
@@ -31,5 +33,7 @@ private:
 	HWND		m_handle;
 	HDC			m_device;
 	HGLRC		m_context;
+	int			m_width;
+	int			m_height;
 
 };

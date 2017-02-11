@@ -1,45 +1,59 @@
 #pragma once
 
-#include <Framework/Camera.h>
+#include "Camera.h"
 #include <glm/glm.hpp>
+#include <map>
 #include <vector>
+#include <string>
 
-class Node;
-class Mesh;
-class Material;
+
 class Object;
-class Light;
+class Mesh;
 
 class Scene
 {
 
 public:
 
+	friend class IRenderer;
+
 	//constructors/destructor
-	Scene();
+	Scene(unsigned const & windowWidth, unsigned const & windowHeight);
 	~Scene();
 
 	//getters
-	Camera & GetCamera();
 	Camera const & GetCamera() const;
+	Camera & GetCamera();
+
+	glm::mat4 const & GetProjectionMatrix() const;
+	glm::mat4 const & GetViewMatrix() const;
+
+	//setters
+	void SetProjection(float const & ry, float const & front, float const & back);
+	void SetWindowWidth(unsigned const & width);
+	void SetWindowHeight(unsigned const & height);
 
 	//public methods
-	Mesh * CreateMesh(char const * objPath);
-	Material * CreateMaterial(glm::vec3 const & kd, glm::vec3 const & ks, float const & alpha);
-	Object * CreateObject();
-	Light * CreateLight();
+	Object * LoadObject(std::string const & path);
+	void FreeMemory();
 
+
+	Mesh * testMesh;
 
 private:
 
-	Node * m_rootNode;
+	void UpdateProjectionMatrix();
 
 	Camera m_camera;
 
-	std::vector<Mesh *> m_meshes;
-	std::vector<Material *> m_materials;
 	std::vector<Object *> m_objects;
-	std::vector<Light *> m_lights;
+	std::vector<Mesh *> m_meshes;
+
+	glm::mat4 m_projectionMatrix;
+	glm::mat4 m_viewMatrix;
+
+	unsigned m_windowWidth;
+	unsigned m_windowHeight;
 
 };
 

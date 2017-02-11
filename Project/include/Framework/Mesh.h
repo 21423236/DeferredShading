@@ -1,28 +1,22 @@
 #pragma once
 
-#include <vector>
-#include <glm/glm.hpp>
+#include <assimp/mesh.h>
 
 class Mesh
 {
 public:
 
-	//constructors/destructor
-	Mesh(std::vector<glm::vec3> const & position, std::vector<glm::vec3> const & normals, std::vector<glm::vec2> const & uvs);
+	Mesh(unsigned const & numberOfFaces, aiFace * faces, aiVector3t<float> * positions, aiVector3t<float> * normals, aiVector3t<float> * tangents, aiVector3t<float> * textureCoords[8]);
 	~Mesh();
 
-	//getters
-	unsigned int const & GetVertexCount() const;
-
-	//public methods
-	void Use() const;
-	void Unuse() const;
+	unsigned const & GetVAO() const;
+	unsigned const & GetVertexCount() const;
 
 private:
 
-	unsigned int m_vao;
-	unsigned int m_vbo;
-	unsigned int m_vertexCount;
+	unsigned m_vao;
+	unsigned m_vbo;
+	unsigned m_vertexCount;
 
 };
 

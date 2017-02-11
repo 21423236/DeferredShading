@@ -78,7 +78,9 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(ProjectDir)lib\$(PlatformTarget)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libpng16d.lib;glew32.lib;opengl32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>assimp.lib;libpng16d.lib;glew32.lib;opengl32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>
+      </SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -90,7 +92,9 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(ProjectDir)lib\$(PlatformTarget)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libpng16d.lib;glew32.lib;opengl32.lib;kernel32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>assimp.lib;libpng16d.lib;glew32.lib;opengl32.lib;kernel32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>
+      </SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -106,7 +110,9 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>$(ProjectDir)lib\$(PlatformTarget)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libpng16.lib;glew32.lib;opengl32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>assimp.lib;libpng16.lib;glew32.lib;opengl32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>
+      </SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -122,42 +128,34 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>$(ProjectDir)lib\$(PlatformTarget)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libpng16.lib;glew32.lib;opengl32.lib;kernel32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>assimp.lib;libpng16.lib;glew32.lib;opengl32.lib;kernel32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>
+      </SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\Framework\Light.cpp" />
-    <ClCompile Include="src\Framework\Node.cpp" />
-    <ClCompile Include="src\Framework\Material.cpp" />
+    <ClCompile Include="src\Framework\Camera.cpp" />
     <ClCompile Include="src\Framework\Mesh.cpp" />
     <ClCompile Include="src\Framework\DeferredRenderer.cpp" />
     <ClCompile Include="src\Framework\Application.cpp" />
-    <ClCompile Include="src\Framework\Camera.cpp" />
-    <ClCompile Include="src\Framework\Object.cpp" />
     <ClCompile Include="src\Framework\Scene.cpp" />
     <ClCompile Include="src\Framework\Program.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Framework\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\Framework\Camera.h" />
     <ClInclude Include="include\Framework\DeferredRenderer.h" />
     <ClInclude Include="include\Framework\Application.h" />
-    <ClInclude Include="include\Framework\Camera.h" />
     <ClInclude Include="include\Framework\IRenderer.h" />
     <ClInclude Include="include\Framework\Window.h" />
     <ClInclude Include="include\Framework\Program.h" />
     <ClInclude Include="include\Framework\Scene.h" />
-    <ClInclude Include="include\Framework\Object.h" />
     <ClInclude Include="include\Framework\Mesh.h" />
-    <ClInclude Include="include\Framework\Material.h" />
-    <ClInclude Include="include\Framework\Node.h" />
-    <ClInclude Include="include\Framework\Light.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\Shaders\Basic.frag" />
     <None Include="src\Shaders\Basic.vert" />
-    <None Include="src\Shaders\DeferredPass.frag" />
-    <None Include="src\Shaders\DeferredPass.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

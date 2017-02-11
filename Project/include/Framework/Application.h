@@ -12,6 +12,12 @@ class Application
 {
 public:
 
+	typedef enum MouseButton {
+		LEFT_MOUSE_BUTTON,
+		RIGHT_MOUSE_BUTTON,
+		MIDDLE_MOUSE_BUTTON
+	} MouseButton;
+
 	//constructors/destructor
 	Application(IRenderer * renderer);
 	~Application();
@@ -21,6 +27,12 @@ public:
 	int Run();
 
 	float dt() const;
+
+protected:
+
+	//events
+	virtual void MouseClicked(MouseButton button, int x, int y);
+	virtual void MouseDragged(MouseButton button, int dx, int dy);
 
 private:
 
@@ -35,6 +47,17 @@ private:
 	IRenderer * m_renderer;
 
 	bool m_running;
+
+	struct MouseState {
+		bool down;
+		int previousX;
+		int previousY;
+		int deltaX;
+		int deltaY;
+	};
+
+	struct MouseState m_leftState;
+	struct MouseState m_rightState;
 
 	
 

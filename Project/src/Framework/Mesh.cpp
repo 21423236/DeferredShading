@@ -1,23 +1,42 @@
 #include <Framework/Mesh.h>
 
 #include <GL/glew.h>
+#include <iostream>
 
-#pragma region "Constructors/Destructor"
-
-Mesh::Mesh(std::vector<glm::vec3> const & positions, std::vector<glm::vec3> const & normals, std::vector<glm::vec2> const & uvs)
+typedef struct Vertex
 {
-	struct Vertex
-	{
-		float pos_x, pos_y, pos_z;
-		float norm_x, norm_y, norm_z;
-		float uv_x, uv_y;
-	};
+	float position[3];
+	float normal[3];
+	float tangent[3];
+	float uv[2];
+} Vertex;
 
-	std::vector<Vertex> vertices(positions.size());
+Mesh::Mesh(unsigned const & numberOfFaces, aiFace * faces, aiVector3t<float> * positions, aiVector3t<float> * normals, aiVector3t<float> * tangents, aiVector3t<float> * textureCoords[8]) : m_vao(0), m_vbo(0), m_vertexCount(0)
+{
+	m_vertexCount = (numberOfFaces) * 3;
 
-	for (int i = 0; i < positions.size(); ++i)
+	Vertex * vertices = (Vertex*)malloc(sizeof(Vertex) * m_vertexCount);
+
+	for (int i = 0; i < numberOfFaces; ++i)
 	{
-		vertices.push_back({ positions[i].x, positions[i].y, positions[i].z, normals[i].x, normals[i].y, normals[i].z, uvs[i].x, uvs[i].y });
+		for (int faceId = 0; faceId < 3; ++faceId)
+		{
+			aiVector3t<float> & position = positions[faces[i].mIndices[faceId]];
+			aiVector3t<float> & normal = normals[faces[i].mIndices[faceId]];
+			aiVector3t<float> & tangent = tangents[faces[i].mIndices[faceId]];
+
+			vertices[(i * 3) + faceId].position[0] = positions[faces[i].mIndices[faceId]].x;
+			vertices[(i * 3) + faceId].position[1] = positions[faces[i].mIndices[faceId]].y;
+			vertices[(i * 3) + faceId].position[2] = positions[faces[i].mIndices[faceId]].z;
+			vertices[(i * 3) + faceId].normal[0] = normals[faces[i].mIndices[faceId]].x;
+			vertices[(i * 3) + faceId].normal[1] = normals[faces[i].mIndices[faceId]].y;
+			vertices[(i * 3) + faceId].normal[2] = normals[faces[i].mIndices[faceId]].z;
+			vertices[(i * 3) + faceId].tangent[0] = tangents[faces[i].mIndices[faceId]].x;
+			vertices[(i * 3) + faceId].tangent[1] = tangents[faces[i].mIndices[faceId]].y;
+			vertices[(i * 3) + faceId].tangent[2] = tangents[faces[i].mIndices[faceId]].z;
+			vertices[(i * 3) + faceId].uv[0] = 0.0f;//textureCoords[faces[i].mIndices[faceId]][0].x;
+			vertices[(i * 3) + faceId].uv[1] = 0.0f;//textureCoords[faces[i].mIndices[faceId]][0].y;
+		}
 	}
 
 	glGenVertexArrays(1, &m_vao);
@@ -25,43 +44,29 @@ Mesh::Mesh(std::vector<glm::vec3> const & positions, std::vector<glm::vec3> cons
 
 	glGenBuffers(1, &m_vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(struct Vertex)*vertices.size(), &vertices[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex)*m_vertexCount, vertices, GL_STATIC_DRAW);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), (GLvoid*)0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), (GLvoid*)(sizeof(float) * 3));
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), (GLvoid*)(sizeof(float) * 6));
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)(sizeof(float) * 3));
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)(sizeof(float) * 6));
+	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid*)(sizeof(float) * 9));
+
+	free(vertices);
 }
+
 
 Mesh::~Mesh()
 {
-
+	glDeleteBuffers(1, &m_vbo);
+	glDeleteVertexArrays(1, &m_vao);
 }
 
-#pragma endregion
+unsigned const & Mesh::GetVAO() const
+{
+	return m_vao;
+}
 
-#pragma region "Getters"
-
-unsigned int const & Mesh::GetVertexCount() const
+unsigned const & Mesh::GetVertexCount() const
 {
 	return m_vertexCount;
 }
-
-#pragma endregion
-
-#pragma region "Public Methods"
-
-void Mesh::Use() const
-{
-	glBindVertexArray(m_vao);
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-}
-
-void Mesh::Unuse() const
-{
-	glDisableVertexAttribArray(1);
-	glDisableVertexAttribArray(0);
-	glBindVertexArray(0);
-}
-
-#pragma endregion

@@ -1,6 +1,9 @@
 #include <Framework/DeferredRenderer.h>
 #include <GL/glew.h>
 
+#include <Framework/Scene.h>
+#include <Framework/Mesh.h>
+
 #define FRAMEBUFFER_WIDTH 800
 #define FRAMEBUFFER_HEIGHT 600
 
@@ -87,6 +90,7 @@ bool DeferredRenderer::Initialize()
 	glBindVertexArray(0);
 
 	glClearColor(1.0f, 0.5f, 0.0f, 1.0f);
+	glEnable(GL_DEPTH_TEST);
 	return true;
 }
 
@@ -97,11 +101,18 @@ void DeferredRenderer::RenderScene(Scene const & scene) const
 
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	m_program.SetUniform("uProjectionMatrix", scene.GetProjectionMatrix());
+	m_program.SetUniform("uViewMatrix", scene.GetViewMatrix());
 	m_program.Use();
-	glBindVertexArray(m_lightGeometry.fsqVAO);
+	
+	glBindVertexArray(scene.testMesh->GetVAO());
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glEnableVertexAttribArray(2);
+	glEnableVertexAttribArray(3);
+	glDrawArrays(GL_TRIANGLES, 0, scene.testMesh->GetVertexCount());
+	glDisableVertexAttribArray(3);
+	glDisableVertexAttribArray(2);
 	glDisableVertexAttribArray(1);
 	glDisableVertexAttribArray(0);
 	glBindVertexArray(0);

@@ -12,7 +12,7 @@ bool				Window::s_windowClassIsRegistered = false;
 
 #pragma region "Constructors/Destructors"
 
-Window::Window(LRESULT (CALLBACK * WndProc)(HWND, UINT, WPARAM, LPARAM)) : m_handle(0), m_device(0), m_context(0)
+Window::Window(LRESULT (CALLBACK * WndProc)(HWND, UINT, WPARAM, LPARAM)) : m_handle(0), m_device(0), m_context(0), m_width(0), m_height(0)
 {
 	if (!s_windowClassIsRegistered)
 	{
@@ -61,6 +61,9 @@ bool Window::Create(int width, int height, char const * title)
 
 	if (!m_handle)
 		return false;
+
+	m_width = width;
+	m_height = height;
 
 	UpdateWindow(m_handle);
 	ShowWindow(m_handle, SW_SHOW);
