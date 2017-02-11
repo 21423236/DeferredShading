@@ -11,7 +11,7 @@ public:
 	DeferredRenderer();
 	~DeferredRenderer();
 
-	//public methodsS
+	//public methods
 	bool Initialize();
 	void Finalize();
 	void RenderScene(Scene const & scene) const;
