@@ -3,7 +3,7 @@
 #include <Windows.h>
 #include <iostream>
 
-#define M_PI   3.14159265358979323846
+#define M_PI 3.14159265358979323846f
 
 #pragma region "Static Data"
 
@@ -74,7 +74,7 @@ int Application::Run()
 
 	m_scene->LoadObject("C:/Users/david/Desktop/bunny.obj");
 	m_scene->SetProjection(0.2f, 0.1f, 20.0f);
-	m_scene->GetCamera().SetZoom(20.0f);
+	m_scene->GetCamera().SetZoom(1.0f);
 
 	MSG msg;
 	std::memset(&msg, 0, sizeof(MSG));

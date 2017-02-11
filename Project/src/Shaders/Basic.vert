@@ -12,7 +12,8 @@ out vec2 uv;
 
 const mat4 modelMatrix = mat4(vec4(10, 0, 0, 0), vec4(0, 10, 0, 0), vec4(0, 0, 10, 0), vec4(0, 0, 0, 1));
 
-void main() {
-	gl_Position = uProjectionMatrix * uViewMatrix * modelMatrix * vec4(in_position, 1);
+void main()
+{
+	gl_Position = uProjectionMatrix * uViewMatrix * vec4(in_position, 1);
 	uv = (0.5f * in_normal.xy) + 0.5f;
 }

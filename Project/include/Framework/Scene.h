@@ -42,8 +42,6 @@ public:
 
 private:
 
-	void UpdateProjectionMatrix();
-
 	Camera m_camera;
 
 	std::vector<Object *> m_objects;
