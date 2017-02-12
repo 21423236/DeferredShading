@@ -6,7 +6,7 @@
 
 #pragma region "Constructors/Destructor"
 
-Scene::Scene(unsigned const & windowWidth, unsigned const & windowHeight) : m_camera(m_viewMatrix), m_objects(), m_meshes(), m_projectionMatrix(), m_viewMatrix(), m_windowWidth(windowWidth), m_windowHeight(windowHeight)
+Scene::Scene(unsigned const & windowWidth, unsigned const & windowHeight) : m_camera(m_viewMatrix), m_meshes(), m_projectionMatrix(), m_viewMatrix(), m_windowWidth(windowWidth), m_windowHeight(windowHeight)
 {
 
 }
@@ -68,7 +68,7 @@ void Scene::SetWindowHeight(unsigned const & height)
 
 #pragma region "Public Methods"
 
-Object * Scene::LoadObject(std::string const & path)
+Mesh * Scene::LoadMesh(std::string const & path)
 {
 	Assimp::Importer importer;
 	aiScene const * scene = importer.ReadFile(path, aiProcess_CalcTangentSpace | aiProcess_Triangulate);
@@ -82,7 +82,7 @@ Object * Scene::LoadObject(std::string const & path)
 	testMesh = gpuMesh;
 	m_meshes.push_back(gpuMesh);
 
-	return nullptr;
+	return gpuMesh;
 }
 
 void Scene::FreeMemory()

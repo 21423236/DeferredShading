@@ -1,14 +1,15 @@
 #pragma once
 
 #include "Camera.h"
+#include "Node.h"
 #include <glm/glm.hpp>
 #include <map>
 #include <vector>
 #include <string>
 
 
-class Object;
 class Mesh;
+class Material;
 
 class Scene
 {
@@ -34,7 +35,7 @@ public:
 	void SetWindowHeight(unsigned const & height);
 
 	//public methods
-	Object * LoadObject(std::string const & path);
+	Mesh * LoadMesh(std::string const & path);
 	void FreeMemory();
 
 
@@ -42,10 +43,12 @@ public:
 
 private:
 
+	Node * m_rootNode;
+
 	Camera m_camera;
 
-	std::vector<Object *> m_objects;
 	std::vector<Mesh *> m_meshes;
+	std::vector<Material *> m_materials;
 
 	glm::mat4 m_projectionMatrix;
 	glm::mat4 m_viewMatrix;
