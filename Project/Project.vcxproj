@@ -134,6 +134,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Framework\IRenderer.cpp" />
     <ClCompile Include="src\Framework\Object.cpp" />
     <ClCompile Include="src\Framework\Node.cpp" />
     <ClCompile Include="src\Framework\Camera.cpp" />

@@ -6,7 +6,7 @@
 
 #pragma region "Constructors/Destructor"
 
-Scene::Scene(unsigned const & windowWidth, unsigned const & windowHeight) : m_camera(m_viewMatrix), m_meshes(), m_projectionMatrix(), m_viewMatrix(), m_windowWidth(windowWidth), m_windowHeight(windowHeight)
+Scene::Scene(unsigned const & windowWidth, unsigned const & windowHeight) : m_rootNode(new Node()), m_camera(m_viewMatrix), m_meshes(), m_projectionMatrix(), m_viewMatrix(), m_windowWidth(windowWidth), m_windowHeight(windowHeight)
 {
 
 }
@@ -77,18 +77,22 @@ Mesh * Scene::LoadMesh(std::string const & path)
 		return nullptr;
 
 	//process the object
-	aiMesh * mesh = scene->mMeshes[0];
-	Mesh * gpuMesh = new Mesh(mesh->mNumFaces, mesh->mFaces, mesh->mVertices, mesh->mNormals, mesh->mTangents, mesh->mTextureCoords);
-	testMesh = gpuMesh;
-	m_meshes.push_back(gpuMesh);
+	aiMesh * assimpMesh = scene->mMeshes[0];
+	Mesh * mesh = new Mesh(assimpMesh->mNumFaces, assimpMesh->mFaces, assimpMesh->mVertices, assimpMesh->mNormals, assimpMesh->mTangents, assimpMesh->mTextureCoords);
+	m_meshes.push_back(mesh);
 
-	return gpuMesh;
+	return mesh;
 }
 
 void Scene::FreeMemory()
 {
 	for (auto mesh : m_meshes)
 		delete mesh;
+}
+
+void Scene::AddNode(Node * node)
+{
+	m_rootNode->AddChild(node);
 }
 
 #pragma endregion

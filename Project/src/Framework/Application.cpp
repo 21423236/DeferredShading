@@ -1,4 +1,5 @@
 #include <Framework/Application.h>
+#include <Framework/Object.h>
 #include <GL/glew.h>
 #include <Windows.h>
 #include <iostream>
@@ -111,9 +112,24 @@ float Application::dt() const
 
 void Application::Initialize()
 {
-	m_scene->LoadMesh("Resources/Meshes/bunny.obj");
-	m_scene->SetProjection(0.2f, 0.1f, 20.0f);
-	m_scene->GetCamera().SetZoom(1.0f);
+	Mesh * bunnyMesh = m_scene->LoadMesh("Resources/Meshes/bunny.obj");
+
+	Object * bunnyObject1 = new Object(bunnyMesh, nullptr);
+	Object * bunnyObject2 = new Object(bunnyMesh, nullptr);
+	Object * bunnyObject3 = new Object(bunnyMesh, nullptr);
+	bunnyObject1->SetTranslation(glm::vec3(-1.0f, -0.75f, 0));
+	bunnyObject1->SetScale(glm::vec3(8, 8, 8));
+	bunnyObject2->SetTranslation(glm::vec3(0, -0.75f, 0));
+	bunnyObject2->SetScale(glm::vec3(8, 8, 8));
+	bunnyObject3->SetTranslation(glm::vec3(1.0f, -0.75f, 0));
+	bunnyObject3->SetScale(glm::vec3(8, 8, 8));
+
+	m_scene->AddNode(bunnyObject1);
+	m_scene->AddNode(bunnyObject2);
+	m_scene->AddNode(bunnyObject3);
+
+	m_scene->SetProjection(0.2f, 0.1f, 1000.0f);
+	m_scene->GetCamera().SetZoom(10.0f);
 }
 
 void Application::MouseClicked(MouseButton button, int x, int y)
@@ -131,7 +147,7 @@ void Application::MouseDragged(MouseButton button, int dx, int dy)
 		camera.SetTilt(camera.GetTilt() + (((float)dy / (float)m_window->m_height) * M_PI));
 		break;
 	case RIGHT_MOUSE_BUTTON:
-
+		camera.SetPosition(camera.GetPosition().x - ((float)dx / (2.0f * (float)m_window->m_width)), camera.GetPosition().y + ((float)dy / (2.0f*(float)m_window->m_height)), 0.0f);
 		break;
 	case MIDDLE_MOUSE_BUTTON:
 

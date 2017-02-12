@@ -2,13 +2,28 @@
 
 #include "Node.h"
 
+class Mesh;
+class Material;
+
 class Object : public Node
 {
 public:
 
 	//constructors/destructor
-	Object();
+	Object(Mesh * mesh, Material * material);
 	~Object();
+
+	//getters
+	Mesh const * const & GetMesh() const;
+	Material const * const & GetMaterial() const;
+
+	//public methods
+	bool IsRenderable() const;
+
+private:
+
+	Mesh * m_mesh;
+	Material * m_material;
 
 };
 

@@ -3,6 +3,7 @@
 
 #include <Framework/Scene.h>
 #include <Framework/Mesh.h>
+#include <Framework/Object.h>
 
 #define FRAMEBUFFER_WIDTH 800
 #define FRAMEBUFFER_HEIGHT 600
@@ -105,17 +106,36 @@ void DeferredRenderer::RenderScene(Scene const & scene) const
 	m_program.SetUniform("uViewMatrix", scene.GetViewMatrix());
 	m_program.Use();
 	
-	glBindVertexArray(scene.testMesh->GetVAO());
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	glEnableVertexAttribArray(2);
-	glEnableVertexAttribArray(3);
-	glDrawArrays(GL_TRIANGLES, 0, scene.testMesh->GetVertexCount());
-	glDisableVertexAttribArray(3);
-	glDisableVertexAttribArray(2);
-	glDisableVertexAttribArray(1);
-	glDisableVertexAttribArray(0);
-	glBindVertexArray(0);
+	Node const * const & rootNode = GetRootNode(scene);
+	RenderNode(rootNode, rootNode->GetTransformMatrix());
+
+}
+
+void DeferredRenderer::RenderNode(Node const * const & node, glm::mat4 modelMatrix) const
+{
+	modelMatrix *= node->GetTransformMatrix();
+	if (node->IsRenderable())
+	{
+		m_program.SetUniform("uModelMatrix", modelMatrix);
+		Object const * object = dynamic_cast<Object const *>(node);
+		glBindVertexArray(object->GetMesh()->GetVAO());
+		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+		glEnableVertexAttribArray(2);
+		glEnableVertexAttribArray(3);
+		glDrawArrays(GL_TRIANGLES, 0, object->GetMesh()->GetVertexCount());
+		glDisableVertexAttribArray(3);
+		glDisableVertexAttribArray(2);
+		glDisableVertexAttribArray(1);
+		glDisableVertexAttribArray(0);
+		glBindVertexArray(0);
+	}
+
+	for (auto childNode : IRenderer::GetChildren(node))
+	{
+		RenderNode(childNode, modelMatrix);
+	}
+
 }
 
 void DeferredRenderer::Finalize()

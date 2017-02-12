@@ -38,8 +38,7 @@ public:
 	Mesh * LoadMesh(std::string const & path);
 	void FreeMemory();
 
-
-	Mesh * testMesh;
+	void AddNode(Node * node);
 
 private:
 

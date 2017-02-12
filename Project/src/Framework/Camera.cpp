@@ -34,9 +34,11 @@ float const & Camera::GetSpin() const
 }
 
 //setters
-void Camera::SetPosition(glm::vec3 const & position)
+void Camera::SetPosition(float const & x, float const & y, float const & z)
 {
-	m_position = position;
+	m_position.x = x;
+	m_position.y = y;
+	m_position.z = z;
 	UpdateViewMatrix();
 }
 

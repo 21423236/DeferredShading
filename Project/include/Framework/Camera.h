@@ -16,7 +16,7 @@ public:
 	float const & GetSpin() const;
 
 	//setters
-	void SetPosition(glm::vec3 const & position);
+	void SetPosition(float const & x, float const & y, float const & z);
 	void SetZoom(float const & zoom);
 	void SetTilt(float const & tilt);
 	void SetSpin(float const & spin);

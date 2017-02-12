@@ -18,6 +18,8 @@ public:
 
 private:
 
+	void RenderNode(Node const * const & node, glm::mat4 modelMatrix) const;
+
 	struct gBuffer
 	{
 		unsigned int famebuffer;

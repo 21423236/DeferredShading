@@ -1,9 +1,9 @@
 #pragma once
 
+#include <vector>
+
 class Scene;
-class Object;
-class Mesh;
-class Material;
+class Node;
 
 class IRenderer
 {
@@ -13,5 +13,10 @@ public:
 	virtual bool Initialize() = 0;
 	virtual void Finalize() = 0;
 	virtual void RenderScene(Scene const & scene) const = 0;
+
+protected:
+
+	Node const * const & GetRootNode(Scene const & scene) const;
+	std::vector<Node *> const & GetChildren(Node const * const & node) const;
 
 };
