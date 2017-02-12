@@ -13,6 +13,7 @@ public:
 	virtual bool Initialize() = 0;
 	virtual void Finalize() = 0;
 	virtual void RenderScene(Scene const & scene) const = 0;
+	virtual void Resize(int const & width, int const & height) = 0;
 
 protected:
 

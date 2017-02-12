@@ -14,7 +14,7 @@ std::map<HWND, Application*> Application::s_applicationDictionary;
 
 #pragma region "Constructors/Destructor"
 
-Application::Application(IRenderer * renderer) : m_window(new Window(WndProcRouter)), m_scene(new Scene(800, 600)), m_renderer(renderer), m_running(false), m_leftState({ false, 0, 0, 0, 0 }), m_rightState({false, 0, 0, 0, 0})
+Application::Application(IRenderer * renderer) : m_window(new Window(WndProcRouter)), m_scene(new Scene(800, 600)), m_renderer(renderer), m_running(false), m_leftState({ false, 0, 0, 0, 0 }), m_rightState({false, 0, 0, 0, 0}), m_isPaused(false), m_width(800), m_height(600)
 {
 
 }
@@ -86,11 +86,14 @@ int Application::Run()
 			DispatchMessage(&msg);
 		}
 
-		//render a frame
-		RenderFrame();
+		if (!m_isPaused)
+		{
+			//render a frame
+			RenderFrame();
 
-		//swap window's back and front buffers
-		m_window->SwapBuffers();
+			//swap window's back and front buffers
+			m_window->SwapBuffers();
+		}
 	}
 
 	//finalize renderer and destroy window
@@ -117,12 +120,12 @@ void Application::Initialize()
 	Object * bunnyObject1 = new Object(bunnyMesh, nullptr);
 	Object * bunnyObject2 = new Object(bunnyMesh, nullptr);
 	Object * bunnyObject3 = new Object(bunnyMesh, nullptr);
-	bunnyObject1->SetTranslation(glm::vec3(-0.25f, 0.0f, 0));
-	bunnyObject1->SetScale(glm::vec3(2, 2, 2));
+	bunnyObject1->SetTranslation(glm::vec3(-1.0f, 0.0f, 0));
+	bunnyObject1->SetScale(glm::vec3(0.5f, 0.5f, 0.5f));
 	bunnyObject2->SetTranslation(glm::vec3(0, 0.0f, 0));
-	bunnyObject2->SetScale(glm::vec3(2, 2, 2));
-	bunnyObject3->SetTranslation(glm::vec3(0.25f, 0.0f, 0));
-	bunnyObject3->SetScale(glm::vec3(2, 2, 2));
+	bunnyObject2->SetScale(glm::vec3(0.5f, 0.5f, 0.5f));
+	bunnyObject3->SetTranslation(glm::vec3(1.0f, 0.0f, 0));
+	bunnyObject3->SetScale(glm::vec3(0.5f, 0.5f, 0.5f));
 
 	Mesh * planeMesh = m_scene->LoadMesh("Resources/Meshes/plane.obj");
 
@@ -159,6 +162,11 @@ void Application::MouseDragged(MouseButton button, int dx, int dy)
 
 		break;
 	}
+}
+
+void Application::MouseScrolled(int delta)
+{
+	m_scene->GetCamera().SetZoom(m_scene->GetCamera().GetZoom() + delta);
 }
 
 #pragma endregion
@@ -220,6 +228,21 @@ LRESULT Application::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			m_rightState.previousY = currentY;
 			MouseDragged(RIGHT_MOUSE_BUTTON, m_rightState.deltaX, m_rightState.deltaY);
 		}
+		break;
+	case WM_ENTERSIZEMOVE:
+		m_isPaused = true;
+		break;
+	case WM_EXITSIZEMOVE:
+		m_isPaused = false;
+		m_renderer->Resize(m_width, m_height);
+		m_scene->Resize(m_width, m_height);
+		break;
+	case WM_SIZE:
+		m_width = LOWORD(lParam);
+		m_height = HIWORD(lParam);
+		break;
+	case WM_MOUSEWHEEL:
+		MouseScrolled(-(int16_t)HIWORD(wParam)/120);
 		break;
 	default:
 		return DefWindowProc(hWnd, msg, wParam, lParam);

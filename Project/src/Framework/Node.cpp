@@ -51,6 +51,16 @@ glm::quat const & Node::GetOrientation() const
 glm::mat4 Node::GetTransformMatrix() const
 {
 	return glm::mat4(
+		glm::vec4(1.0f, 0, 0, 0),
+		glm::vec4(0, 1.0f, 0, 0),
+		glm::vec4(0, 0, 1.0f, 0),
+		glm::vec4(m_translation.x, m_translation.y, m_translation.z, 1)
+	) * glm::mat4_cast(m_orientation);
+}
+
+glm::mat4 Node::GetTransformMatrixWithScale() const
+{
+	return glm::mat4(
 		glm::vec4(m_scale.x, 0, 0, 0),
 		glm::vec4(0, m_scale.y, 0, 0),
 		glm::vec4(0, 0, m_scale.z, 0),

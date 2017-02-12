@@ -24,6 +24,7 @@ public:
 	glm::vec3 const & GetScale() const;
 	glm::quat const & GetOrientation() const;
 	glm::mat4 GetTransformMatrix() const;
+	glm::mat4 GetTransformMatrixWithScale() const;
 
 	//setters
 	void SetTranslation(glm::vec3 const & translation);

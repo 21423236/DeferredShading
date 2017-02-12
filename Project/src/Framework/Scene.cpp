@@ -95,4 +95,13 @@ void Scene::AddNode(Node * node)
 	m_rootNode->AddChild(node);
 }
 
+void Scene::Resize(int const & width, int const & height)
+{
+	float ry = 1.0f / m_projectionMatrix[1][1];
+	float rx = ry * ((float)width / (float)height);
+	m_projectionMatrix[0][0] = 1.0f / rx;
+	m_windowWidth = width;
+	m_windowHeight = height;
+}
+
 #pragma endregion

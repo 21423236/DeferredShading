@@ -34,6 +34,7 @@ protected:
 	virtual void Initialize();
 	virtual void MouseClicked(MouseButton button, int x, int y);
 	virtual void MouseDragged(MouseButton button, int dx, int dy);
+	virtual void MouseScrolled(int delta);
 
 private:
 
@@ -60,6 +61,9 @@ private:
 	struct MouseState m_leftState;
 	struct MouseState m_rightState;
 
-	
+	bool m_isPaused;
+
+	int m_width;
+	int m_height;
 
 };

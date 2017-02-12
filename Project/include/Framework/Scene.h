@@ -40,6 +40,8 @@ public:
 
 	void AddNode(Node * node);
 
+	void Resize(int const & width, int const & height);
+
 private:
 
 	Node * m_rootNode;
