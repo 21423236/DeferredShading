@@ -72,9 +72,7 @@ int Application::Run()
 		retValue = 1;
 	}
 
-	m_scene->LoadObject("C:/Users/david/Desktop/bunny.obj");
-	m_scene->SetProjection(0.2f, 0.1f, 20.0f);
-	m_scene->GetCamera().SetZoom(1.0f);
+	Initialize();
 
 	MSG msg;
 	std::memset(&msg, 0, sizeof(MSG));
@@ -110,6 +108,13 @@ float Application::dt() const
 #pragma endregion
 
 #pragma region "Events"
+
+void Application::Initialize()
+{
+	m_scene->LoadMesh("Resources/Meshes/bunny.obj");
+	m_scene->SetProjection(0.2f, 0.1f, 20.0f);
+	m_scene->GetCamera().SetZoom(1.0f);
+}
 
 void Application::MouseClicked(MouseButton button, int x, int y)
 {

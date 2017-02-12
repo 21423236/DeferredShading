@@ -31,6 +31,7 @@ public:
 protected:
 
 	//events
+	virtual void Initialize();
 	virtual void MouseClicked(MouseButton button, int x, int y);
 	virtual void MouseDragged(MouseButton button, int dx, int dy);
 

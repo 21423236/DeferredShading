@@ -134,6 +134,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Framework\Object.cpp" />
+    <ClCompile Include="src\Framework\Node.cpp" />
     <ClCompile Include="src\Framework\Camera.cpp" />
     <ClCompile Include="src\Framework\Mesh.cpp" />
     <ClCompile Include="src\Framework\DeferredRenderer.cpp" />
@@ -152,6 +154,8 @@
     <ClInclude Include="include\Framework\Program.h" />
     <ClInclude Include="include\Framework\Scene.h" />
     <ClInclude Include="include\Framework\Mesh.h" />
+    <ClInclude Include="include\Framework\Node.h" />
+    <ClInclude Include="include\Framework\Object.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\Shaders\Basic.frag" />
