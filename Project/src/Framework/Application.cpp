@@ -112,21 +112,27 @@ float Application::dt() const
 
 void Application::Initialize()
 {
-	Mesh * bunnyMesh = m_scene->LoadMesh("Resources/Meshes/bunny.obj");
+	Mesh * bunnyMesh = m_scene->LoadMesh("Resources/Meshes/dragon.obj");
 
 	Object * bunnyObject1 = new Object(bunnyMesh, nullptr);
 	Object * bunnyObject2 = new Object(bunnyMesh, nullptr);
 	Object * bunnyObject3 = new Object(bunnyMesh, nullptr);
-	bunnyObject1->SetTranslation(glm::vec3(-1.0f, -0.75f, 0));
-	bunnyObject1->SetScale(glm::vec3(8, 8, 8));
-	bunnyObject2->SetTranslation(glm::vec3(0, -0.75f, 0));
-	bunnyObject2->SetScale(glm::vec3(8, 8, 8));
-	bunnyObject3->SetTranslation(glm::vec3(1.0f, -0.75f, 0));
-	bunnyObject3->SetScale(glm::vec3(8, 8, 8));
+	bunnyObject1->SetTranslation(glm::vec3(-0.25f, 0.0f, 0));
+	bunnyObject1->SetScale(glm::vec3(2, 2, 2));
+	bunnyObject2->SetTranslation(glm::vec3(0, 0.0f, 0));
+	bunnyObject2->SetScale(glm::vec3(2, 2, 2));
+	bunnyObject3->SetTranslation(glm::vec3(0.25f, 0.0f, 0));
+	bunnyObject3->SetScale(glm::vec3(2, 2, 2));
 
-	m_scene->AddNode(bunnyObject1);
-	m_scene->AddNode(bunnyObject2);
-	m_scene->AddNode(bunnyObject3);
+	Mesh * planeMesh = m_scene->LoadMesh("Resources/Meshes/plane.obj");
+
+	Object * planeObject = new Object(planeMesh, nullptr);
+	planeObject->SetScale(glm::vec3(4, 4, 4));
+	planeObject->AddChild(bunnyObject1);
+	planeObject->AddChild(bunnyObject2);
+	planeObject->AddChild(bunnyObject3);
+
+	m_scene->AddNode(planeObject);
 
 	m_scene->SetProjection(0.2f, 0.1f, 1000.0f);
 	m_scene->GetCamera().SetZoom(10.0f);

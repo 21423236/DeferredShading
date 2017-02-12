@@ -16,7 +16,8 @@ Node::Node(glm::vec3 const & translation, glm::quat const & orientation) : m_tra
 
 Node::~Node()
 {
-
+	for (auto childNode : m_children)
+		delete childNode;
 }
 
 #pragma endregion

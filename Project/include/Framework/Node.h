@@ -14,7 +14,7 @@ public:
 	//constructors/destructor
 	Node();
 	Node(glm::vec3 const & translation, glm::quat const & orientation);
-	~Node();
+	virtual ~Node();
 
 	//public methods
 	void AddChild(Node * node);

@@ -13,7 +13,7 @@ Scene::Scene(unsigned const & windowWidth, unsigned const & windowHeight) : m_ro
 
 Scene::~Scene()
 {
-
+	delete m_rootNode;
 }
 
 #pragma endregion
