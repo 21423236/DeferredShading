@@ -98,5 +98,7 @@
     <None Include="src\Shaders\Basic.frag" />
     <None Include="src\Shaders\DeferredPass.vert" />
     <None Include="src\Shaders\DeferredPass.frag" />
+    <None Include="src\Shaders\LightingPass.vert" />
+    <None Include="src\Shaders\LightingPass.frag" />
   </ItemGroup>
 </Project>

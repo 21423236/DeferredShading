@@ -23,7 +23,7 @@ public:
 
 private:
 
-	void RenderNode(Node const * const & node, glm::mat4 modelMatrix, std::vector<std::pair<Light *, glm::vec3>> & lights) const;
+	void RenderNode(Node const * const & node, glm::mat4 modelMatrix, std::vector<std::pair<Light const *, glm::vec3>> & lights) const;
 	
 	void CreateGBuffer(int const & width, int const & height);
 	void FreeGBuffer();
@@ -54,7 +54,7 @@ private:
 		unsigned int fsqVBO;
 	} m_lightGeometry;
 
-	Program m_program;
 	Program m_deferredPassProgram;
+	Program m_lightingPassProgram;
 
 };

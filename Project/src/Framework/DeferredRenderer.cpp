@@ -12,7 +12,7 @@
 
 #pragma region "Constructors/Destructor"
 
-DeferredRenderer::DeferredRenderer() : m_deferredPassProgram(), m_program(), m_defaultFramebuffer({ 0, FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT, GL_BACK_LEFT })
+DeferredRenderer::DeferredRenderer() : m_deferredPassProgram(), m_defaultFramebuffer({ 0, FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT, GL_BACK_LEFT })
 {
 	m_gBuffer.framebuffer = 0;
 	memset(m_gBuffer.colorBuffers, 0, sizeof(int) * 4);
@@ -25,16 +25,24 @@ DeferredRenderer::~DeferredRenderer()
 
 bool DeferredRenderer::Initialize()
 {
-	//create program
-	m_program.CreateHandle();
-	m_program.AttachShader(Program::VERTEX_SHADER_TYPE, "src/Shaders/Basic.vert");
-	m_program.AttachShader(Program::FRAGMENT_SHADER_TYPE, "src/Shaders/Basic.frag");
-	m_program.Link();
-
+	//create programs
 	m_deferredPassProgram.CreateHandle();
 	m_deferredPassProgram.AttachShader(Program::VERTEX_SHADER_TYPE, "src/Shaders/DeferredPass.vert");
 	m_deferredPassProgram.AttachShader(Program::FRAGMENT_SHADER_TYPE, "src/Shaders/DeferredPass.frag");
 	m_deferredPassProgram.Link();
+
+	m_lightingPassProgram.CreateHandle();
+	m_lightingPassProgram.AttachShader(Program::VERTEX_SHADER_TYPE, "src/Shaders/LightingPass.vert");
+	m_lightingPassProgram.AttachShader(Program::FRAGMENT_SHADER_TYPE, "src/Shaders/LightingPass.frag");
+	m_lightingPassProgram.Link();
+
+	//this data doesn't change, can set it now
+	m_lightingPassProgram.SetUniform("uColor0", 0);
+	m_lightingPassProgram.SetUniform("uColor1", 1);
+	m_lightingPassProgram.SetUniform("uColor2", 2);
+	m_lightingPassProgram.SetUniform("uColor3", 3);
+	//will be updated when resized
+	m_lightingPassProgram.SetUniform("uWindowSize", glm::vec2(FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT));
 
 	//generate g-buffer
 	CreateGBuffer(FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT);
@@ -46,35 +54,38 @@ bool DeferredRenderer::Initialize()
 	glBindBuffer(GL_ARRAY_BUFFER, m_lightGeometry.fsqVBO);
 
 	float fsqData[] = {
-		-1.0f, 1.0f, 0.0f, 1.0f,
-		-1.0f, -1.0f, 0.0f, 0.0f,
-		1.0f, -1.0f, 1.0f, 0.0f,
-		1.0f, -1.0f, 1.0f, 0.0f,
-		1.0f, 1.0f, 1.0f, 1.0f,
-		-1.0f, 1.0f, 0.0f, 1.0f
+		-1.0f, 1.0f,
+		-1.0f, -1.0f,
+		1.0f, -1.0f,
+		1.0f, -1.0f,
+		1.0f, 1.0f,
+		-1.0f, 1.0f
 	};
 
 	glBufferData(GL_ARRAY_BUFFER, sizeof(fsqData), fsqData, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, 0);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, (GLvoid*)(sizeof(float) * 2));
-
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
 	glBindVertexArray(0);
 
-	glClearColor(1.0f, 0.5f, 0.0f, 1.0f);
-	glEnable(GL_DEPTH_TEST);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	return true;
 }
 
 void DeferredRenderer::RenderScene(Scene const & scene) const
 {
-	static std::vector<std::pair<Light *, glm::vec3>> lights(100);
+//----------------------------------------------------------------------------------------------
+//DEFERRED PASS
+//----------------------------------------------------------------------------------------------
+
+	//prepare for pass
+	static std::vector<std::pair<Light const *, glm::vec3>> lights(100);
 	lights.clear();
 
 	BindGBuffer();
-
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	glDisable(GL_BLEND);
+	glEnable(GL_DEPTH_TEST);
 
 	m_deferredPassProgram.Use();
 
@@ -86,6 +97,33 @@ void DeferredRenderer::RenderScene(Scene const & scene) const
 	Node const * const & rootNode = GetRootNode(scene);
 	RenderNode(rootNode, rootNode->GetTransformMatrix(), lights);
 
+//----------------------------------------------------------------------------------------------
+//LIGHTING PASS
+//----------------------------------------------------------------------------------------------
+
+	//prepare for pass
+	BindDefaultFramebuffer();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	glDisable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
+
+	m_lightingPassProgram.Use();
+	//set data per-frame uniforms
+	m_lightingPassProgram.SetUniform("uEye", scene.GetCamera().GetPosition());
+
+	for (auto lightPair : lights)
+	{
+		m_lightingPassProgram.SetUniform("uLight.position", lightPair.second);
+		m_lightingPassProgram.SetUniform("uLight.ambient", lightPair.first->GetAmbientIntensity());
+		m_lightingPassProgram.SetUniform("uLight.intensity", lightPair.first->GetIntensity());
+
+		glBindVertexArray(m_lightGeometry.fsqVAO);
+		glEnableVertexAttribArray(0);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glDisableVertexAttribArray(0);
+		glBindVertexArray(0);
+	}
 }
 
 void DeferredRenderer::Resize(int const & width, int const & height)
@@ -94,6 +132,7 @@ void DeferredRenderer::Resize(int const & width, int const & height)
 	m_defaultFramebuffer.height = height;
 	FreeGBuffer();
 	CreateGBuffer(width, height);
+	m_lightingPassProgram.SetUniform("uWindowSize", glm::vec2(width, height));
 }
 
 void DeferredRenderer::CreateGBuffer(int const & width, int const & height)
@@ -109,28 +148,27 @@ void DeferredRenderer::CreateGBuffer(int const & width, int const & height)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_gBuffer.colorBuffers[0], 0);
-	glBindTexture(GL_TEXTURE_2D, 0);
 
+	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, m_gBuffer.colorBuffers[1]);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, 0);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, m_gBuffer.colorBuffers[1], 0);
-	glBindTexture(GL_TEXTURE_2D, 0);
 
+	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, m_gBuffer.colorBuffers[2]);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, 0);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, m_gBuffer.colorBuffers[2], 0);
-	glBindTexture(GL_TEXTURE_2D, 0);
 
+	glActiveTexture(GL_TEXTURE3);
 	glBindTexture(GL_TEXTURE_2D, m_gBuffer.colorBuffers[3]);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, 0);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, m_gBuffer.colorBuffers[3], 0);
-	glBindTexture(GL_TEXTURE_2D, 0);
 
 	glGenRenderbuffers(1, &m_gBuffer.depthBuffer);
 	glBindRenderbuffer(GL_RENDERBUFFER, m_gBuffer.depthBuffer);
@@ -172,16 +210,18 @@ void DeferredRenderer::BindDefaultFramebuffer() const
 	glViewport(0, 0, m_defaultFramebuffer.width, m_defaultFramebuffer.height);
 }
 
-void DeferredRenderer::RenderNode(Node const * const & node, glm::mat4 modelMatrix, std::vector<std::pair<Light *, glm::vec3>> & lights) const
+void DeferredRenderer::RenderNode(Node const * const & node, glm::mat4 modelMatrix, std::vector<std::pair<Light const *, glm::vec3>> & lights) const
 {
 	glm::mat4 cumulative = modelMatrix * node->GetTransformMatrix();
 	if (node->GetNodeType() == Node::OBJECT_NODE)
 	{
 		Object const * object = static_cast<Object const *>(node);
+		
 		m_deferredPassProgram.SetUniform("uModelMatrix", modelMatrix * node->GetTransformMatrixWithScale());
 		m_deferredPassProgram.SetUniform("uMaterial.kd", object->GetMaterial()->GetKd());
 		m_deferredPassProgram.SetUniform("uMaterial.ks", object->GetMaterial()->GetKs());
 		m_deferredPassProgram.SetUniform("uMaterial.alpha", object->GetMaterial()->GetAlpha());
+
 		glBindVertexArray(object->GetMesh()->GetVAO());
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
@@ -193,12 +233,13 @@ void DeferredRenderer::RenderNode(Node const * const & node, glm::mat4 modelMatr
 		glDisableVertexAttribArray(1);
 		glDisableVertexAttribArray(0);
 		glBindVertexArray(0);
+
 	}
 	else if (node->GetNodeType() == Node::LIGHT_NODE)
 	{
 		//if we encounter a light, record it's world position
 		//this information will be used in the lighting pass
-		//lights.push_back(std::make_pair(static_cast<Light*>(node), glm::vec3(modelMatrix[3][0], modelMatrix[3][1], modelMatrix[3][2]))); 
+		lights.push_back(std::make_pair(dynamic_cast<Light const *>(node), glm::vec3(cumulative[3][0], cumulative[3][1], cumulative[3][2])));
 	}
 
 
@@ -216,5 +257,6 @@ void DeferredRenderer::Finalize()
 
 	FreeGBuffer();
 
-	m_program.DestroyHandle();
+	m_deferredPassProgram.DestroyHandle();
+	m_lightingPassProgram.DestroyHandle();
 }

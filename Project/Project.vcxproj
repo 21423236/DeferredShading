@@ -167,6 +167,8 @@
     <None Include="src\Shaders\Basic.vert" />
     <None Include="src\Shaders\DeferredPass.frag" />
     <None Include="src\Shaders\DeferredPass.vert" />
+    <None Include="src\Shaders\LightingPass.frag" />
+    <None Include="src\Shaders\LightingPass.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

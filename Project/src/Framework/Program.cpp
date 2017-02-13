@@ -3,6 +3,7 @@
 #include <GL/glew.h>
 #include <cstdlib>
 #include <cstdio>
+#include <iostream>
 
 #pragma region "Constructors/Destructor"
 
@@ -121,6 +122,7 @@ void Program::AttachShader(ShaderType const & type, char const * sourcePath)
 		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
 		char * infoLog = (char*)malloc(length);
 		glGetShaderInfoLog(shader, length, &length, infoLog);
+		std::cout << infoLog << std::endl;
 		free(infoLog);
 	}
 	glDeleteShader(shader);
