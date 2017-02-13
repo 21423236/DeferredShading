@@ -28,9 +28,9 @@ Material const * const & Object::GetMaterial() const
 
 #pragma region "Public Methods"
 
-bool Object::IsRenderable() const
+Node::NodeType Object::GetNodeType() const
 {
-	return true;
+	return OBJECT_NODE;
 }
 
 #pragma endregion

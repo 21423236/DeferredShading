@@ -134,6 +134,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Framework\Light.cpp" />
+    <ClCompile Include="src\Framework\Material.cpp" />
     <ClCompile Include="src\Framework\IRenderer.cpp" />
     <ClCompile Include="src\Framework\Object.cpp" />
     <ClCompile Include="src\Framework\Node.cpp" />
@@ -157,10 +159,14 @@
     <ClInclude Include="include\Framework\Mesh.h" />
     <ClInclude Include="include\Framework\Node.h" />
     <ClInclude Include="include\Framework\Object.h" />
+    <ClInclude Include="include\Framework\Material.h" />
+    <ClInclude Include="include\Framework\Light.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\Shaders\Basic.frag" />
     <None Include="src\Shaders\Basic.vert" />
+    <None Include="src\Shaders\DeferredPass.frag" />
+    <None Include="src\Shaders\DeferredPass.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

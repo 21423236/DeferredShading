@@ -17,8 +17,8 @@ public:
 	Mesh const * const & GetMesh() const;
 	Material const * const & GetMaterial() const;
 
-	//public methods
-	bool IsRenderable() const;
+	NodeType GetNodeType() const;
+
 
 private:
 

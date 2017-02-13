@@ -9,12 +9,16 @@ layout(location = 1) in vec3 in_normal;
 layout(location = 2) in vec3 in_tangent;
 layout(location = 3) in vec2 in_uv;
 
-out vec2 uv;
-
-const mat4 modelMatrix = mat4(vec4(10, 0, 0, 0), vec4(0, 10, 0, 0), vec4(0, 0, 10, 0), vec4(0, 0, 0, 1));
+out vec3 worldPosition;
+out vec3 worldNormal;
 
 void main()
 {
-	gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * vec4(in_position, 1);
-	uv = (0.5f * in_normal.xy) + 0.5f;
+	vec4 worldPosition4 = uModelMatrix * vec4(in_position, 1);
+	vec4 worldNormal4 = uModelMatrix * vec4(in_normal, 0);
+	
+	worldPosition = worldPosition4.xyz;
+	worldNormal = worldNormal4.xyz;
+
+	gl_Position = uProjectionMatrix * uViewMatrix * worldPosition4;
 }

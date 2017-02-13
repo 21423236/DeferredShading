@@ -1,5 +1,6 @@
 #include <Framework/Application.h>
 #include <Framework/Object.h>
+#include <Framework/Light.h>
 #include <GL/glew.h>
 #include <Windows.h>
 #include <iostream>
@@ -115,22 +116,24 @@ float Application::dt() const
 
 void Application::Initialize()
 {
-	Mesh * bunnyMesh = m_scene->LoadMesh("Resources/Meshes/dragon.obj");
+	Mesh * bunnyMesh = m_scene->CreateMesh("dragon", "Resources/Meshes/bunny.obj");
+	Material * bunnyMaterial = m_scene->CreateMaterial("dragon", glm::vec3(1, 1, 1), glm::vec3(0, 0, 0), 100);
 
-	Object * bunnyObject1 = new Object(bunnyMesh, nullptr);
-	Object * bunnyObject2 = new Object(bunnyMesh, nullptr);
-	Object * bunnyObject3 = new Object(bunnyMesh, nullptr);
-	bunnyObject1->SetTranslation(glm::vec3(-1.0f, 0.0f, 0));
-	bunnyObject1->SetScale(glm::vec3(0.5f, 0.5f, 0.5f));
+	Object * bunnyObject1 = new Object(bunnyMesh, bunnyMaterial);
+	Object * bunnyObject2 = new Object(bunnyMesh, bunnyMaterial);
+	Object * bunnyObject3 = new Object(bunnyMesh, bunnyMaterial);
+	bunnyObject1->SetTranslation(glm::vec3(-2.0f, 0.0f, 0));
+	bunnyObject1->SetScale(glm::vec3(1.0f, 1.0f, 1.0f));
 	bunnyObject2->SetTranslation(glm::vec3(0, 0.0f, 0));
-	bunnyObject2->SetScale(glm::vec3(0.5f, 0.5f, 0.5f));
-	bunnyObject3->SetTranslation(glm::vec3(1.0f, 0.0f, 0));
-	bunnyObject3->SetScale(glm::vec3(0.5f, 0.5f, 0.5f));
+	bunnyObject2->SetScale(glm::vec3(1.0f, 1.0f, 1.0f));
+	bunnyObject3->SetTranslation(glm::vec3(2.0f, 0.0f, 0));
+	bunnyObject3->SetScale(glm::vec3(1.0f, 1.0f, 1.0f));
 
-	Mesh * planeMesh = m_scene->LoadMesh("Resources/Meshes/plane.obj");
+	Mesh * planeMesh = m_scene->CreateMesh("plane", "Resources/Meshes/plane.obj");
+	Material * planeMaterial = m_scene->CreateMaterial("plane", glm::vec3(0, 0, 1), glm::vec3(0, 0, 0), 100);
 
-	Object * planeObject = new Object(planeMesh, nullptr);
-	planeObject->SetScale(glm::vec3(4, 4, 4));
+	Object * planeObject = new Object(planeMesh, planeMaterial);
+	planeObject->SetScale(glm::vec3(8, 8, 8));
 	planeObject->AddChild(bunnyObject1);
 	planeObject->AddChild(bunnyObject2);
 	planeObject->AddChild(bunnyObject3);

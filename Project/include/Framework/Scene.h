@@ -4,7 +4,7 @@
 #include "Node.h"
 #include <glm/glm.hpp>
 #include <map>
-#include <vector>
+#include <map>
 #include <string>
 
 
@@ -35,7 +35,8 @@ public:
 	void SetWindowHeight(unsigned const & height);
 
 	//public methods
-	Mesh * LoadMesh(std::string const & path);
+	Mesh * CreateMesh(std::string const & name, std::string const & path);
+	Material * CreateMaterial(std::string const & name, glm::vec3 const & kd, glm::vec3 const & ks, float const & alpha);
 	void FreeMemory();
 
 	void AddNode(Node * node);
@@ -48,8 +49,8 @@ private:
 
 	Camera m_camera;
 
-	std::vector<Mesh *> m_meshes;
-	std::vector<Material *> m_materials;
+	std::map<std::string, Mesh *> m_meshes;
+	std::map<std::string, Material *> m_materials;
 
 	glm::mat4 m_projectionMatrix;
 	glm::mat4 m_viewMatrix;

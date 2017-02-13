@@ -34,8 +34,8 @@ Mesh::Mesh(unsigned const & numberOfFaces, aiFace * faces, aiVector3t<float> * p
 			vertices[(i * 3) + faceId].tangent[0] = tangents[faces[i].mIndices[faceId]].x;
 			vertices[(i * 3) + faceId].tangent[1] = tangents[faces[i].mIndices[faceId]].y;
 			vertices[(i * 3) + faceId].tangent[2] = tangents[faces[i].mIndices[faceId]].z;
-			vertices[(i * 3) + faceId].uv[0] = 0.0f;//textureCoords[faces[i].mIndices[faceId]][0].x;
-			vertices[(i * 3) + faceId].uv[1] = 0.0f;//textureCoords[faces[i].mIndices[faceId]][0].y;
+			vertices[(i * 3) + faceId].uv[0] = textureCoords[0][faces[i].mIndices[faceId]].x;
+			vertices[(i * 3) + faceId].uv[1] = textureCoords[0][faces[i].mIndices[faceId]].y;
 		}
 	}
 

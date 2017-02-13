@@ -31,8 +31,15 @@ public:
 	void SetScale(glm::vec3 const & scale);
 	void SetOrientation(glm::quat const & orientation);
 
-	//public methods
-	virtual bool IsRenderable() const;
+	typedef enum NodeType
+	{
+		BASE_NODE,
+		OBJECT_NODE,
+		LIGHT_NODE,
+		MAX_NODE_TYPES
+	} NodeType;
+
+	virtual NodeType GetNodeType() const;
 
 private:
 

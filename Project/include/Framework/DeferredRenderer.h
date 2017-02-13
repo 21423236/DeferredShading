@@ -3,6 +3,10 @@
 #include <Framework/IRenderer.h>
 #include <Framework/Program.h>
 
+#include <vector>
+
+class Light;
+
 class DeferredRenderer : public IRenderer
 {
 public:
@@ -19,11 +23,11 @@ public:
 
 private:
 
-	void RenderNode(Node const * const & node, glm::mat4 modelMatrix) const;
+	void RenderNode(Node const * const & node, glm::mat4 modelMatrix, std::vector<std::pair<Light *, glm::vec3>> & lights) const;
 	
 	void CreateGBuffer(int const & width, int const & height);
 	void FreeGBuffer();
-	void BindGBuffer();
+	void BindGBuffer() const;
 	void BindDefaultFramebuffer() const;
 
 	struct gBuffer
@@ -51,5 +55,6 @@ private:
 	} m_lightGeometry;
 
 	Program m_program;
+	Program m_deferredPassProgram;
 
 };

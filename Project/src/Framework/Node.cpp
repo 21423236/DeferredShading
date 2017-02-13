@@ -89,11 +89,11 @@ void Node::SetOrientation(glm::quat const & orientation)
 
 #pragma endregion
 
-#pragma region "Public Methods"
+#pragma region "Protected Methods"
 
-bool Node::IsRenderable() const
+Node::NodeType Node::GetNodeType() const
 {
-	return false;
+	return BASE_NODE;
 }
 
 #pragma endregion

@@ -4,13 +4,15 @@
 #include <Framework/Scene.h>
 #include <Framework/Mesh.h>
 #include <Framework/Object.h>
+#include <Framework/Material.h>
+#include <Framework/Light.h>
 
 #define FRAMEBUFFER_WIDTH 800
 #define FRAMEBUFFER_HEIGHT 600
 
 #pragma region "Constructors/Destructor"
 
-DeferredRenderer::DeferredRenderer() : m_program(), m_defaultFramebuffer({ 0, 800, 600, GL_BACK_LEFT })
+DeferredRenderer::DeferredRenderer() : m_deferredPassProgram(), m_program(), m_defaultFramebuffer({ 0, FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT, GL_BACK_LEFT })
 {
 	m_gBuffer.framebuffer = 0;
 	memset(m_gBuffer.colorBuffers, 0, sizeof(int) * 4);
@@ -28,6 +30,11 @@ bool DeferredRenderer::Initialize()
 	m_program.AttachShader(Program::VERTEX_SHADER_TYPE, "src/Shaders/Basic.vert");
 	m_program.AttachShader(Program::FRAGMENT_SHADER_TYPE, "src/Shaders/Basic.frag");
 	m_program.Link();
+
+	m_deferredPassProgram.CreateHandle();
+	m_deferredPassProgram.AttachShader(Program::VERTEX_SHADER_TYPE, "src/Shaders/DeferredPass.vert");
+	m_deferredPassProgram.AttachShader(Program::FRAGMENT_SHADER_TYPE, "src/Shaders/DeferredPass.frag");
+	m_deferredPassProgram.Link();
 
 	//generate g-buffer
 	CreateGBuffer(FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT);
@@ -61,16 +68,23 @@ bool DeferredRenderer::Initialize()
 
 void DeferredRenderer::RenderScene(Scene const & scene) const
 {
+	static std::vector<std::pair<Light *, glm::vec3>> lights(100);
+	lights.clear();
+
+	BindGBuffer();
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	BindDefaultFramebuffer();
 
-	m_program.SetUniform("uProjectionMatrix", scene.GetProjectionMatrix());
-	m_program.SetUniform("uViewMatrix", scene.GetViewMatrix());
-	m_program.Use();
-	
+	m_deferredPassProgram.Use();
+
+	//set per-frame uniforms
+	m_deferredPassProgram.SetUniform("uProjectionMatrix", scene.GetProjectionMatrix());
+	m_deferredPassProgram.SetUniform("uViewMatrix", scene.GetViewMatrix());
+
+	//traverse the scene graph
 	Node const * const & rootNode = GetRootNode(scene);
-	RenderNode(rootNode, rootNode->GetTransformMatrix());
+	RenderNode(rootNode, rootNode->GetTransformMatrix(), lights);
 
 }
 
@@ -144,7 +158,7 @@ void DeferredRenderer::FreeGBuffer()
 	glDeleteFramebuffers(1, &m_gBuffer.framebuffer);
 }
 
-void DeferredRenderer::BindGBuffer()
+void DeferredRenderer::BindGBuffer() const
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, m_gBuffer.framebuffer);
 	glDrawBuffers(4, m_gBuffer.drawBuffers);
@@ -158,13 +172,16 @@ void DeferredRenderer::BindDefaultFramebuffer() const
 	glViewport(0, 0, m_defaultFramebuffer.width, m_defaultFramebuffer.height);
 }
 
-void DeferredRenderer::RenderNode(Node const * const & node, glm::mat4 modelMatrix) const
+void DeferredRenderer::RenderNode(Node const * const & node, glm::mat4 modelMatrix, std::vector<std::pair<Light *, glm::vec3>> & lights) const
 {
 	glm::mat4 cumulative = modelMatrix * node->GetTransformMatrix();
-	if (node->IsRenderable())
+	if (node->GetNodeType() == Node::OBJECT_NODE)
 	{
-		m_program.SetUniform("uModelMatrix", modelMatrix * node->GetTransformMatrixWithScale());
-		Object const * object = dynamic_cast<Object const *>(node);
+		Object const * object = static_cast<Object const *>(node);
+		m_deferredPassProgram.SetUniform("uModelMatrix", modelMatrix * node->GetTransformMatrixWithScale());
+		m_deferredPassProgram.SetUniform("uMaterial.kd", object->GetMaterial()->GetKd());
+		m_deferredPassProgram.SetUniform("uMaterial.ks", object->GetMaterial()->GetKs());
+		m_deferredPassProgram.SetUniform("uMaterial.alpha", object->GetMaterial()->GetAlpha());
 		glBindVertexArray(object->GetMesh()->GetVAO());
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
@@ -177,10 +194,17 @@ void DeferredRenderer::RenderNode(Node const * const & node, glm::mat4 modelMatr
 		glDisableVertexAttribArray(0);
 		glBindVertexArray(0);
 	}
+	else if (node->GetNodeType() == Node::LIGHT_NODE)
+	{
+		//if we encounter a light, record it's world position
+		//this information will be used in the lighting pass
+		//lights.push_back(std::make_pair(static_cast<Light*>(node), glm::vec3(modelMatrix[3][0], modelMatrix[3][1], modelMatrix[3][2]))); 
+	}
+
 
 	for (auto childNode : IRenderer::GetChildren(node))
 	{
-		RenderNode(childNode, cumulative);
+		RenderNode(childNode, cumulative, lights);
 	}
 
 }

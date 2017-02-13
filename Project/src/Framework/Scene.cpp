@@ -1,5 +1,6 @@
 #include <Framework/Scene.h>
 #include <Framework/Mesh.h>
+#include <Framework/Material.h>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -68,7 +69,7 @@ void Scene::SetWindowHeight(unsigned const & height)
 
 #pragma region "Public Methods"
 
-Mesh * Scene::LoadMesh(std::string const & path)
+Mesh * Scene::CreateMesh(std::string const & name, std::string const & path)
 {
 	Assimp::Importer importer;
 	aiScene const * scene = importer.ReadFile(path, aiProcess_CalcTangentSpace | aiProcess_Triangulate);
@@ -79,15 +80,25 @@ Mesh * Scene::LoadMesh(std::string const & path)
 	//process the object
 	aiMesh * assimpMesh = scene->mMeshes[0];
 	Mesh * mesh = new Mesh(assimpMesh->mNumFaces, assimpMesh->mFaces, assimpMesh->mVertices, assimpMesh->mNormals, assimpMesh->mTangents, assimpMesh->mTextureCoords);
-	m_meshes.push_back(mesh);
+	m_meshes[name] = mesh;
 
 	return mesh;
+}
+
+Material * Scene::CreateMaterial(std::string const & name, glm::vec3 const & kd, glm::vec3 const & ks, float const & alpha)
+{
+	Material * material = new Material(kd, ks, alpha);
+	m_materials[name] = material;
+	return material;
 }
 
 void Scene::FreeMemory()
 {
 	for (auto mesh : m_meshes)
-		delete mesh;
+		delete mesh.second;
+
+	for (auto material : m_materials)
+		delete material.second;
 }
 
 void Scene::AddNode(Node * node)
