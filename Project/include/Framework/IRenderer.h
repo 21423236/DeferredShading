@@ -14,6 +14,7 @@ public:
 	virtual void Finalize() = 0;
 	virtual void RenderScene(Scene const & scene) const = 0;
 	virtual void Resize(int const & width, int const & height) = 0;
+	virtual void GenerateGUI() = 0;
 
 protected:
 

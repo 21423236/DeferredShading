@@ -134,6 +134,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Framework\Input.cpp" />
+    <ClCompile Include="src\Framework\GUI.cpp" />
+    <ClCompile Include="src\imgui\imgui_impl.cpp" />
     <ClCompile Include="src\Framework\Light.cpp" />
     <ClCompile Include="src\Framework\Material.cpp" />
     <ClCompile Include="src\Framework\IRenderer.cpp" />
@@ -145,10 +148,15 @@
     <ClCompile Include="src\Framework\Application.cpp" />
     <ClCompile Include="src\Framework\Scene.cpp" />
     <ClCompile Include="src\Framework\Program.cpp" />
+    <ClCompile Include="src\imgui\imgui.cpp" />
+    <ClCompile Include="src\imgui\imgui_demo.cpp" />
+    <ClCompile Include="src\imgui\imgui_draw.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Framework\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\Framework\GUI.h" />
+    <ClInclude Include="include\imgui\imgui_impl.h" />
     <ClInclude Include="include\Framework\Camera.h" />
     <ClInclude Include="include\Framework\DeferredRenderer.h" />
     <ClInclude Include="include\Framework\Application.h" />
@@ -161,6 +169,13 @@
     <ClInclude Include="include\Framework\Object.h" />
     <ClInclude Include="include\Framework\Material.h" />
     <ClInclude Include="include\Framework\Light.h" />
+    <ClInclude Include="include\imgui\imconfig.h" />
+    <ClInclude Include="include\imgui\imgui.h" />
+    <ClInclude Include="include\imgui\imgui_internal.h" />
+    <ClInclude Include="include\imgui\stb_rect_pack.h" />
+    <ClInclude Include="include\imgui\stb_textedit.h" />
+    <ClInclude Include="include\imgui\stb_truetype.h" />
+    <ClInclude Include="include\Framework\Input.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\Shaders\Basic.frag" />

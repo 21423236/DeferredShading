@@ -32,3 +32,8 @@ Node::NodeType Light::GetNodeType() const
 {
 	return LIGHT_NODE;
 }
+
+bool Light::IsGlobal() const
+{
+	return m_isGlobal;
+}

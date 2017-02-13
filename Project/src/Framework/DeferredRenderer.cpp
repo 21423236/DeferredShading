@@ -7,6 +7,8 @@
 #include <Framework/Material.h>
 #include <Framework/Light.h>
 
+#include <imgui/imgui.h>
+
 #define FRAMEBUFFER_WIDTH 800
 #define FRAMEBUFFER_HEIGHT 600
 
@@ -114,6 +116,11 @@ void DeferredRenderer::RenderScene(Scene const & scene) const
 
 	for (auto lightPair : lights)
 	{
+		if (lightPair.first->IsGlobal())
+		{
+			//generate shadow map
+		}
+
 		m_lightingPassProgram.SetUniform("uLight.position", lightPair.second);
 		m_lightingPassProgram.SetUniform("uLight.ambient", lightPair.first->GetAmbientIntensity());
 		m_lightingPassProgram.SetUniform("uLight.intensity", lightPair.first->GetIntensity());
@@ -133,6 +140,29 @@ void DeferredRenderer::Resize(int const & width, int const & height)
 	FreeGBuffer();
 	CreateGBuffer(width, height);
 	m_lightingPassProgram.SetUniform("uWindowSize", glm::vec2(width, height));
+}
+
+void DeferredRenderer::GenerateGUI()
+{
+	ImGui::SetNextWindowSize(ImVec2(300, 300));
+	ImGui::Begin("Positions");
+	ImGui::Image((void *)(intptr_t)m_gBuffer.colorBuffers[0], ImVec2(300, 300), ImVec2(1, 1), ImVec2(0, 0));
+	ImGui::End();
+
+	ImGui::SetNextWindowSize(ImVec2(300, 300));
+	ImGui::Begin("Normals");
+	ImGui::Image((void*)(intptr_t)m_gBuffer.colorBuffers[1], ImVec2(300, 300), ImVec2(1, 1), ImVec2(0, 0));
+	ImGui::End();
+
+	ImGui::SetNextWindowSize(ImVec2(300, 300));
+	ImGui::Begin("Kd");
+	ImGui::Image((void*)(intptr_t)m_gBuffer.colorBuffers[2], ImVec2(300, 300), ImVec2(1, 1), ImVec2(0, 0));
+	ImGui::End();
+
+	ImGui::SetNextWindowSize(ImVec2(300, 300));
+	ImGui::Begin("Ks/alpha");
+	ImGui::Image((void*)(intptr_t)m_gBuffer.colorBuffers[3], ImVec2(300, 300), ImVec2(1, 1), ImVec2(0, 0));
+	ImGui::End();
 }
 
 void DeferredRenderer::CreateGBuffer(int const & width, int const & height)
@@ -222,6 +252,7 @@ void DeferredRenderer::RenderNode(Node const * const & node, glm::mat4 modelMatr
 		m_deferredPassProgram.SetUniform("uMaterial.ks", object->GetMaterial()->GetKs());
 		m_deferredPassProgram.SetUniform("uMaterial.alpha", object->GetMaterial()->GetAlpha());
 
+		//render the object
 		glBindVertexArray(object->GetMesh()->GetVAO());
 		glEnableVertexAttribArray(0);
 		glEnableVertexAttribArray(1);
@@ -242,7 +273,7 @@ void DeferredRenderer::RenderNode(Node const * const & node, glm::mat4 modelMatr
 		lights.push_back(std::make_pair(dynamic_cast<Light const *>(node), glm::vec3(cumulative[3][0], cumulative[3][1], cumulative[3][2])));
 	}
 
-
+	//render children
 	for (auto childNode : IRenderer::GetChildren(node))
 	{
 		RenderNode(childNode, cumulative, lights);

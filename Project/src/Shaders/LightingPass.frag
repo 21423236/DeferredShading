@@ -31,6 +31,7 @@ void main()
 
 	vec3 V = normalize(uEye - P);
 	vec3 L = normalize(uLight.position - P);
+	vec3 H = normalize(L + V);
 
 	fragColor = vec4(uLight.ambient * kd + uLight.intensity * (max(dot(N,L), 0) * kd.rgb), 1);
 }

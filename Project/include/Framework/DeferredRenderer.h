@@ -20,6 +20,7 @@ public:
 	void Finalize();
 	void RenderScene(Scene const & scene) const;
 	void Resize(int const & width, int const & height);
+	void GenerateGUI();
 
 private:
 
@@ -52,6 +53,8 @@ private:
 	{
 		unsigned int fsqVAO;
 		unsigned int fsqVBO;
+		unsigned int circleVAO;
+		unsigned int cirlceVBO;
 	} m_lightGeometry;
 
 	Program m_deferredPassProgram;

@@ -5,6 +5,10 @@
 #include <Windows.h>
 #include <iostream>
 
+
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl.h>
+
 #define M_PI 3.14159265358979323846f
 
 #pragma region "Static Data"
@@ -15,7 +19,7 @@ std::map<HWND, Application*> Application::s_applicationDictionary;
 
 #pragma region "Constructors/Destructor"
 
-Application::Application(IRenderer * renderer) : m_window(new Window(WndProcRouter)), m_scene(new Scene(800, 600)), m_renderer(renderer), m_running(false), m_leftState({ false, 0, 0, 0, 0 }), m_rightState({false, 0, 0, 0, 0}), m_isPaused(false), m_width(800), m_height(600)
+Application::Application(IRenderer * renderer) : m_window(new Window(WndProcRouter)), m_scene(new Scene(800, 600)), m_renderer(renderer), m_gui(new GUI()), m_input(new Input(this)), m_running(false), m_isPaused(false), m_width(800), m_height(600)
 {
 
 }
@@ -23,6 +27,8 @@ Application::Application(IRenderer * renderer) : m_window(new Window(WndProcRout
 
 Application::~Application()
 {
+	delete m_input;
+	delete m_gui;
 	delete m_renderer;
 	delete m_scene;
 	delete m_window;
@@ -74,6 +80,9 @@ int Application::Run()
 		retValue = 1;
 	}
 
+	m_gui->Initialize(*m_window);
+	m_input->Initialize();
+
 	Initialize();
 
 	MSG msg;
@@ -87,10 +96,19 @@ int Application::Run()
 			DispatchMessage(&msg);
 		}
 
+		m_input->Update();
+
 		if (!m_isPaused)
 		{
+			m_gui->NewFrame(m_width, m_height);
+
 			//render a frame
 			RenderFrame();
+
+			//render gui
+			m_gui->GenerateGUI(*m_scene);
+			m_renderer->GenerateGUI();
+			m_gui->EndFrame();
 
 			//swap window's back and front buffers
 			m_window->SwapBuffers();
@@ -98,6 +116,8 @@ int Application::Run()
 	}
 
 	//finalize renderer and destroy window
+	m_input->Finalize();
+	m_gui->Finalize();
 	m_scene->FreeMemory();
 	m_renderer->Finalize();
 	m_window->Destroy();
@@ -116,8 +136,8 @@ float Application::dt() const
 
 void Application::Initialize()
 {
-	Mesh * bunnyMesh = m_scene->CreateMesh("dragon", "Resources/Meshes/bunny.obj");
-	Material * bunnyMaterial = m_scene->CreateMaterial("dragon", glm::vec3(1, 1, 1), glm::vec3(1, 1, 1), 100);
+	Mesh * bunnyMesh = m_scene->CreateMesh("bunny", "Resources/Meshes/bunny.obj");
+	Material * bunnyMaterial = m_scene->CreateMaterial("bunny", glm::vec3(1, 1, 1), glm::vec3(1, 1, 1), 100);
 
 	Object * bunnyObject1 = new Object(bunnyMesh, bunnyMaterial);
 	Object * bunnyObject2 = new Object(bunnyMesh, bunnyMaterial);
@@ -140,9 +160,13 @@ void Application::Initialize()
 
 	m_scene->AddNode(planeObject);
 
-	Light * light = new Light(glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(1.0f, 1.0f, 1.0f));
-	light->SetTranslation(glm::vec3(10, 1, 0));
-	m_scene->AddNode(light);
+	Light * light1 = new Light(glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(1.0f, 1.0f, 1.0f));
+	light1->SetTranslation(glm::vec3(4, 8, 4));
+	m_scene->AddNode(light1);
+
+	Light * light2 = new Light(glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(1, 1, 1));
+	light2->SetTranslation(glm::vec3(-4, 8, -4));
+	m_scene->AddNode(light2);
 
 	m_scene->SetProjection(0.2f, 0.1f, 1000.0f);
 	m_scene->GetCamera().SetZoom(10.0f);
@@ -159,11 +183,11 @@ void Application::MouseDragged(MouseButton button, int dx, int dy)
 	switch (button)
 	{
 	case LEFT_MOUSE_BUTTON:
-		camera.SetSpin(camera.GetSpin() + (((float)dx / (float)m_window->m_width) * M_PI));
-		camera.SetTilt(camera.GetTilt() + (((float)dy / (float)m_window->m_height) * M_PI));
+		camera.SetSpin(camera.GetSpin() - (((float)dx / (float)m_window->m_width) * M_PI));
+		camera.SetTilt(camera.GetTilt() - (((float)dy / (float)m_window->m_height) * M_PI));
 		break;
 	case RIGHT_MOUSE_BUTTON:
-		camera.SetPosition(camera.GetPosition().x - ((float)dx / (2.0f * (float)m_window->m_width)), camera.GetPosition().y + ((float)dy / (2.0f*(float)m_window->m_height)), 0.0f);
+		camera.SetPosition(camera.GetPosition().x + ((float)dx / (2.0f * (float)m_window->m_width)), camera.GetPosition().y - ((float)dy / (2.0f*(float)m_window->m_height)), 0.0f);
 		break;
 	case MIDDLE_MOUSE_BUTTON:
 
@@ -182,59 +206,31 @@ void Application::MouseScrolled(int delta)
 
 LRESULT Application::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+	ImGuiIO & io = ImGui::GetIO();
 	switch (msg)
 	{
 	case WM_CLOSE:
 		//inform the application to stop running
 		m_running = false;
 		break;
-	case WM_LBUTTONDBLCLK:
-		MouseClicked(LEFT_MOUSE_BUTTON, LOWORD(lParam), HIWORD(lParam));
-		break;
 	case WM_LBUTTONDOWN:
-		m_leftState.down = true;
-		m_leftState.previousX = LOWORD(lParam);
-		m_leftState.previousY = HIWORD(lParam);
-		m_leftState.deltaX = 0;
-		m_leftState.deltaY = 0;
+		m_input->MouseDown(0);
 		break;
 	case WM_LBUTTONUP:
-		m_leftState.down = false;
-		break;
-	case WM_RBUTTONDBLCLK:
-		MouseClicked(RIGHT_MOUSE_BUTTON, LOWORD(lParam), HIWORD(lParam));
+		m_input->MouseUp(0);
 		break;
 	case WM_RBUTTONDOWN:
-		m_rightState.down = true;
-		m_rightState.previousX = LOWORD(lParam);
-		m_rightState.previousY = HIWORD(lParam);
-		m_rightState.deltaX = 0;
-		m_rightState.deltaY = 0;
+		m_input->MouseDown(1);
 		break;
 	case WM_RBUTTONUP:
-		m_rightState.down = false;
+		m_input->MouseUp(1);
 		break;
 	case WM_MOUSEMOVE:
-		if (m_leftState.down)
-		{
-			int currentX = LOWORD(lParam);
-			int currentY = HIWORD(lParam);
-			m_leftState.deltaX = currentX - m_leftState.previousX;
-			m_leftState.deltaY = currentY - m_leftState.previousY;
-			m_leftState.previousX = currentX;
-			m_leftState.previousY = currentY;
-			MouseDragged(LEFT_MOUSE_BUTTON, m_leftState.deltaX, m_leftState.deltaY);
-		}
-		if (m_rightState.down)
-		{
-			int currentX = LOWORD(lParam);
-			int currentY = HIWORD(lParam);
-			m_rightState.deltaX = currentX - m_rightState.previousX;
-			m_rightState.deltaY = currentY - m_rightState.previousY;
-			m_rightState.previousX = currentX;
-			m_rightState.previousY = currentY;
-			MouseDragged(RIGHT_MOUSE_BUTTON, m_rightState.deltaX, m_rightState.deltaY);
-		}
+		m_input->MouseMove(LOWORD(lParam), HIWORD(lParam));
+		break;
+	case WM_KEYDOWN:
+		break;
+	case WM_KEYUP:
 		break;
 	case WM_ENTERSIZEMOVE:
 		m_isPaused = true;
@@ -247,9 +243,12 @@ LRESULT Application::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_SIZE:
 		m_width = LOWORD(lParam);
 		m_height = HIWORD(lParam);
-		break;
-	case WM_MOUSEWHEEL:
-		MouseScrolled(-(int16_t)HIWORD(wParam)/120);
+
+		if (wParam == SIZE_MAXIMIZED || wParam == SIZE_RESTORED)
+		{
+			m_renderer->Resize(m_width, m_height);
+			m_scene->Resize(m_width, m_height);
+		}
 		break;
 	default:
 		return DefWindowProc(hWnd, msg, wParam, lParam);

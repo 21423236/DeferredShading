@@ -3,6 +3,8 @@
 #include <Framework/Window.h>
 #include <Framework/Scene.h>
 #include <Framework/IRenderer.h>
+#include <Framework/GUI.h>
+#include <Framework/Input.h>
 
 #include <Windows.h>
 
@@ -11,6 +13,8 @@
 class Application
 {
 public:
+
+	friend class Input;
 
 	typedef enum MouseButton {
 		LEFT_MOUSE_BUTTON,
@@ -47,20 +51,10 @@ private:
 	Window * m_window;
 	Scene * m_scene;
 	IRenderer * m_renderer;
+	GUI * m_gui;
+	Input * m_input;
 
 	bool m_running;
-
-	struct MouseState {
-		bool down;
-		int previousX;
-		int previousY;
-		int deltaX;
-		int deltaY;
-	};
-
-	struct MouseState m_leftState;
-	struct MouseState m_rightState;
-
 	bool m_isPaused;
 
 	int m_width;

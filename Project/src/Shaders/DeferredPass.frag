@@ -23,8 +23,8 @@ layout(location = 3) out vec4 color3;
 
 void main()
 {
-	color0 = vec4(inData.position, 0);
-	color1 = vec4(normalize(inData.normal), 0);
-	color2 = vec4(uMaterial.kd, 0);
+	color0 = vec4(inData.position, 1);
+	color1 = vec4(normalize(inData.normal), 1);
+	color2 = vec4(uMaterial.kd, 1);
 	color3 = vec4(uMaterial.ks, uMaterial.alpha);
 }

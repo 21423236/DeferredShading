@@ -23,7 +23,7 @@ Window::Window(LRESULT (CALLBACK * WndProc)(HWND, UINT, WPARAM, LPARAM)) : m_han
 		s_windowClass.cbWndExtra = 0;
 		s_windowClass.hInstance = GetModuleHandle(NULL);
 		s_windowClass.hIcon = NULL;
-		s_windowClass.hCursor = LoadCursor(s_windowClass.hInstance, IDC_ARROW);
+		s_windowClass.hCursor = LoadCursor(NULL, IDC_ARROW);
 		s_windowClass.hbrBackground = (HBRUSH)COLOR_WINDOW;
 		s_windowClass.lpszMenuName = NULL;
 		s_windowClass.lpszClassName = s_windowClassName;
