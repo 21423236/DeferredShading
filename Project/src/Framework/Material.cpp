@@ -9,14 +9,29 @@ Material::~Material()
 {
 }
 
+glm::vec3 & Material::GetKd()
+{
+	return m_kd;
+}
+
 glm::vec3 const & Material::GetKd() const
 {
 	return m_kd;
 }
 
+glm::vec3 & Material::GetKs()
+{
+	return m_ks;
+}
+
 glm::vec3 const & Material::GetKs() const
 {
 	return m_ks;
+}
+
+float & Material::GetAlpha()
+{
+	return m_alpha;
 }
 
 float const & Material::GetAlpha() const

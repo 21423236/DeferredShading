@@ -17,6 +17,7 @@ class Scene
 public:
 
 	friend class IRenderer;
+	friend class GUI;
 
 	//constructors/destructor
 	Scene(unsigned const & windowWidth, unsigned const & windowHeight);

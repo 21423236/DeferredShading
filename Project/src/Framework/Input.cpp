@@ -23,6 +23,8 @@ void Input::Update()
 			m_application->MouseDragged(Application::LEFT_MOUSE_BUTTON, m_io->MouseDelta.x, m_io->MouseDelta.y);
 		if (m_io->MouseDown[1])
 			m_application->MouseDragged(Application::RIGHT_MOUSE_BUTTON, m_io->MouseDelta.x, m_io->MouseDelta.y);
+		
+		m_application->MouseScrolled(m_io->MouseWheel);
 	}
 }
 
@@ -57,4 +59,14 @@ void Input::MouseDown(char button)
 void Input::MouseUp(char button)
 {
 	m_io->MouseDown[button] = false;
+}
+
+void Input::MouseScroll(int value)
+{
+	m_io->MouseWheel = (float)value / 120.0f;
+}
+
+void Input::CharInput(int character)
+{
+	m_io->AddInputCharacter(character);
 }

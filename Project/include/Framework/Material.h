@@ -9,8 +9,11 @@ public:
 	~Material();
 
 	//getters
+	glm::vec3 & GetKd();
 	glm::vec3 const & GetKd() const;
+	glm::vec3 & GetKs();
 	glm::vec3 const & GetKs() const;
+	float & GetAlpha();
 	float const & GetAlpha() const;
 
 	//setters

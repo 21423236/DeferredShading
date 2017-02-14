@@ -9,6 +9,8 @@ class Object : public Node
 {
 public:
 
+	friend class GUI;
+
 	//constructors/destructor
 	Object(Mesh * mesh, Material * material);
 	~Object();

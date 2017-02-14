@@ -7,6 +7,8 @@
 class Light : public Node
 {
 public:
+
+	friend class GUI;
 	
 	Light(glm::vec3 const & ambient, glm::vec3 const & intensity, bool const & isGlobal = true);
 	~Light();

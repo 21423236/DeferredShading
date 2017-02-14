@@ -197,7 +197,7 @@ void Application::MouseDragged(MouseButton button, int dx, int dy)
 
 void Application::MouseScrolled(int delta)
 {
-	m_scene->GetCamera().SetZoom(m_scene->GetCamera().GetZoom() + delta);
+	m_scene->GetCamera().SetZoom(m_scene->GetCamera().GetZoom() - delta);
 }
 
 #pragma endregion
@@ -229,8 +229,13 @@ LRESULT Application::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		m_input->MouseMove(LOWORD(lParam), HIWORD(lParam));
 		break;
 	case WM_KEYDOWN:
+		m_input->KeyDown(wParam);
 		break;
 	case WM_KEYUP:
+		m_input->KeyUp(wParam);
+		break;
+	case WM_MOUSEWHEEL:
+		m_input->MouseScroll((int16_t)HIWORD(wParam));
 		break;
 	case WM_ENTERSIZEMOVE:
 		m_isPaused = true;
@@ -249,6 +254,9 @@ LRESULT Application::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			m_renderer->Resize(m_width, m_height);
 			m_scene->Resize(m_width, m_height);
 		}
+		break;
+	case WM_CHAR:
+		m_input->CharInput(wParam);
 		break;
 	default:
 		return DefWindowProc(hWnd, msg, wParam, lParam);

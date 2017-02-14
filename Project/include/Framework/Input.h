@@ -21,23 +21,12 @@ public:
 	void MouseMove(int x, int y);
 	void MouseDown(char button);
 	void MouseUp(char button);
+	void MouseScroll(int value);
+	void CharInput(int character);
 
 private:
 
 	Application * m_application;
-
-	struct Mouse {
-		int x;
-		int y;
-		int dx;
-		int dy;
-		bool left;
-		bool right;
-		bool middle;
-	} m_mouseState;
-
-	bool m_previousFrameKeys[512];
-	bool m_currentFrameKeys[512];
 
 	ImGuiIO * m_io;
 

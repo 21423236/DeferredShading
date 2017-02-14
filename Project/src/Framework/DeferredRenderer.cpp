@@ -146,24 +146,32 @@ void DeferredRenderer::Resize(int const & width, int const & height)
 
 void DeferredRenderer::GenerateGUI()
 {
-	//ImGui::SetNextWindowSize(ImVec2(300, 300));
-	ImGui::Begin("Positions");
-	ImGui::Image((void *)(intptr_t)m_gBuffer.colorBuffers[0], ImVec2(300, 300), ImVec2(1, 1), ImVec2(0, 0));
-	ImGui::End();
+	ImGui::Begin("Deferred Renderer");
 
-	//ImGui::SetNextWindowSize(ImVec2(300, 300));
-	ImGui::Begin("Normals");
-	ImGui::Image((void*)(intptr_t)m_gBuffer.colorBuffers[1], ImVec2(300, 300), ImVec2(1, 1), ImVec2(0, 0));
-	ImGui::End();
+	if (ImGui::TreeNode("Positions"))
+	{
+		ImGui::Image((void *)(intptr_t)m_gBuffer.colorBuffers[0], ImVec2(300, 300), ImVec2(0, 1), ImVec2(1, 0));
+		ImGui::TreePop();
+	}
 
-	//ImGui::SetNextWindowSize(ImVec2(300, 300));
-	ImGui::Begin("Kd");
-	ImGui::Image((void*)(intptr_t)m_gBuffer.colorBuffers[2], ImVec2(300, 300), ImVec2(1, 1), ImVec2(0, 0));
-	ImGui::End();
+	if (ImGui::TreeNode("Normals"))
+	{
+		ImGui::Image((void*)(intptr_t)m_gBuffer.colorBuffers[1], ImVec2(300, 300), ImVec2(0, 1), ImVec2(1, 0));
+		ImGui::TreePop();
+	}
 
-	//ImGui::SetNextWindowSize(ImVec2(300, 300));
-	ImGui::Begin("Ks/alpha");
-	ImGui::Image((void*)(intptr_t)m_gBuffer.colorBuffers[3], ImVec2(300, 300), ImVec2(1, 1), ImVec2(0, 0));
+	if (ImGui::TreeNode("Kd"))
+	{
+		ImGui::Image((void*)(intptr_t)m_gBuffer.colorBuffers[2], ImVec2(300, 300), ImVec2(0, 1), ImVec2(1, 0));
+		ImGui::TreePop();
+	}
+
+	if (ImGui::TreeNode("Ks/alpha"))
+	{
+		ImGui::Image((void*)(intptr_t)m_gBuffer.colorBuffers[3], ImVec2(300, 300), ImVec2(0, 1), ImVec2(1, 0));
+		ImGui::TreePop();
+	}
+
 	ImGui::End();
 }
 

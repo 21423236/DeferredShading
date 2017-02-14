@@ -10,6 +10,7 @@ class Node
 public:
 
 	friend class IRenderer;
+	friend class GUI;
 
 	//constructors/destructor
 	Node();
