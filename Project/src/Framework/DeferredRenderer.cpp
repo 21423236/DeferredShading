@@ -8,6 +8,7 @@
 #include <Framework/Light.h>
 
 #include <imgui/imgui.h>
+#include <iostream>
 
 #define FRAMEBUFFER_WIDTH 800
 #define FRAMEBUFFER_HEIGHT 600
@@ -39,10 +40,10 @@ bool DeferredRenderer::Initialize()
 	m_lightingPassProgram.Link();
 
 	//this data doesn't change, can set it now
-	m_lightingPassProgram.SetUniform("uColor0", 0);
-	m_lightingPassProgram.SetUniform("uColor1", 1);
-	m_lightingPassProgram.SetUniform("uColor2", 2);
-	m_lightingPassProgram.SetUniform("uColor3", 3);
+	m_lightingPassProgram.SetUniform("uColor0", 1);
+	m_lightingPassProgram.SetUniform("uColor1", 2);
+	m_lightingPassProgram.SetUniform("uColor2", 3);
+	m_lightingPassProgram.SetUniform("uColor3", 4);
 	//will be updated when resized
 	m_lightingPassProgram.SetUniform("uWindowSize", glm::vec2(FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT));
 
@@ -107,8 +108,9 @@ void DeferredRenderer::RenderScene(Scene const & scene) const
 	BindDefaultFramebuffer();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	glDisable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
+	glDisable(GL_DEPTH_TEST);
+
 
 	m_lightingPassProgram.Use();
 	//set data per-frame uniforms
@@ -144,22 +146,22 @@ void DeferredRenderer::Resize(int const & width, int const & height)
 
 void DeferredRenderer::GenerateGUI()
 {
-	ImGui::SetNextWindowSize(ImVec2(300, 300));
+	//ImGui::SetNextWindowSize(ImVec2(300, 300));
 	ImGui::Begin("Positions");
 	ImGui::Image((void *)(intptr_t)m_gBuffer.colorBuffers[0], ImVec2(300, 300), ImVec2(1, 1), ImVec2(0, 0));
 	ImGui::End();
 
-	ImGui::SetNextWindowSize(ImVec2(300, 300));
+	//ImGui::SetNextWindowSize(ImVec2(300, 300));
 	ImGui::Begin("Normals");
 	ImGui::Image((void*)(intptr_t)m_gBuffer.colorBuffers[1], ImVec2(300, 300), ImVec2(1, 1), ImVec2(0, 0));
 	ImGui::End();
 
-	ImGui::SetNextWindowSize(ImVec2(300, 300));
+	//ImGui::SetNextWindowSize(ImVec2(300, 300));
 	ImGui::Begin("Kd");
 	ImGui::Image((void*)(intptr_t)m_gBuffer.colorBuffers[2], ImVec2(300, 300), ImVec2(1, 1), ImVec2(0, 0));
 	ImGui::End();
 
-	ImGui::SetNextWindowSize(ImVec2(300, 300));
+	//ImGui::SetNextWindowSize(ImVec2(300, 300));
 	ImGui::Begin("Ks/alpha");
 	ImGui::Image((void*)(intptr_t)m_gBuffer.colorBuffers[3], ImVec2(300, 300), ImVec2(1, 1), ImVec2(0, 0));
 	ImGui::End();
@@ -170,7 +172,7 @@ void DeferredRenderer::CreateGBuffer(int const & width, int const & height)
 	glGenFramebuffers(1, &m_gBuffer.framebuffer);
 	glBindFramebuffer(GL_FRAMEBUFFER, m_gBuffer.framebuffer);
 
-	glActiveTexture(GL_TEXTURE0);
+	glActiveTexture(GL_TEXTURE1);
 	glGenTextures(4, m_gBuffer.colorBuffers);
 
 	glBindTexture(GL_TEXTURE_2D, m_gBuffer.colorBuffers[0]);
@@ -179,21 +181,21 @@ void DeferredRenderer::CreateGBuffer(int const & width, int const & height)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_gBuffer.colorBuffers[0], 0);
 
-	glActiveTexture(GL_TEXTURE1);
+	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, m_gBuffer.colorBuffers[1]);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, 0);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, m_gBuffer.colorBuffers[1], 0);
 
-	glActiveTexture(GL_TEXTURE2);
+	glActiveTexture(GL_TEXTURE3);
 	glBindTexture(GL_TEXTURE_2D, m_gBuffer.colorBuffers[2]);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, 0);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, m_gBuffer.colorBuffers[2], 0);
 
-	glActiveTexture(GL_TEXTURE3);
+	glActiveTexture(GL_TEXTURE4);
 	glBindTexture(GL_TEXTURE_2D, m_gBuffer.colorBuffers[3]);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, 0);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);

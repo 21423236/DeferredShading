@@ -24,7 +24,9 @@ void GUI::NewFrame(int const & width, int const & height)
 
 void GUI::GenerateGUI(Scene const & scene)
 {
-
+	ImGui::Begin("Scene");
+	ImGui::Text("Will contain information about the scene");
+	ImGui::End();
 }
 
 void GUI::EndFrame()
