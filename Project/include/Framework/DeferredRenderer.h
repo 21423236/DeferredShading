@@ -25,11 +25,14 @@ public:
 private:
 
 	void RenderNode(Node const * const & node, glm::mat4 modelMatrix, std::vector<std::pair<Light const *, glm::vec3>> & lights) const;
-	
+	void GenerateShadowMap(Light const * light) const;
+
 	void CreateGBuffer(int const & width, int const & height);
+	void CreateShadowFramebuffer(int const & width, int const & height);
 	void FreeGBuffer();
 	void BindGBuffer() const;
 	void BindDefaultFramebuffer() const;
+	void BindShadowFramebuffer(unsigned int shadowMap) const;
 
 	struct gBuffer
 	{
@@ -48,6 +51,14 @@ private:
 		unsigned int height;
 		unsigned int drawBuffers;
 	} m_defaultFramebuffer;
+
+	struct ShadowFramebuffer
+	{
+		unsigned int framebuffer;
+		unsigned int width;
+		unsigned int height;
+		unsigned int depthBuffer;
+	} m_shadowFramebuffer;
 
 	struct lightGeometry
 	{

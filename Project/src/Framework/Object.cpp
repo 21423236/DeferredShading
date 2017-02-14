@@ -2,7 +2,7 @@
 
 #pragma region "Constructors/Destructor"
 
-Object::Object(Mesh * mesh, Material * material) : Node(), m_mesh(mesh), m_material(material)
+Object::Object(std::string const & name, Mesh * mesh, Material * material) : Node(name), m_mesh(mesh), m_material(material)
 {
 }
 

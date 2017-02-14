@@ -1,6 +1,6 @@
 #include <Framework/Light.h>
 
-Light::Light(glm::vec3 const & ambient, glm::vec3 const & intensity, bool const & isGlobal) : Node(), m_ambient(ambient), m_intensity(intensity), m_isGlobal(isGlobal)
+Light::Light(std::string const & name, glm::vec3 const & ambient, glm::vec3 const & intensity, bool const & isGlobal) : Node(name), m_ambient(ambient), m_intensity(intensity), m_isGlobal(isGlobal)
 {
 }
 

@@ -38,7 +38,7 @@ void GUI::TraverseGraph(Node * node)
 		switch (child->GetNodeType())
 		{
 		case Node::OBJECT_NODE:
-			if (ImGui::TreeNode(child, "Object"))
+			if (ImGui::TreeNode(child, child->m_name.c_str()))
 			{
 				Object * object = dynamic_cast<Object*>(child);
 				if (ImGui::TreeNode("Material"))
@@ -51,18 +51,23 @@ void GUI::TraverseGraph(Node * node)
 					NodeInformation(child);
 					ImGui::TreePop();
 				}
+				if (child->m_children.size())
+					ImGui::Text("Children:");
+				ImGui::Indent(16.0f);
 				TraverseGraph(child);
+				ImGui::Unindent(16.0f);
 				ImGui::TreePop();
 			}
 			break;
 		case Node::LIGHT_NODE:
-			if (ImGui::TreeNode(child, "Light"))
+			if (ImGui::TreeNode(child, child->m_name.c_str()))
 			{
 				Light * light = dynamic_cast<Light*>(child);
 				if (ImGui::TreeNode("Attributes"))
 				{
-					ImGui::ColorEdit3("Ia", &light->m_ambient[0]);
-					ImGui::ColorEdit3("Is", &light->m_intensity[0]);
+					ImGui::Checkbox("IsGlobal", &light->m_isGlobal);
+					ImGui::InputFloat3("Ia", &light->m_ambient[0]);
+					ImGui::InputFloat3("Is", &light->m_intensity[0]);
 					ImGui::TreePop();
 				}
 				if (ImGui::TreeNode("Transform"))
@@ -70,19 +75,31 @@ void GUI::TraverseGraph(Node * node)
 					NodeInformation(child);
 					ImGui::TreePop();
 				}
+
+				if (child->m_children.size())
+					ImGui::Text("Children:");
+				ImGui::Indent(16.0f);
 				TraverseGraph(child);
+				ImGui::Unindent(16.0f);
+				
 				ImGui::TreePop();
 			}
 			break;
 		case Node::BASE_NODE:
-			if (ImGui::TreeNode(child, "Node"))
+			if (ImGui::TreeNode(child, child->m_name.c_str()))
 			{
 				if (ImGui::TreeNode("Transform"))
 				{
 					NodeInformation(child);
 					ImGui::TreePop();
 				}
+				
+				if (child->m_children.size())
+					ImGui::Text("Children:");
+				ImGui::Indent(16.0f);
 				TraverseGraph(child);
+				ImGui::Unindent(16.0f);
+
 				ImGui::TreePop();
 			}
 			break;
@@ -92,8 +109,8 @@ void GUI::TraverseGraph(Node * node)
 
 void GUI::MaterialEditor(Material * material)
 {
-	ImGui::ColorEdit3("Kd", &material->GetKd()[0]);
-	ImGui::ColorEdit3("Ks", &material->GetKs()[0]);
+	ImGui::DragFloat3("Kd", &material->GetKd()[0], 0.01f, 0.0f, 1.0f);
+	ImGui::DragFloat3("Ks", &material->GetKs()[0], 0.01f, 0.0f, 1.0f);
 	ImGui::DragFloat("A", &material->GetAlpha(), 1.0f, 0.0f, 120.0f);
 }
 

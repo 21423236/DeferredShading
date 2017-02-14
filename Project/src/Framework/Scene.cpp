@@ -7,7 +7,7 @@
 
 #pragma region "Constructors/Destructor"
 
-Scene::Scene(unsigned const & windowWidth, unsigned const & windowHeight) : m_rootNode(new Node()), m_camera(m_viewMatrix), m_meshes(), m_projectionMatrix(), m_viewMatrix(), m_windowWidth(windowWidth), m_windowHeight(windowHeight)
+Scene::Scene(unsigned const & windowWidth, unsigned const & windowHeight) : m_rootNode(new Node("Root")), m_camera(m_viewMatrix), m_meshes(), m_projectionMatrix(), m_viewMatrix(), m_windowWidth(windowWidth), m_windowHeight(windowHeight)
 {
 
 }
