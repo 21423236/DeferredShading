@@ -148,6 +148,9 @@ void DeferredRenderer::GenerateGUI()
 {
 	ImGui::Begin("Deferred Renderer");
 
+	ImGui::Text("Intermediate Data:");
+	ImGui::Indent(16.0f);
+
 	if (ImGui::TreeNode("Positions"))
 	{
 		ImGui::Image((void *)(intptr_t)m_gBuffer.colorBuffers[0], ImVec2(300, 300), ImVec2(0, 1), ImVec2(1, 0));
@@ -171,6 +174,8 @@ void DeferredRenderer::GenerateGUI()
 		ImGui::Image((void*)(intptr_t)m_gBuffer.colorBuffers[3], ImVec2(300, 300), ImVec2(0, 1), ImVec2(1, 0));
 		ImGui::TreePop();
 	}
+
+	ImGui::Unindent(16.0f);
 
 	ImGui::End();
 }

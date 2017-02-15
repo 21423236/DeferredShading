@@ -117,6 +117,8 @@ void GUI::GenerateGUI(Scene & scene)
 		}
 		ImGui::TreePop();
 	}
+
+	ImGui::Separator();
 	
 	if (ImGui::TreeNode("Materials"))
 	{
