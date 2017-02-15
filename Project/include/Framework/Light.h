@@ -10,7 +10,7 @@ public:
 
 	friend class GUI;
 	
-	Light(glm::vec3 const & ambient, glm::vec3 const & intensity, bool const & isGlobal = true);
+	Light(std::string const & name, glm::vec3 const & ambient, glm::vec3 const & intensity, bool const & isGlobal = true);
 	~Light();
 
 	//getters
@@ -31,5 +31,8 @@ private:
 	glm::vec3 m_ambient;
 	glm::vec3 m_intensity;
 	bool      m_isGlobal;
+
+	
+
 };
 

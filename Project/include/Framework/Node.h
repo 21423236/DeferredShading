@@ -3,6 +3,7 @@
 #include <vector>
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include <string>
 
 class Node
 {
@@ -13,8 +14,8 @@ public:
 	friend class GUI;
 
 	//constructors/destructor
-	Node();
-	Node(glm::vec3 const & translation, glm::quat const & orientation);
+	Node(std::string const & name);
+	Node(std::string const & name, glm::vec3 const & translation, glm::quat const & orientation);
 	virtual ~Node();
 
 	//public methods
@@ -44,6 +45,7 @@ public:
 
 private:
 
+	std::string m_name;
 	glm::vec3 m_translation;
 	glm::vec3 m_scale;
 	glm::quat m_orientation;

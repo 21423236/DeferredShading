@@ -3,12 +3,12 @@
 
 #pragma region "Constructors/Destructor"
  
-Node::Node() : m_translation(0.0f, 0.0f, 0.0f), m_scale(1, 1, 1), m_orientation(), m_children()
+Node::Node(std::string const & name) : m_name(name), m_translation(0.0f, 0.0f, 0.0f), m_scale(1, 1, 1), m_orientation(), m_children()
 {
 
 }
 
-Node::Node(glm::vec3 const & translation, glm::quat const & orientation) : m_translation(translation), m_scale(1, 1, 1), m_orientation(orientation), m_children()
+Node::Node(std::string const & name, glm::vec3 const & translation, glm::quat const & orientation) : m_name(name), m_translation(translation), m_scale(1, 1, 1), m_orientation(orientation), m_children()
 {
 
 }

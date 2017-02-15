@@ -139,9 +139,9 @@ void Application::Initialize()
 	Mesh * bunnyMesh = m_scene->CreateMesh("bunny", "Resources/Meshes/bunny.obj");
 	Material * bunnyMaterial = m_scene->CreateMaterial("bunny", glm::vec3(1, 1, 1), glm::vec3(1, 1, 1), 100);
 
-	Object * bunnyObject1 = new Object(bunnyMesh, bunnyMaterial);
-	Object * bunnyObject2 = new Object(bunnyMesh, bunnyMaterial);
-	Object * bunnyObject3 = new Object(bunnyMesh, bunnyMaterial);
+	Object * bunnyObject1 = new Object("bunny1", bunnyMesh, bunnyMaterial);
+	Object * bunnyObject2 = new Object("bunny2", bunnyMesh, bunnyMaterial);
+	Object * bunnyObject3 = new Object("bunny3", bunnyMesh, bunnyMaterial);
 	bunnyObject1->SetTranslation(glm::vec3(-2.0f, 0.0f, 0));
 	bunnyObject1->SetScale(glm::vec3(1.0f, 1.0f, 1.0f));
 	bunnyObject2->SetTranslation(glm::vec3(0, 0.0f, 0));
@@ -152,7 +152,7 @@ void Application::Initialize()
 	Mesh * planeMesh = m_scene->CreateMesh("plane", "Resources/Meshes/plane.obj");
 	Material * planeMaterial = m_scene->CreateMaterial("plane", glm::vec3(0, 0, 1), glm::vec3(1, 1, 1), 100);
 
-	Object * planeObject = new Object(planeMesh, planeMaterial);
+	Object * planeObject = new Object("plane", planeMesh, planeMaterial);
 	planeObject->SetScale(glm::vec3(8, 8, 8));
 	planeObject->AddChild(bunnyObject1);
 	planeObject->AddChild(bunnyObject2);
@@ -160,11 +160,11 @@ void Application::Initialize()
 
 	m_scene->AddNode(planeObject);
 
-	Light * light1 = new Light(glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(1.0f, 1.0f, 1.0f));
+	Light * light1 = new Light("light1", glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(1.0f, 1.0f, 1.0f));
 	light1->SetTranslation(glm::vec3(4, 8, 4));
 	m_scene->AddNode(light1);
 
-	Light * light2 = new Light(glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(1, 1, 1));
+	Light * light2 = new Light("light2", glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(1, 1, 1));
 	light2->SetTranslation(glm::vec3(-4, 8, -4));
 	m_scene->AddNode(light2);
 

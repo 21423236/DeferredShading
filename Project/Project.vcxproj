@@ -155,6 +155,7 @@
     <ClCompile Include="src\Framework\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\Framework\Defaults.h" />
     <ClInclude Include="include\Framework\GUI.h" />
     <ClInclude Include="include\imgui\imgui_impl.h" />
     <ClInclude Include="include\Framework\Camera.h" />

@@ -12,7 +12,7 @@ public:
 	friend class GUI;
 
 	//constructors/destructor
-	Object(Mesh * mesh, Material * material);
+	Object(std::string const & name, Mesh * mesh, Material * material);
 	~Object();
 
 	//getters

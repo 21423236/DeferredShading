@@ -10,12 +10,11 @@
 #include <imgui/imgui.h>
 #include <iostream>
 
-#define FRAMEBUFFER_WIDTH 800
-#define FRAMEBUFFER_HEIGHT 600
+#include <Framework/Defaults.h>
 
 #pragma region "Constructors/Destructor"
 
-DeferredRenderer::DeferredRenderer() : m_deferredPassProgram(), m_defaultFramebuffer({ 0, FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT, GL_BACK_LEFT })
+DeferredRenderer::DeferredRenderer() : m_deferredPassProgram(), m_defaultFramebuffer({ 0, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, GL_BACK_LEFT })
 {
 	m_gBuffer.framebuffer = 0;
 	memset(m_gBuffer.colorBuffers, 0, sizeof(int) * 4);
@@ -45,10 +44,13 @@ bool DeferredRenderer::Initialize()
 	m_lightingPassProgram.SetUniform("uColor2", 3);
 	m_lightingPassProgram.SetUniform("uColor3", 4);
 	//will be updated when resized
-	m_lightingPassProgram.SetUniform("uWindowSize", glm::vec2(FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT));
+	m_lightingPassProgram.SetUniform("uWindowSize", glm::vec2(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT));
 
 	//generate g-buffer
-	CreateGBuffer(FRAMEBUFFER_WIDTH, FRAMEBUFFER_HEIGHT);
+	CreateGBuffer(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
+
+	//create shadow framebuffer
+	CreateShadowFramebuffer(DEFAULT_SHADOW_WIDTH, DEFAULT_SHADOW_HEIGHT);
 
 	//light geometries quad
 	glGenVertexArrays(1, &m_lightGeometry.fsqVAO);
@@ -106,7 +108,7 @@ void DeferredRenderer::RenderScene(Scene const & scene) const
 
 	//prepare for pass
 	BindDefaultFramebuffer();
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
 
 	glEnable(GL_BLEND);
 	glDisable(GL_DEPTH_TEST);
@@ -114,24 +116,27 @@ void DeferredRenderer::RenderScene(Scene const & scene) const
 
 	m_lightingPassProgram.Use();
 	//set data per-frame uniforms
-	m_lightingPassProgram.SetUniform("uEye", scene.GetCamera().GetPosition());
+	glm::vec3 eye(glm::inverse(scene.GetViewMatrix()) * glm::vec4(0, 0, 0, 1));
+	m_lightingPassProgram.SetUniform("uEye", eye);
 
 	for (auto lightPair : lights)
 	{
-		if (lightPair.first->IsGlobal())
-		{
-			//generate shadow map
-		}
-
 		m_lightingPassProgram.SetUniform("uLight.position", lightPair.second);
 		m_lightingPassProgram.SetUniform("uLight.ambient", lightPair.first->GetAmbientIntensity());
 		m_lightingPassProgram.SetUniform("uLight.intensity", lightPair.first->GetIntensity());
 
-		glBindVertexArray(m_lightGeometry.fsqVAO);
-		glEnableVertexAttribArray(0);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-		glDisableVertexAttribArray(0);
-		glBindVertexArray(0);
+		if (lightPair.first->IsGlobal())
+		{
+			//generate shadow map
+			GenerateShadowMap(lightPair.first);
+
+			glBindVertexArray(m_lightGeometry.fsqVAO);
+			glEnableVertexAttribArray(0);
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+			glDisableVertexAttribArray(0);
+			glBindVertexArray(0);
+		}
+
 	}
 }
 
@@ -233,6 +238,22 @@ void DeferredRenderer::CreateGBuffer(int const & width, int const & height)
 
 }
 
+void DeferredRenderer::CreateShadowFramebuffer(int const & width, int const & height)
+{
+	m_shadowFramebuffer.width = width;
+	m_shadowFramebuffer.height = height;
+
+	glGenFramebuffers(1, &m_shadowFramebuffer.framebuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, m_shadowFramebuffer.framebuffer);
+
+	glGenRenderbuffers(1, &m_shadowFramebuffer.depthBuffer);
+	glBindRenderbuffer(GL_RENDERBUFFER, m_shadowFramebuffer.depthBuffer);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_shadowFramebuffer.depthBuffer);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
 void DeferredRenderer::FreeGBuffer()
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -253,6 +274,13 @@ void DeferredRenderer::BindDefaultFramebuffer() const
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glDrawBuffers(1, &m_defaultFramebuffer.drawBuffers);
 	glViewport(0, 0, m_defaultFramebuffer.width, m_defaultFramebuffer.height);
+}
+
+void DeferredRenderer::BindShadowFramebuffer(unsigned int shadowMap) const
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, m_shadowFramebuffer.framebuffer);
+	glBindTexture(GL_TEXTURE_2D, shadowMap);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, shadowMap, 0);
 }
 
 void DeferredRenderer::RenderNode(Node const * const & node, glm::mat4 modelMatrix, std::vector<std::pair<Light const *, glm::vec3>> & lights) const
@@ -293,6 +321,11 @@ void DeferredRenderer::RenderNode(Node const * const & node, glm::mat4 modelMatr
 	{
 		RenderNode(childNode, cumulative, lights);
 	}
+
+}
+
+void DeferredRenderer::GenerateShadowMap(Light const * light) const
+{
 
 }
 

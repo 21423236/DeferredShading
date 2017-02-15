@@ -33,5 +33,14 @@ void main()
 	vec3 L = normalize(uLight.position - P);
 	vec3 H = normalize(L + V);
 
-	fragColor = vec4(uLight.ambient * kd + uLight.intensity * (max(dot(N,L), 0) * kd.rgb), 1);
+	float lambertian = max(dot(L, N), 0.0);
+	float specular = 0.0;
+
+	if(lambertian > 0.0)
+	{
+		float specAngle = max(dot(H, N), 0.0);
+		specular = pow(specAngle, ks.a/4.0);
+	}
+
+	fragColor = vec4(uLight.ambient * kd + uLight.intensity * (lambertian * kd.rgb + specular * ks.rgb), 1);
 }
