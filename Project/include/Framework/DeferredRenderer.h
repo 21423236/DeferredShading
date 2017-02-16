@@ -2,6 +2,7 @@
 
 #include <Framework/IRenderer.h>
 #include <Framework/Program.h>
+#include <Framework/DeferredPass.h>
 
 #include <vector>
 
@@ -22,15 +23,14 @@ public:
 	void Resize(int const & width, int const & height);
 	void GenerateGUI();
 
+	void BindGBuffer() const;
+
 private:
 
-	void RenderNode(Node const * const & node, glm::mat4 modelMatrix, std::vector<std::pair<Light const *, glm::vec3>> & lights) const;
-	void GenerateShadowMap(Light const * light) const;
-
+	
 	void CreateGBuffer(int const & width, int const & height);
 	void CreateShadowFramebuffer(int const & width, int const & height);
 	void FreeGBuffer();
-	void BindGBuffer() const;
 	void BindDefaultFramebuffer() const;
 	void BindShadowFramebuffer(unsigned int shadowMap) const;
 
@@ -68,7 +68,7 @@ private:
 		unsigned int cirlceVBO;
 	} m_lightGeometry;
 
-	Program m_deferredPassProgram;
 	Program m_lightingPassProgram;
+	DeferredPass m_deferredPass;
 
 };

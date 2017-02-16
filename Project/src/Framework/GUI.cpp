@@ -109,9 +109,9 @@ void GUI::TraverseGraph(Node * node)
 
 void GUI::MaterialEditor(Material * material)
 {
-	ImGui::DragFloat3("Kd", &material->GetKd()[0], 0.01f, 0.0f, 1.0f);
-	ImGui::DragFloat3("Ks", &material->GetKs()[0], 0.01f, 0.0f, 1.0f);
-	ImGui::DragFloat("A", &material->GetAlpha(), 1.0f, 0.0f, 120.0f);
+	ImGui::InputFloat3("Kd", &material->GetKd()[0]);
+	ImGui::InputFloat3("Ks", &material->GetKs()[0]);
+	ImGui::InputFloat("A", &material->GetAlpha());
 }
 
 void GUI::NodeInformation(Node * node)

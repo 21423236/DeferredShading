@@ -14,7 +14,7 @@
 
 #pragma region "Constructors/Destructor"
 
-DeferredRenderer::DeferredRenderer() : m_deferredPassProgram(), m_defaultFramebuffer({ 0, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, GL_BACK_LEFT })
+DeferredRenderer::DeferredRenderer() : m_defaultFramebuffer({ 0, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, GL_BACK_LEFT }), m_deferredPass(this)
 {
 	m_gBuffer.framebuffer = 0;
 	memset(m_gBuffer.colorBuffers, 0, sizeof(int) * 4);
@@ -28,10 +28,11 @@ DeferredRenderer::~DeferredRenderer()
 bool DeferredRenderer::Initialize()
 {
 	//create programs
-	m_deferredPassProgram.CreateHandle();
+	/*m_deferredPassProgram.CreateHandle();
 	m_deferredPassProgram.AttachShader(Program::VERTEX_SHADER_TYPE, "src/Shaders/DeferredPass.vert");
 	m_deferredPassProgram.AttachShader(Program::FRAGMENT_SHADER_TYPE, "src/Shaders/DeferredPass.frag");
-	m_deferredPassProgram.Link();
+	m_deferredPassProgram.Link();*/
+	m_deferredPass.Initialize();
 
 	m_lightingPassProgram.CreateHandle();
 	m_lightingPassProgram.AttachShader(Program::VERTEX_SHADER_TYPE, "src/Shaders/LightingPass.vert");
@@ -83,24 +84,25 @@ void DeferredRenderer::RenderScene(Scene const & scene) const
 //----------------------------------------------------------------------------------------------
 
 	//prepare for pass
-	static std::vector<std::pair<Light const *, glm::vec3>> lights(100);
-	lights.clear();
+	static std::vector<std::pair<Light const *, glm::vec3>> globalLights(100);
+	static std::vector<std::pair<Light const *, glm::vec3>> localLights(1000);
+	static std::vector<Object const *> reflectiveObjects(1000);
+	globalLights.clear();
+	localLights.clear();
+	reflectiveObjects.clear();
 
-	BindGBuffer();
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	m_deferredPass.Prepare(scene);
+	m_deferredPass.ProcessScene(scene, &globalLights, &localLights, nullptr);
 
-	glDisable(GL_BLEND);
-	glEnable(GL_DEPTH_TEST);
 
-	m_deferredPassProgram.Use();
+//----------------------------------------------------------------------------------------------
+//SHADOW MAP PASS
+//----------------------------------------------------------------------------------------------
 
-	//set per-frame uniforms
-	m_deferredPassProgram.SetUniform("uProjectionMatrix", scene.GetProjectionMatrix());
-	m_deferredPassProgram.SetUniform("uViewMatrix", scene.GetViewMatrix());
+//----------------------------------------------------------------------------------------------
+//REFLECTION PASS
+//----------------------------------------------------------------------------------------------
 
-	//traverse the scene graph
-	Node const * const & rootNode = GetRootNode(scene);
-	RenderNode(rootNode, rootNode->GetTransformMatrix(), lights);
 
 //----------------------------------------------------------------------------------------------
 //LIGHTING PASS
@@ -119,7 +121,7 @@ void DeferredRenderer::RenderScene(Scene const & scene) const
 	glm::vec3 eye(glm::inverse(scene.GetViewMatrix()) * glm::vec4(0, 0, 0, 1));
 	m_lightingPassProgram.SetUniform("uEye", eye);
 
-	for (auto lightPair : lights)
+	for (auto lightPair : globalLights)
 	{
 		m_lightingPassProgram.SetUniform("uLight.position", lightPair.second);
 		m_lightingPassProgram.SetUniform("uLight.ambient", lightPair.first->GetAmbientIntensity());
@@ -128,7 +130,6 @@ void DeferredRenderer::RenderScene(Scene const & scene) const
 		if (lightPair.first->IsGlobal())
 		{
 			//generate shadow map
-			GenerateShadowMap(lightPair.first);
 
 			glBindVertexArray(m_lightGeometry.fsqVAO);
 			glEnableVertexAttribArray(0);
@@ -283,52 +284,6 @@ void DeferredRenderer::BindShadowFramebuffer(unsigned int shadowMap) const
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, shadowMap, 0);
 }
 
-void DeferredRenderer::RenderNode(Node const * const & node, glm::mat4 modelMatrix, std::vector<std::pair<Light const *, glm::vec3>> & lights) const
-{
-	glm::mat4 cumulative = modelMatrix * node->GetTransformMatrix();
-	if (node->GetNodeType() == Node::OBJECT_NODE)
-	{
-		Object const * object = static_cast<Object const *>(node);
-		
-		m_deferredPassProgram.SetUniform("uModelMatrix", modelMatrix * node->GetTransformMatrixWithScale());
-		m_deferredPassProgram.SetUniform("uMaterial.kd", object->GetMaterial()->GetKd());
-		m_deferredPassProgram.SetUniform("uMaterial.ks", object->GetMaterial()->GetKs());
-		m_deferredPassProgram.SetUniform("uMaterial.alpha", object->GetMaterial()->GetAlpha());
-
-		//render the object
-		glBindVertexArray(object->GetMesh()->GetVAO());
-		glEnableVertexAttribArray(0);
-		glEnableVertexAttribArray(1);
-		glEnableVertexAttribArray(2);
-		glEnableVertexAttribArray(3);
-		glDrawArrays(GL_TRIANGLES, 0, object->GetMesh()->GetVertexCount());
-		glDisableVertexAttribArray(3);
-		glDisableVertexAttribArray(2);
-		glDisableVertexAttribArray(1);
-		glDisableVertexAttribArray(0);
-		glBindVertexArray(0);
-
-	}
-	else if (node->GetNodeType() == Node::LIGHT_NODE)
-	{
-		//if we encounter a light, record it's world position
-		//this information will be used in the lighting pass
-		lights.push_back(std::make_pair(dynamic_cast<Light const *>(node), glm::vec3(cumulative[3][0], cumulative[3][1], cumulative[3][2])));
-	}
-
-	//render children
-	for (auto childNode : IRenderer::GetChildren(node))
-	{
-		RenderNode(childNode, cumulative, lights);
-	}
-
-}
-
-void DeferredRenderer::GenerateShadowMap(Light const * light) const
-{
-
-}
-
 void DeferredRenderer::Finalize()
 {
 	glDeleteBuffers(1, &m_lightGeometry.fsqVBO);
@@ -336,6 +291,6 @@ void DeferredRenderer::Finalize()
 
 	FreeGBuffer();
 
-	m_deferredPassProgram.DestroyHandle();
+	m_deferredPass.Finalize();
 	m_lightingPassProgram.DestroyHandle();
 }

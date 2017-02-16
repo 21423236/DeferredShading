@@ -10,6 +10,7 @@
 
 class Mesh;
 class Material;
+class IRenderPass;
 
 class Scene
 {
@@ -38,13 +39,15 @@ public:
 	//public methods
 	Mesh * CreateMesh(std::string const & name, std::string const & path);
 	Material * CreateMaterial(std::string const & name, glm::vec3 const & kd, glm::vec3 const & ks, float const & alpha);
+	void AddNode(Node * node);
+	void Traverse(IRenderPass const & pass) const;
+	void Resize(int const & width, int const & height);
 	void FreeMemory();
 
-	void AddNode(Node * node);
-
-	void Resize(int const & width, int const & height);
-
 private:
+
+	//private methods
+	void TraverseNode(Node * const & node, IRenderPass const & pass, glm::mat4 const & modelMatrix) const;
 
 	Node * m_rootNode;
 

@@ -11,6 +11,7 @@ class Node
 public:
 
 	friend class IRenderer;
+	friend class Scene;
 	friend class GUI;
 
 	//constructors/destructor

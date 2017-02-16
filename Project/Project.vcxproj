@@ -134,6 +134,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Framework\DeferredPass.cpp" />
     <ClCompile Include="src\Framework\Input.cpp" />
     <ClCompile Include="src\Framework\GUI.cpp" />
     <ClCompile Include="src\imgui\imgui_impl.cpp" />
@@ -155,8 +156,10 @@
     <ClCompile Include="src\Framework\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\Framework\DeferredPass.h" />
     <ClInclude Include="include\Framework\Defaults.h" />
     <ClInclude Include="include\Framework\GUI.h" />
+    <ClInclude Include="include\Framework\IRenderPass.h" />
     <ClInclude Include="include\imgui\imgui_impl.h" />
     <ClInclude Include="include\Framework\Camera.h" />
     <ClInclude Include="include\Framework\DeferredRenderer.h" />

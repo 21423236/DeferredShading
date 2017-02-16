@@ -1,6 +1,7 @@
 #include <Framework/Scene.h>
 #include <Framework/Mesh.h>
 #include <Framework/Material.h>
+#include <Framework/IRenderPass.h>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -92,18 +93,18 @@ Material * Scene::CreateMaterial(std::string const & name, glm::vec3 const & kd,
 	return material;
 }
 
-void Scene::FreeMemory()
-{
-	for (auto mesh : m_meshes)
-		delete mesh.second;
-
-	for (auto material : m_materials)
-		delete material.second;
-}
-
 void Scene::AddNode(Node * node)
 {
 	m_rootNode->AddChild(node);
+}
+
+void Scene::Traverse(IRenderPass const & pass) const
+{
+	static glm::mat4 identity = glm::mat4();
+	for (auto & const node : m_rootNode->m_children)
+	{
+		TraverseNode(node, pass, identity);
+	}
 }
 
 void Scene::Resize(int const & width, int const & height)
@@ -113,6 +114,26 @@ void Scene::Resize(int const & width, int const & height)
 	m_projectionMatrix[0][0] = 1.0f / rx;
 	m_windowWidth = width;
 	m_windowHeight = height;
+}
+
+void Scene::FreeMemory()
+{
+	for (auto mesh : m_meshes)
+		delete mesh.second;
+
+	for (auto material : m_materials)
+		delete material.second;
+}
+
+#pragma endregion
+
+#pragma region "Private Methods"
+
+void Scene::TraverseNode(Node * const & node, IRenderPass const & pass, glm::mat4 const & modelMatrix) const
+{
+	pass.ProcessNode(node, modelMatrix * node->GetTransformMatrixWithScale());
+	for (auto & const child : node->m_children)
+		TraverseNode(child, pass, modelMatrix * node->GetTransformMatrix());
 }
 
 #pragma endregion
