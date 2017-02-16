@@ -14,7 +14,7 @@
 
 #pragma region "Constructors/Destructor"
 
-DeferredRenderer::DeferredRenderer() : m_defaultFramebuffer({ 0, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, GL_BACK_LEFT }), m_deferredPass(this)
+DeferredRenderer::DeferredRenderer() : m_defaultFramebuffer({ 0, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, GL_BACK_LEFT }), m_deferredPass(this), m_lightingPass(this)
 {
 	m_gBuffer.framebuffer = 0;
 	memset(m_gBuffer.colorBuffers, 0, sizeof(int) * 4);
@@ -27,50 +27,12 @@ DeferredRenderer::~DeferredRenderer()
 
 bool DeferredRenderer::Initialize()
 {
-	//create programs
-	/*m_deferredPassProgram.CreateHandle();
-	m_deferredPassProgram.AttachShader(Program::VERTEX_SHADER_TYPE, "src/Shaders/DeferredPass.vert");
-	m_deferredPassProgram.AttachShader(Program::FRAGMENT_SHADER_TYPE, "src/Shaders/DeferredPass.frag");
-	m_deferredPassProgram.Link();*/
+	//initialize passes
 	m_deferredPass.Initialize();
-
-	m_lightingPassProgram.CreateHandle();
-	m_lightingPassProgram.AttachShader(Program::VERTEX_SHADER_TYPE, "src/Shaders/LightingPass.vert");
-	m_lightingPassProgram.AttachShader(Program::FRAGMENT_SHADER_TYPE, "src/Shaders/LightingPass.frag");
-	m_lightingPassProgram.Link();
-
-	//this data doesn't change, can set it now
-	m_lightingPassProgram.SetUniform("uColor0", 1);
-	m_lightingPassProgram.SetUniform("uColor1", 2);
-	m_lightingPassProgram.SetUniform("uColor2", 3);
-	m_lightingPassProgram.SetUniform("uColor3", 4);
-	//will be updated when resized
-	m_lightingPassProgram.SetUniform("uWindowSize", glm::vec2(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT));
+	m_lightingPass.Initialize();
 
 	//generate g-buffer
 	CreateGBuffer(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
-
-	//create shadow framebuffer
-	CreateShadowFramebuffer(DEFAULT_SHADOW_WIDTH, DEFAULT_SHADOW_HEIGHT);
-
-	//light geometries quad
-	glGenVertexArrays(1, &m_lightGeometry.fsqVAO);
-	glBindVertexArray(m_lightGeometry.fsqVAO);
-	glGenBuffers(1, &m_lightGeometry.fsqVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, m_lightGeometry.fsqVBO);
-
-	float fsqData[] = {
-		-1.0f, 1.0f,
-		-1.0f, -1.0f,
-		1.0f, -1.0f,
-		1.0f, -1.0f,
-		1.0f, 1.0f,
-		-1.0f, 1.0f
-	};
-
-	glBufferData(GL_ARRAY_BUFFER, sizeof(fsqData), fsqData, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
-	glBindVertexArray(0);
 
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
@@ -79,21 +41,21 @@ bool DeferredRenderer::Initialize()
 
 void DeferredRenderer::RenderScene(Scene const & scene) const
 {
+	static std::vector<std::pair<Light const *, glm::vec3>> globalLights(100);
+	static std::vector<std::pair<Light const *, glm::vec3>> localLights(1000);
+	static std::vector<Object const *> reflectiveObjects(1000);
+
+	globalLights.clear();
+	localLights.clear();
+	reflectiveObjects.clear();
+
 //----------------------------------------------------------------------------------------------
 //DEFERRED PASS
 //----------------------------------------------------------------------------------------------
 
 	//prepare for pass
-	static std::vector<std::pair<Light const *, glm::vec3>> globalLights(100);
-	static std::vector<std::pair<Light const *, glm::vec3>> localLights(1000);
-	static std::vector<Object const *> reflectiveObjects(1000);
-	globalLights.clear();
-	localLights.clear();
-	reflectiveObjects.clear();
-
 	m_deferredPass.Prepare(scene);
 	m_deferredPass.ProcessScene(scene, &globalLights, &localLights, nullptr);
-
 
 //----------------------------------------------------------------------------------------------
 //SHADOW MAP PASS
@@ -108,37 +70,9 @@ void DeferredRenderer::RenderScene(Scene const & scene) const
 //LIGHTING PASS
 //----------------------------------------------------------------------------------------------
 
-	//prepare for pass
-	BindDefaultFramebuffer();
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
+	m_lightingPass.Prepare(scene, glm::vec2(m_defaultFramebuffer.width, m_defaultFramebuffer.height));
+	m_lightingPass.ProcessGlobalLights(globalLights);
 
-	glEnable(GL_BLEND);
-	glDisable(GL_DEPTH_TEST);
-
-
-	m_lightingPassProgram.Use();
-	//set data per-frame uniforms
-	glm::vec3 eye(glm::inverse(scene.GetViewMatrix()) * glm::vec4(0, 0, 0, 1));
-	m_lightingPassProgram.SetUniform("uEye", eye);
-
-	for (auto lightPair : globalLights)
-	{
-		m_lightingPassProgram.SetUniform("uLight.position", lightPair.second);
-		m_lightingPassProgram.SetUniform("uLight.ambient", lightPair.first->GetAmbientIntensity());
-		m_lightingPassProgram.SetUniform("uLight.intensity", lightPair.first->GetIntensity());
-
-		if (lightPair.first->IsGlobal())
-		{
-			//generate shadow map
-
-			glBindVertexArray(m_lightGeometry.fsqVAO);
-			glEnableVertexAttribArray(0);
-			glDrawArrays(GL_TRIANGLES, 0, 6);
-			glDisableVertexAttribArray(0);
-			glBindVertexArray(0);
-		}
-
-	}
 }
 
 void DeferredRenderer::Resize(int const & width, int const & height)
@@ -147,7 +81,6 @@ void DeferredRenderer::Resize(int const & width, int const & height)
 	m_defaultFramebuffer.height = height;
 	FreeGBuffer();
 	CreateGBuffer(width, height);
-	m_lightingPassProgram.SetUniform("uWindowSize", glm::vec2(width, height));
 }
 
 void DeferredRenderer::GenerateGUI()
@@ -239,22 +172,6 @@ void DeferredRenderer::CreateGBuffer(int const & width, int const & height)
 
 }
 
-void DeferredRenderer::CreateShadowFramebuffer(int const & width, int const & height)
-{
-	m_shadowFramebuffer.width = width;
-	m_shadowFramebuffer.height = height;
-
-	glGenFramebuffers(1, &m_shadowFramebuffer.framebuffer);
-	glBindFramebuffer(GL_FRAMEBUFFER, m_shadowFramebuffer.framebuffer);
-
-	glGenRenderbuffers(1, &m_shadowFramebuffer.depthBuffer);
-	glBindRenderbuffer(GL_RENDERBUFFER, m_shadowFramebuffer.depthBuffer);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_shadowFramebuffer.depthBuffer);
-
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
 void DeferredRenderer::FreeGBuffer()
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -277,20 +194,11 @@ void DeferredRenderer::BindDefaultFramebuffer() const
 	glViewport(0, 0, m_defaultFramebuffer.width, m_defaultFramebuffer.height);
 }
 
-void DeferredRenderer::BindShadowFramebuffer(unsigned int shadowMap) const
-{
-	glBindFramebuffer(GL_FRAMEBUFFER, m_shadowFramebuffer.framebuffer);
-	glBindTexture(GL_TEXTURE_2D, shadowMap);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, shadowMap, 0);
-}
-
 void DeferredRenderer::Finalize()
 {
-	glDeleteBuffers(1, &m_lightGeometry.fsqVBO);
-	glDeleteVertexArrays(1, &m_lightGeometry.fsqVAO);
 
 	FreeGBuffer();
 
+	m_lightingPass.Finalize();
 	m_deferredPass.Finalize();
-	m_lightingPassProgram.DestroyHandle();
 }

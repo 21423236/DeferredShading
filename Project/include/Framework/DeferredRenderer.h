@@ -3,6 +3,7 @@
 #include <Framework/IRenderer.h>
 #include <Framework/Program.h>
 #include <Framework/DeferredPass.h>
+#include <Framework/LightingPass.h>
 
 #include <vector>
 
@@ -24,15 +25,13 @@ public:
 	void GenerateGUI();
 
 	void BindGBuffer() const;
+	void BindDefaultFramebuffer() const;
 
 private:
 
 	
 	void CreateGBuffer(int const & width, int const & height);
-	void CreateShadowFramebuffer(int const & width, int const & height);
 	void FreeGBuffer();
-	void BindDefaultFramebuffer() const;
-	void BindShadowFramebuffer(unsigned int shadowMap) const;
 
 	struct gBuffer
 	{
@@ -52,23 +51,7 @@ private:
 		unsigned int drawBuffers;
 	} m_defaultFramebuffer;
 
-	struct ShadowFramebuffer
-	{
-		unsigned int framebuffer;
-		unsigned int width;
-		unsigned int height;
-		unsigned int depthBuffer;
-	} m_shadowFramebuffer;
-
-	struct lightGeometry
-	{
-		unsigned int fsqVAO;
-		unsigned int fsqVBO;
-		unsigned int circleVAO;
-		unsigned int cirlceVBO;
-	} m_lightGeometry;
-
-	Program m_lightingPassProgram;
 	DeferredPass m_deferredPass;
+	LightingPass m_lightingPass;
 
 };

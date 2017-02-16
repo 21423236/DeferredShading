@@ -134,6 +134,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Framework\LightingPass.cpp" />
     <ClCompile Include="src\Framework\DeferredPass.cpp" />
     <ClCompile Include="src\Framework\Input.cpp" />
     <ClCompile Include="src\Framework\GUI.cpp" />
@@ -180,6 +181,7 @@
     <ClInclude Include="include\imgui\stb_textedit.h" />
     <ClInclude Include="include\imgui\stb_truetype.h" />
     <ClInclude Include="include\Framework\Input.h" />
+    <ClInclude Include="include\Framework\LightingPass.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\Shaders\Basic.frag" />
