@@ -18,6 +18,13 @@ DeferredRenderer::DeferredRenderer() : m_defaultFramebuffer({ 0, DEFAULT_WINDOW_
 {
 	m_gBuffer.framebuffer = 0;
 	memset(m_gBuffer.colorBuffers, 0, sizeof(int) * 4);
+	m_gBuffer.depthBuffer = 0;
+	m_gBuffer.width = DEFAULT_WINDOW_WIDTH;
+	m_gBuffer.height = DEFAULT_WINDOW_HEIGHT;
+	m_gBuffer.drawBuffers[0] = GL_COLOR_ATTACHMENT0;
+	m_gBuffer.drawBuffers[1] = GL_COLOR_ATTACHMENT1;
+	m_gBuffer.drawBuffers[2] = GL_COLOR_ATTACHMENT2;
+	m_gBuffer.drawBuffers[3] = GL_COLOR_ATTACHMENT3;
 }
 
 
@@ -53,7 +60,6 @@ void DeferredRenderer::RenderScene(Scene const & scene) const
 //DEFERRED PASS
 //----------------------------------------------------------------------------------------------
 
-	//prepare for pass
 	m_deferredPass.Prepare(scene);
 	m_deferredPass.ProcessScene(scene, &globalLights, &localLights, nullptr);
 
@@ -196,7 +202,6 @@ void DeferredRenderer::BindDefaultFramebuffer() const
 
 void DeferredRenderer::Finalize()
 {
-
 	FreeGBuffer();
 
 	m_lightingPass.Finalize();

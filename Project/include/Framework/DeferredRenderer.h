@@ -28,7 +28,6 @@ public:
 	void BindDefaultFramebuffer() const;
 
 private:
-
 	
 	void CreateGBuffer(int const & width, int const & height);
 	void FreeGBuffer();
