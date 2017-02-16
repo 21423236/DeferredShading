@@ -27,10 +27,13 @@ DeferredRenderer::DeferredRenderer() : m_defaultFramebuffer({ 0, DEFAULT_WINDOW_
 	m_gBuffer.drawBuffers[3] = GL_COLOR_ATTACHMENT3;
 }
 
-
 DeferredRenderer::~DeferredRenderer()
 {
 }
+
+#pragma endregion
+
+#pragma region "Public Methods"
 
 bool DeferredRenderer::Initialize()
 {
@@ -56,25 +59,30 @@ void DeferredRenderer::RenderScene(Scene const & scene) const
 	localLights.clear();
 	reflectiveObjects.clear();
 
-//----------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------
 //DEFERRED PASS
-//----------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------
 
 	m_deferredPass.Prepare(scene);
 	m_deferredPass.ProcessScene(scene, &globalLights, &localLights, nullptr);
 
-//----------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------
 //SHADOW MAP PASS
-//----------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------
 
-//----------------------------------------------------------------------------------------------
+	//m_shadowPass.Prepare(scene);
+	//m_shadowPass.ProcessScene(scene, globalLights);
+
+//-------------------------------------------------------------------------------------------------------
 //REFLECTION PASS
-//----------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------
 
+	//m_reflectionPass.Prepare(scene);
+	//m_reflectionPass.ProcessScene(scene, reflectiveObjects);
 
-//----------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------
 //LIGHTING PASS
-//----------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------
 
 	m_lightingPass.Prepare(scene, glm::vec2(m_defaultFramebuffer.width, m_defaultFramebuffer.height));
 	m_lightingPass.ProcessGlobalLights(globalLights);
@@ -124,6 +132,32 @@ void DeferredRenderer::GenerateGUI()
 
 	ImGui::End();
 }
+
+void DeferredRenderer::BindGBuffer() const
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, m_gBuffer.framebuffer);
+	glDrawBuffers(4, m_gBuffer.drawBuffers);
+	glViewport(0, 0, m_gBuffer.width, m_gBuffer.height);
+}
+
+void DeferredRenderer::BindDefaultFramebuffer() const
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glDrawBuffers(1, &m_defaultFramebuffer.drawBuffers);
+	glViewport(0, 0, m_defaultFramebuffer.width, m_defaultFramebuffer.height);
+}
+
+void DeferredRenderer::Finalize()
+{
+	FreeGBuffer();
+
+	m_lightingPass.Finalize();
+	m_deferredPass.Finalize();
+}
+
+#pragma endregion
+
+#pragma region "Private Methods"
 
 void DeferredRenderer::CreateGBuffer(int const & width, int const & height)
 {
@@ -186,24 +220,4 @@ void DeferredRenderer::FreeGBuffer()
 	glDeleteFramebuffers(1, &m_gBuffer.framebuffer);
 }
 
-void DeferredRenderer::BindGBuffer() const
-{
-	glBindFramebuffer(GL_FRAMEBUFFER, m_gBuffer.framebuffer);
-	glDrawBuffers(4, m_gBuffer.drawBuffers);
-	glViewport(0, 0, m_gBuffer.width, m_gBuffer.height);
-}
-
-void DeferredRenderer::BindDefaultFramebuffer() const
-{
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glDrawBuffers(1, &m_defaultFramebuffer.drawBuffers);
-	glViewport(0, 0, m_defaultFramebuffer.width, m_defaultFramebuffer.height);
-}
-
-void DeferredRenderer::Finalize()
-{
-	FreeGBuffer();
-
-	m_lightingPass.Finalize();
-	m_deferredPass.Finalize();
-}
+#pragma endregion
