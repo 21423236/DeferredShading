@@ -59,10 +59,10 @@ void main()
 		
 		if(shadowCoord.w > 0 && (shadowIndex.x > 0 && shadowIndex.x < 1) && (shadowIndex.y > 0 && shadowIndex.y < 1))
 		{
-			vec4 lightInfo = texture(uShadow.shadowTexture, shadowIndex);
+			float lightDepth = texture(uShadow.shadowTexture, shadowIndex).w;
 			float pixelDepth = shadowCoord.w;
 
-			if(lightInfo.w + 0.0025f < pixelDepth)
+			if(lightDepth + 0.0025f < pixelDepth)
 				inShadow = true;
 		}
 	}

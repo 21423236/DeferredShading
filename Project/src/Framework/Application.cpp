@@ -136,7 +136,7 @@ float Application::dt() const
 
 void Application::Initialize()
 {
-	Mesh * bunnyMesh = m_scene->CreateMesh("bunny", "Resources/Meshes/bunny.obj");
+	Mesh * bunnyMesh = m_scene->CreateMesh("bunny", "Resources/Meshes/dragon.obj");
 	Material * bunnyMaterial = m_scene->CreateMaterial("bunny", glm::vec3(1, 1, 1), glm::vec3(1, 1, 1), 100);
 
 	Object * bunnyObject1 = new Object("bunny1", bunnyMesh, bunnyMaterial);
@@ -150,7 +150,7 @@ void Application::Initialize()
 	bunnyObject3->SetScale(glm::vec3(1.0f, 1.0f, 1.0f));
 
 	Mesh * planeMesh = m_scene->CreateMesh("plane", "Resources/Meshes/plane.obj");
-	Material * planeMaterial = m_scene->CreateMaterial("plane", glm::vec3(0, 0, 1), glm::vec3(1, 1, 1), 100);
+	Material * planeMaterial = m_scene->CreateMaterial("plane", glm::vec3(0.8, 0.8, 0.8), glm::vec3(1, 1, 1), 500);
 
 	Object * planeObject = new Object("plane", planeMesh, planeMaterial);
 	planeObject->SetScale(glm::vec3(8, 8, 8));
@@ -161,12 +161,16 @@ void Application::Initialize()
 	m_scene->AddNode(planeObject);
 
 	Light * light1 = new Light("light1", glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(1.0f, 1.0f, 1.0f));
-	light1->SetTranslation(glm::vec3(-4, 10, 4));
+	light1->SetTranslation(glm::vec3(0, 10, 4));
 	m_scene->AddNode(light1);
 
 	Light * light2 = new Light("light2", glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(1, 1, 1));
 	light2->SetTranslation(glm::vec3(4, 10, -4));
-	m_scene->AddNode(light2);
+	//m_scene->AddNode(light2);
+
+	Light * light3 = new Light("light3", glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(1, 1, 1));
+	light3->SetTranslation(glm::vec3(0, 10, 4));
+	//m_scene->AddNode(light3);
 
 	m_scene->SetProjection(0.2f, 0.1f, 1000.0f);
 	m_scene->GetCamera().SetZoom(10.0f);

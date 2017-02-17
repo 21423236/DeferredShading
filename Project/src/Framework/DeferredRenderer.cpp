@@ -86,8 +86,14 @@ void DeferredRenderer::RenderScene(Scene const & scene) const
 //LIGHTING PASS
 //-------------------------------------------------------------------------------------------------------
 
+	//enable gamma correction
+	glEnable(GL_FRAMEBUFFER_SRGB);
+
 	m_lightingPass.Prepare(scene, glm::vec2(m_defaultFramebuffer.width, m_defaultFramebuffer.height));
 	m_lightingPass.ProcessGlobalLights(globalLights);
+	
+	//disable gamma correction
+	glDisable(GL_FRAMEBUFFER_SRGB);
 
 }
 
