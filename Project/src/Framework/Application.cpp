@@ -160,15 +160,15 @@ void Application::Initialize()
 
 	m_scene->AddNode(planeObject);
 
-	Light * light1 = new Light("light1", glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(1.0f, 1.0f, 1.0f));
+	Light * light1 = new Light("light1", glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(1.0f, 1.0f, 1.0f), false);
 	light1->SetTranslation(glm::vec3(0, 10, 4));
 	m_scene->AddNode(light1);
 
-	Light * light2 = new Light("light2", glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(1, 1, 1));
+	Light * light2 = new Light("light2", glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(1, 1, 1), false);
 	light2->SetTranslation(glm::vec3(4, 10, -4));
 	//m_scene->AddNode(light2);
 
-	Light * light3 = new Light("light3", glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(1, 1, 1));
+	Light * light3 = new Light("light3", glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(1, 1, 1), false);
 	light3->SetTranslation(glm::vec3(0, 10, 4));
 	//m_scene->AddNode(light3);
 

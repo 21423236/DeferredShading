@@ -33,8 +33,10 @@ private:
 	{
 		unsigned int fsqVAO;
 		unsigned int fsqVBO;
-		unsigned int circleVAO;
-		unsigned int circleVBO;
+		unsigned int sphereVAO;
+		unsigned int sphereVBO;
+		unsigned int sphereIBO;
+		unsigned int sphereIndexCount;
 	} m_lightGeometries;
 
 	Program m_lightingProgram;
