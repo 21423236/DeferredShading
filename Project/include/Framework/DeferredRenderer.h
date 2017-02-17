@@ -4,6 +4,7 @@
 #include <Framework/Program.h>
 #include <Framework/DeferredPass.h>
 #include <Framework/LightingPass.h>
+#include <Framework/ShadowPass.h>
 
 #include <vector>
 
@@ -26,11 +27,14 @@ public:
 
 	void BindGBuffer() const;
 	void BindDefaultFramebuffer() const;
+	void BindShadowBuffer(unsigned int const & shadowTexture) const;
 
 private:
 	
 	void CreateGBuffer(int const & width, int const & height);
 	void FreeGBuffer();
+	void CreateShadowBuffer(int const & width, int const & height);
+	void FreeShadowBuffer();
 
 	struct gBuffer
 	{
@@ -42,6 +46,15 @@ private:
 		unsigned int drawBuffers[4];
 	} m_gBuffer;
 
+	struct ShadowBuffer
+	{
+		unsigned int framebuffer;
+		unsigned int depthBuffer;
+		unsigned int width;
+		unsigned int height;
+		unsigned int drawBuffers;
+	} m_shadowBuffer;
+
 	struct DefaultFramebuffer
 	{
 		unsigned int framebuffer;
@@ -51,6 +64,7 @@ private:
 	} m_defaultFramebuffer;
 
 	DeferredPass m_deferredPass;
+	ShadowPass m_shadowPass;
 	LightingPass m_lightingPass;
 
 };

@@ -1,13 +1,18 @@
 #version 440
 
-struct Light
+uniform struct Light
 {
 	vec3 position;
 	vec3 ambient;
 	vec3 intensity;
-};
+	bool isGlobal;
+} uLight;;
 
-uniform Light uLight;
+uniform struct ShadowInfo
+{
+	mat4 shadowMatrix;
+	sampler2D shadowTexture;
+} uShadow;
 
 uniform sampler2D uColor0;
 uniform sampler2D uColor1;
@@ -15,8 +20,9 @@ uniform sampler2D uColor2;
 uniform sampler2D uColor3;
 
 uniform vec2 uWindowSize;
-
 uniform vec3 uEye;
+
+const mat4 B = mat4(vec4(0.5, 0, 0, 0), vec4(0, 0.5, 0, 0), vec4(0, 0, 0.5, 0), vec4(0.5, 0.5, 0.5, 1));
 
 out vec4 fragColor;
 
@@ -42,5 +48,31 @@ void main()
 		specular = pow(specAngle, ks.a/4.0);
 	}
 
-	fragColor = vec4(uLight.ambient * kd + uLight.intensity * (lambertian * kd.rgb + specular * ks.rgb), 1);
+	fragColor.xyz = uLight.ambient * kd;
+	
+	if(!uLight.isGlobal)
+	{
+		fragColor.xyz += uLight.intensity * (lambertian * kd.rgb + specular * ks.rgb);
+	}
+	else
+	{
+		vec4 shadowCoord = uShadow.shadowMatrix * vec4(P, 1);
+		vec2 shadowIndex = shadowCoord.xy / shadowCoord.w;
+		//shadowIndex.y = 1 - shadowIndex.y;
+		//shadowIndex.x = 1 - shadowIndex.x;
+		
+		if(shadowCoord.w > 0 && (shadowIndex.x > 0 && shadowIndex.x < 1) && (shadowIndex.y > 0 && shadowIndex.y < 1))
+		{
+			vec4 lightDepth = texture(uShadow.shadowTexture, shadowIndex);
+			float pixelDepth = shadowCoord.w;
+
+			//if(lightDepth.w >= pixelDepth)
+				fragColor.xyz = vec3(lightDepth.xyz - shadowCoord.xyz);//vec3(pixelDepth/13.0f, lightDepth/13.0f, 0);
+			//else
+				//fragColor.xyz = vec3(pixelDepth/13.0f, lightDepth.w/13.0f, 0);
+		}
+		else
+		fragColor.xyz = vec3(0, 0, 0);
+	}
+	fragColor.a = 1;
 }

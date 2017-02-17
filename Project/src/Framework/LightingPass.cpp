@@ -31,6 +31,7 @@ void LightingPass::Initialize()
 	m_lightingProgram.SetUniform("uColor1", 2);
 	m_lightingProgram.SetUniform("uColor2", 3);
 	m_lightingProgram.SetUniform("uColor3", 4);
+	m_lightingProgram.SetUniform("uShadow.shadowTexture", 5);
 
 	glGenVertexArrays(1, &m_lightGeometries.fsqVAO);
 	glBindVertexArray(m_lightGeometries.fsqVAO);
@@ -66,11 +67,17 @@ void LightingPass::Prepare(Scene const & scene, glm::vec2 const & windowSize) co
 
 void LightingPass::ProcessGlobalLights(std::vector<std::pair<Light const *,glm::vec3>> const & globalLights) const
 {
+	m_lightingProgram.SetUniform("uLight.isGlobal", 1);
+
 	for (auto lightPair : globalLights)
 	{
 		m_lightingProgram.SetUniform("uLight.position", lightPair.second);
 		m_lightingProgram.SetUniform("uLight.ambient", lightPair.first->GetAmbientIntensity());
 		m_lightingProgram.SetUniform("uLight.intensity", lightPair.first->GetIntensity());
+
+		m_lightingProgram.SetUniform("uShadow.shadowMatrix", lightPair.first->GetShadowMatrix());
+		glActiveTexture(GL_TEXTURE5);
+		glBindTexture(GL_TEXTURE_2D, lightPair.first->GetShadowTexture()); 
 
 		glBindVertexArray(m_lightGeometries.fsqVAO);
 		glEnableVertexAttribArray(0);
@@ -83,7 +90,7 @@ void LightingPass::ProcessGlobalLights(std::vector<std::pair<Light const *,glm::
 
 void LightingPass::ProcessLocalLights(std::vector<std::pair<Light const *, glm::vec3>> const & localLights) const
 {
-
+	m_lightingProgram.SetUniform("uLight.isGlobal", 0);
 }
 
 void LightingPass::Finalize()

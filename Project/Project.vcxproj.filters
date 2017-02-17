@@ -78,6 +78,9 @@
     <ClCompile Include="src\Framework\LightingPass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Framework\ShadowPass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Framework\Window.h">
@@ -155,6 +158,9 @@
     <ClInclude Include="include\Framework\LightingPass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\Framework\ShadowPass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\Shaders\Basic.vert" />
@@ -163,5 +169,7 @@
     <None Include="src\Shaders\DeferredPass.frag" />
     <None Include="src\Shaders\LightingPass.vert" />
     <None Include="src\Shaders\LightingPass.frag" />
+    <None Include="src\Shaders\ShadowPass.vert" />
+    <None Include="src\Shaders\ShadowPass.frag" />
   </ItemGroup>
 </Project>

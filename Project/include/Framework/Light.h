@@ -9,6 +9,7 @@ class Light : public Node
 public:
 
 	friend class GUI;
+	friend class ShadowPass;
 	
 	Light(std::string const & name, glm::vec3 const & ambient, glm::vec3 const & intensity, bool const & isGlobal = true);
 	~Light();
@@ -16,6 +17,8 @@ public:
 	//getters
 	glm::vec3 const & GetAmbientIntensity() const;
 	glm::vec3 const & GetIntensity() const;
+	unsigned int const & GetShadowTexture() const;
+	glm::mat4 const & GetShadowMatrix() const;
 	NodeType GetNodeType() const;
 
 	//setters
@@ -32,7 +35,8 @@ private:
 	glm::vec3 m_intensity;
 	bool      m_isGlobal;
 
-	
+	unsigned int m_shadowTexture;
+	mutable glm::mat4 m_shadowMatrix;
 
 };
 

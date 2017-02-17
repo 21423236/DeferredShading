@@ -14,7 +14,7 @@
 
 #pragma region "Constructors/Destructor"
 
-DeferredRenderer::DeferredRenderer() : m_defaultFramebuffer({ 0, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, GL_BACK_LEFT }), m_deferredPass(this), m_lightingPass(this)
+DeferredRenderer::DeferredRenderer() : m_defaultFramebuffer({ 0, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, GL_BACK_LEFT }), m_deferredPass(this), m_shadowPass(this), m_lightingPass(this)
 {
 	m_gBuffer.framebuffer = 0;
 	memset(m_gBuffer.colorBuffers, 0, sizeof(int) * 4);
@@ -37,12 +37,14 @@ DeferredRenderer::~DeferredRenderer()
 
 bool DeferredRenderer::Initialize()
 {
+	//generate framebuffers
+	CreateGBuffer(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
+	CreateShadowBuffer(DEFAULT_SHADOW_WIDTH, DEFAULT_SHADOW_HEIGHT);
+	
 	//initialize passes
 	m_deferredPass.Initialize();
+	m_shadowPass.Initialize();
 	m_lightingPass.Initialize();
-
-	//generate g-buffer
-	CreateGBuffer(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
 
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
@@ -70,8 +72,8 @@ void DeferredRenderer::RenderScene(Scene const & scene) const
 //SHADOW MAP PASS
 //-------------------------------------------------------------------------------------------------------
 
-	//m_shadowPass.Prepare(scene);
-	//m_shadowPass.ProcessScene(scene, globalLights);
+	m_shadowPass.Prepare(scene);
+	m_shadowPass.ProcessScene(scene, globalLights);
 
 //-------------------------------------------------------------------------------------------------------
 //REFLECTION PASS
@@ -147,11 +149,24 @@ void DeferredRenderer::BindDefaultFramebuffer() const
 	glViewport(0, 0, m_defaultFramebuffer.width, m_defaultFramebuffer.height);
 }
 
+void DeferredRenderer::BindShadowBuffer(unsigned int const & shadowTexture) const
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, m_shadowBuffer.framebuffer);
+	glActiveTexture(GL_TEXTURE5);
+	glBindTexture(GL_TEXTURE_2D, shadowTexture);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, shadowTexture, 0);
+
+	glDrawBuffers(1, &m_shadowBuffer.drawBuffers);
+	glViewport(0, 0, m_shadowBuffer.width, m_shadowBuffer.height);
+}
+
 void DeferredRenderer::Finalize()
 {
 	FreeGBuffer();
+	FreeShadowBuffer();
 
 	m_lightingPass.Finalize();
+	m_shadowPass.Finalize();
 	m_deferredPass.Finalize();
 }
 
@@ -218,6 +233,31 @@ void DeferredRenderer::FreeGBuffer()
 	glDeleteRenderbuffers(1, &m_gBuffer.depthBuffer);
 	glDeleteTextures(4, m_gBuffer.colorBuffers);
 	glDeleteFramebuffers(1, &m_gBuffer.framebuffer);
+}
+
+void DeferredRenderer::CreateShadowBuffer(int const & width, int const & height)
+{
+	glGenFramebuffers(1, &m_shadowBuffer.framebuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, m_shadowBuffer.framebuffer);
+
+	glGenRenderbuffers(1, &m_shadowBuffer.depthBuffer);
+	glBindRenderbuffer(GL_RENDERBUFFER, m_shadowBuffer.depthBuffer);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_shadowBuffer.depthBuffer);
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	m_shadowBuffer.width = width;
+	m_shadowBuffer.height = height;
+
+	m_shadowBuffer.drawBuffers = GL_COLOR_ATTACHMENT0;
+}
+
+void DeferredRenderer::FreeShadowBuffer()
+{
+	glDeleteRenderbuffers(1, &m_shadowBuffer.depthBuffer);
+	glDeleteFramebuffers(1, &m_shadowBuffer.framebuffer);
 }
 
 #pragma endregion

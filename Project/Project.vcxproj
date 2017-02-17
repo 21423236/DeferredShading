@@ -134,6 +134,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Framework\ShadowPass.cpp" />
     <ClCompile Include="src\Framework\LightingPass.cpp" />
     <ClCompile Include="src\Framework\DeferredPass.cpp" />
     <ClCompile Include="src\Framework\Input.cpp" />
@@ -182,6 +183,7 @@
     <ClInclude Include="include\imgui\stb_truetype.h" />
     <ClInclude Include="include\Framework\Input.h" />
     <ClInclude Include="include\Framework\LightingPass.h" />
+    <ClInclude Include="include\Framework\ShadowPass.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\Shaders\Basic.frag" />
@@ -190,6 +192,8 @@
     <None Include="src\Shaders\DeferredPass.vert" />
     <None Include="src\Shaders\LightingPass.frag" />
     <None Include="src\Shaders\LightingPass.vert" />
+    <None Include="src\Shaders\ShadowPass.frag" />
+    <None Include="src\Shaders\ShadowPass.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
