@@ -30,13 +30,13 @@ void main()
 {
 	vec2 uv = gl_FragCoord.xy / uWindowSize;
 
-	vec3 P = texture(uColor0, uv).rbg;
+	vec4 P = texture(uColor0, uv);
 	vec3 N = texture(uColor1, uv).rgb;
 	vec3 kd = texture(uColor2, uv).rgb;
 	vec4 ks = texture(uColor3, uv);
 
-	vec3 V = normalize(uEye - P);
-	vec3 L = normalize(uLight.position - P);
+	vec3 V = normalize(uEye - P.xyz);
+	vec3 L = normalize(uLight.position - P.xyz);
 	vec3 H = normalize(L + V);
 
 	float lambertian = max(dot(L, N), 0.0);
@@ -50,29 +50,25 @@ void main()
 
 	fragColor.xyz = uLight.ambient * kd;
 	
-	if(!uLight.isGlobal)
+	bool inShadow = false;
+
+	if(uLight.isGlobal)
 	{
-		fragColor.xyz += uLight.intensity * (lambertian * kd.rgb + specular * ks.rgb);
-	}
-	else
-	{
-		vec4 shadowCoord = uShadow.shadowMatrix * vec4(P, 1);
+		vec4 shadowCoord = uShadow.shadowMatrix * P;
 		vec2 shadowIndex = shadowCoord.xy / shadowCoord.w;
-		//shadowIndex.y = 1 - shadowIndex.y;
-		//shadowIndex.x = 1 - shadowIndex.x;
 		
 		if(shadowCoord.w > 0 && (shadowIndex.x > 0 && shadowIndex.x < 1) && (shadowIndex.y > 0 && shadowIndex.y < 1))
 		{
-			vec4 lightDepth = texture(uShadow.shadowTexture, shadowIndex);
+			vec4 lightInfo = texture(uShadow.shadowTexture, shadowIndex);
 			float pixelDepth = shadowCoord.w;
 
-			//if(lightDepth.w >= pixelDepth)
-				fragColor.xyz = vec3(lightDepth.xyz - shadowCoord.xyz);//vec3(pixelDepth/13.0f, lightDepth/13.0f, 0);
-			//else
-				//fragColor.xyz = vec3(pixelDepth/13.0f, lightDepth.w/13.0f, 0);
+			if(lightInfo.w + 0.0025f < pixelDepth)
+				inShadow = true;
 		}
-		else
-		fragColor.xyz = vec3(0, 0, 0);
 	}
+
+	if(!inShadow)
+		fragColor.xyz += uLight.intensity * (lambertian * kd.rgb + specular * ks.rgb);
+
 	fragColor.a = 1;
 }
