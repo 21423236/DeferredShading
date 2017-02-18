@@ -161,13 +161,13 @@ void Application::Initialize()
 	m_scene->AddNode(planeObject);
 
 	Node * lights = new Node("local_lights", glm::vec3(0, 0, 0), glm::quat());
-	for (int r = 0; r < 10; r++)
+	for (int r = 0; r < 100; r++)
 	{
-		for (int c = 0; c < 10; c++)
+		for (int c = 0; c < 100; c++)
 		{
-			Light * localLight = new Light(std::to_string((r*10) + c), glm::vec3(0.2f, 0.5f, 0.2f), glm::vec3(sinf(c/10.0f), cosf((c*r)/10.0f), sinf(c/10.0f)), false);
-			localLight->SetTranslation(glm::vec3(-4 + (8.0f / 10.0f) * c, 0.15f, -4 + (8.0f / 10.0f) * r));
-			localLight->SetRadius(0.5f);
+			Light * localLight = new Light(std::to_string((r*10) + c), glm::vec3(0.2f, 0.5f, 0.2f), glm::vec3(sinf(c*r/10000.0f*M_PI), sinf(c/100.0f*M_PI), sinf(r/100.0f*M_PI)), false);
+			localLight->SetTranslation(glm::vec3(-3.5 + (7.0f / 100.0f) * c, sinf(r/100.0f * M_PI)*0.05f, -3.5 + (7.0f / 100.0f) * r));
+			localLight->SetRadius(0.1f + sinf(r/100.0f * M_PI)*0.15f);
 			lights->AddChild(localLight);
 		}
 	}

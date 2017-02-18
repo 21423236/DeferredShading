@@ -146,7 +146,7 @@ void LightingPass::ProcessGlobalLights(std::vector<std::pair<Light const *,glm::
 		m_lightingProgram.SetUniform("uLight.intensity", lightPair.first->GetIntensity());
 
 		m_lightingProgram.SetUniform("uShadow.shadowMatrix", lightPair.first->GetShadowMatrix());
-		glActiveTexture(GL_TEXTURE5);
+		glActiveTexture(GL_TEXTURE6);
 		glBindTexture(GL_TEXTURE_2D, lightPair.first->GetShadowTexture()); 
 
 		glBindVertexArray(m_lightGeometries.fsqVAO);
@@ -161,7 +161,7 @@ void LightingPass::ProcessGlobalLights(std::vector<std::pair<Light const *,glm::
 
 void LightingPass::ProcessLocalLights(std::vector<std::pair<Light const *, glm::vec3>> const & localLights) const
 {
-	glEnable(GL_DEPTH_TEST);
+	//glEnable(GL_DEPTH_TEST);
 
 	m_lightingProgram.SetUniform("uLight.isGlobal", false);
 
