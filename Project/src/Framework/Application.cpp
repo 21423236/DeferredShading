@@ -6,7 +6,6 @@
 #include <Windows.h>
 #include <iostream>
 
-
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl.h>
 
@@ -151,7 +150,7 @@ void Application::Initialize()
 	bunnyObject3->SetScale(glm::vec3(1.0f, 1.0f, 1.0f));
 
 	Mesh * planeMesh = m_scene->CreateMesh("plane", "Resources/Meshes/plane.obj");
-	Material * planeMaterial = m_scene->CreateMaterial("plane", glm::vec3(0.2f, 0.2f, 0.2f), glm::vec3(0.02f, 0.02f, 0.02f), 10);
+	Material * planeMaterial = m_scene->CreateMaterial("plane", glm::vec3(0.2f, 0.2f, 0.2f), glm::vec3(0.02f, 0.02f, 0.02f), 20);
 
 	Object * planeObject = new Object("plane", planeMesh, planeMaterial);
 	planeObject->SetScale(glm::vec3(8, 8, 8));
@@ -168,7 +167,7 @@ void Application::Initialize()
 		{
 			LocalLight * localLight = new LocalLight(std::to_string((r*10) + c), glm::vec3(sinf(c*r/10000.0f*M_PI), sinf(c/100.0f*M_PI), sinf(r/100.0f*M_PI)), 1.0f);
 			localLight->SetTranslation(glm::vec3(-3.5 + (7.0f / 100.0f) * c, sinf(r/100.0f * M_PI)*0.05f, -3.5 + (7.0f / 100.0f) * r));
-			localLight->SetRadius(0.1f + sinf(r/100.0f * M_PI)*0.15f);
+			localLight->SetRadius(0.1f + sinf(r/100.0f * M_PI)*0.25f);
 			lights->AddChild(localLight);
 		}
 	}
