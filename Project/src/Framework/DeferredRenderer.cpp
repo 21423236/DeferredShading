@@ -159,12 +159,19 @@ void DeferredRenderer::BindDefaultFramebuffer() const
 void DeferredRenderer::BindShadowBuffer(unsigned int const & shadowTexture) const
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, m_shadowBuffer.framebuffer);
-	glActiveTexture(GL_TEXTURE5);
+	glActiveTexture(GL_TEXTURE6);
 	glBindTexture(GL_TEXTURE_2D, shadowTexture);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, shadowTexture, 0);
 
 	glDrawBuffers(1, &m_shadowBuffer.drawBuffers);
 	glViewport(0, 0, m_shadowBuffer.width, m_shadowBuffer.height);
+}
+
+void DeferredRenderer::BlitDepthBuffers() const
+{
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, m_gBuffer.framebuffer);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	glBlitFramebuffer(0, 0, m_gBuffer.width, m_gBuffer.height, 0, 0, m_defaultFramebuffer.width, m_defaultFramebuffer.height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 }
 
 void DeferredRenderer::Finalize()
@@ -222,6 +229,16 @@ void DeferredRenderer::CreateGBuffer(int const & width, int const & height)
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_gBuffer.depthBuffer);
 	glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
+	/*glGenTextures(1, &m_gBuffer.depthBuffer);
+	glActiveTexture(GL_TEXTURE5);
+	glBindTexture(GL_TEXTURE_2D, m_gBuffer.depthBuffer);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_gBuffer.depthBuffer, 0);*/
+
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	m_gBuffer.width = width;
@@ -238,6 +255,7 @@ void DeferredRenderer::FreeGBuffer()
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glDeleteRenderbuffers(1, &m_gBuffer.depthBuffer);
+	//glDeleteTextures(1, &m_gBuffer.depthBuffer);
 	glDeleteTextures(4, m_gBuffer.colorBuffers);
 	glDeleteFramebuffers(1, &m_gBuffer.framebuffer);
 }

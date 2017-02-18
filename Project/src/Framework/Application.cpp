@@ -150,7 +150,7 @@ void Application::Initialize()
 	bunnyObject3->SetScale(glm::vec3(1.0f, 1.0f, 1.0f));
 
 	Mesh * planeMesh = m_scene->CreateMesh("plane", "Resources/Meshes/plane.obj");
-	Material * planeMaterial = m_scene->CreateMaterial("plane", glm::vec3(0.8, 0.8, 0.8), glm::vec3(1, 1, 1), 500);
+	Material * planeMaterial = m_scene->CreateMaterial("plane", glm::vec3(0.2, 0.2, 0.2), glm::vec3(1, 1, 1), 500);
 
 	Object * planeObject = new Object("plane", planeMesh, planeMaterial);
 	planeObject->SetScale(glm::vec3(8, 8, 8));
@@ -160,17 +160,26 @@ void Application::Initialize()
 
 	m_scene->AddNode(planeObject);
 
-	Light * light1 = new Light("light1", glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(1.0f, 1.0f, 1.0f), false);
-	light1->SetTranslation(glm::vec3(0, 10, 4));
-	m_scene->AddNode(light1);
+	Node * lights = new Node("local_lights", glm::vec3(0, 0, 0), glm::quat());
+	for (int r = 0; r < 10; r++)
+	{
+		for (int c = 0; c < 10; c++)
+		{
+			Light * localLight = new Light(std::to_string((r*10) + c), glm::vec3(0.2f, 0.5f, 0.2f), glm::vec3(sinf(c/10.0f), cosf((c*r)/10.0f), sinf(c/10.0f)), false);
+			localLight->SetTranslation(glm::vec3(-4 + (8.0f / 10.0f) * c, 0.15f, -4 + (8.0f / 10.0f) * r));
+			localLight->SetRadius(0.5f);
+			lights->AddChild(localLight);
+		}
+	}
+	m_scene->AddNode(lights);
 
-	Light * light2 = new Light("light2", glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(1, 1, 1), false);
-	light2->SetTranslation(glm::vec3(4, 10, -4));
-	//m_scene->AddNode(light2);
+	Light * globalLight1 = new Light("global1", glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(1, 1, 1));
+	globalLight1->SetTranslation(glm::vec3(4, 10, -4));
+	m_scene->AddNode(globalLight1);
 
-	Light * light3 = new Light("light3", glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(1, 1, 1), false);
-	light3->SetTranslation(glm::vec3(0, 10, 4));
-	//m_scene->AddNode(light3);
+	Light * globalLight2 = new Light("global2", glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(1, 1, 1));
+	globalLight2->SetTranslation(glm::vec3(-4, 10, 4));
+	m_scene->AddNode(globalLight2);
 
 	m_scene->SetProjection(0.2f, 0.1f, 1000.0f);
 	m_scene->GetCamera().SetZoom(10.0f);

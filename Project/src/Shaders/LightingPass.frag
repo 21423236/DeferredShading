@@ -6,7 +6,8 @@ uniform struct Light
 	vec3 ambient;
 	vec3 intensity;
 	bool isGlobal;
-} uLight;;
+	float radius;
+} uLight;
 
 uniform struct ShadowInfo
 {
@@ -48,12 +49,13 @@ void main()
 		specular = pow(specAngle, ks.a/4.0);
 	}
 
-	fragColor.xyz = uLight.ambient * kd;
-	
-	bool inShadow = false;
-
 	if(uLight.isGlobal)
 	{
+
+		fragColor.xyz = uLight.ambient * kd;
+	
+		bool inShadow = false;
+
 		vec4 shadowCoord = uShadow.shadowMatrix * P;
 		vec2 shadowIndex = shadowCoord.xy / shadowCoord.w;
 		
@@ -65,10 +67,22 @@ void main()
 			if(lightDepth + 0.0025f < pixelDepth)
 				inShadow = true;
 		}
+	
+		if(!inShadow)
+			fragColor.xyz += uLight.intensity * (lambertian * kd.rgb + specular * ks.rgb);
+
 	}
 
-	if(!inShadow)
-		fragColor.xyz += uLight.intensity * (lambertian * kd.rgb + specular * ks.rgb);
-
+	else
+	{
+		float radiusSquared = uLight.radius * uLight.radius;
+		vec3 distance = P.xyz - uLight.position;
+		float distanceSquared = (distance.x*distance.x + distance.y * distance.y + distance.z * distance.z);
+		if(distanceSquared < radiusSquared)
+		{
+			fragColor.xyz = uLight.intensity * (lambertian * kd.rgb + specular * ks.rgb);
+		}
+	}
+	
 	fragColor.a = 1;
 }

@@ -28,6 +28,7 @@ public:
 	void BindGBuffer() const;
 	void BindDefaultFramebuffer() const;
 	void BindShadowBuffer(unsigned int const & shadowTexture) const;
+	void BlitDepthBuffers() const;
 
 private:
 	

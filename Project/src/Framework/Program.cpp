@@ -81,6 +81,13 @@ void Program::SetUniform(char const * name, int const & value) const
 		glProgramUniform1i(m_handle, location, value);
 }
 
+void Program::SetUniform(char const * name, bool const & value) const
+{
+	GLint location = glGetUniformLocation(m_handle, name);
+	if (location != -1)
+		glProgramUniform1i(m_handle, location, value ? 1 : 0);
+}
+
 void Program::CreateHandle()
 {
 	m_handle = glCreateProgram();

@@ -26,6 +26,7 @@ public:
 	void SetUniform(char const * name, glm::vec2 const & vector) const;
 	void SetUniform(char const * name, float const & value) const;
 	void SetUniform(char const * name, int const & value) const;
+	void SetUniform(char const * name, bool const & value) const;
 
 	void CreateHandle();
 	void DestroyHandle();

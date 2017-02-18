@@ -32,7 +32,7 @@ void LightingPass::Initialize()
 	m_lightingProgram.SetUniform("uColor1", 2);
 	m_lightingProgram.SetUniform("uColor2", 3);
 	m_lightingProgram.SetUniform("uColor3", 4);
-	m_lightingProgram.SetUniform("uShadow.shadowTexture", 5);
+	m_lightingProgram.SetUniform("uShadow.shadowTexture", 6);
 
 	//generate full screen quad
 	glGenVertexArrays(1, &m_lightGeometries.fsqVAO);
@@ -41,87 +41,103 @@ void LightingPass::Initialize()
 	glBindBuffer(GL_ARRAY_BUFFER, m_lightGeometries.fsqVBO);
 
 	float fsqData[] = {
-		-1.0f, 1.0f,
-		-1.0f, -1.0f,
-		1.0f, -1.0f,
-		1.0f, -1.0f,
-		1.0f, 1.0f,
-		-1.0f, 1.0f
+		-1.0f, 1.0f, 0.0f,
+		-1.0f, -1.0f, 0.0f,
+		1.0f, -1.0f, 0.0f,
+		1.0f, -1.0f, 0.0f,
+		1.0f, 1.0f, 0.0f,
+		-1.0f, 1.0f, 0.0f
 	};
 
 	glBufferData(GL_ARRAY_BUFFER, sizeof(fsqData), fsqData, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, 0);
 	glBindVertexArray(0);
 
-	//generate sphere
-	struct Vertex
-	{
-		float x, y, z;
+	float const t = (1.0f + sqrt(5.0f)) / 2.0f;
+
+	float icoBaseVertices[12][3] = {
+		{-1.0f, t, 0.0f},
+		{ 1.0f, t, 0.0f},
+		{ -1.0f, -t, 0.0f},
+		{ 1.0f, -t, 0.0f},
+
+		{ 0.0f, -1.0f, t},
+		{ 0.0f, 1.0f, t },
+		{ 0.0f, -1.0f, -t },
+		{ 0.0f , 1.0f, -t },
+
+		{ t, 0.0f, -1.0f },
+		{ t, 0.0f, 1.0f },
+		{ -t, 0.0f, -1.0f },
+		{ -t, 0.0f, 1.0f }
 	};
 
-	struct Face
-	{
-		int a, b, c, d;
-	};
+	int faces[20][3] = {
+		{0, 11, 5},
+		{0, 5, 1},
+		{0, 1, 7},
+		{0, 7, 10},
+		{0, 10, 11},
 
-	std::vector<struct Vertex> sphereVertices;
-	std::vector<struct Face> sphereIndices;
-	float const PI = 3.14159f;
-	float const rad = PI / 180.0f;
-	int const n = 8;
-	float const d = 2.0f * PI / (float)(n * 2);
-	for (int i = 0; i < n * 2; ++i)
-	{
-		float s = i * 2.0f * PI / (float)(n * 2);
-		for (int j = 0; j < n; ++j)
-		{
-			float t = j * PI / (float)n;
-			float x = cos(s) * sin(t) * 0.5f;
-			float y = sin(s) * sin(t) * 0.5f;
-			float z = cos(t) * 0.5f;
-			sphereVertices.push_back({ x, y, z });
-			if (i > 0 && j > 0)
-				sphereIndices.push_back({ (i - 1)*(n + 1) + (j - 1),
-				(i - 1)*(n + 1) + (j),
-					(i)*(n + 1) + (j),
-					(i)*(n + 1) + (j - 1) });
-		}
-	}
+		{1, 5, 9},
+		{5, 11, 4},
+		{11, 10, 2},
+		{10, 7, 6},
+		{7, 1, 8},
+
+		{3, 9, 4},
+		{3, 4, 2},
+		{3, 2, 6},
+		{3, 6, 8},
+		{3, 8, 9},
+
+		{4, 9, 5},
+		{2, 4, 11},
+		{6, 2, 10},
+		{8, 6, 7},
+		{9, 8, 1}
+	};
 
 	glGenVertexArrays(1, &m_lightGeometries.sphereVAO);
 	glBindVertexArray(m_lightGeometries.sphereVAO);
 
 	glGenBuffers(1, &m_lightGeometries.sphereVBO);
 	glBindBuffer(GL_ARRAY_BUFFER, m_lightGeometries.sphereVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(struct Vertex) * sphereVertices.size(), &sphereVertices[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 36, icoBaseVertices, GL_STATIC_DRAW);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), 0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float)*3, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	glGenBuffers(1, &m_lightGeometries.sphereIBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_lightGeometries.sphereIBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(struct Face) * sphereIndices.size(), &sphereIndices[0], GL_STATIC_DRAW);
-	m_lightGeometries.sphereIndexCount = sphereIndices.size();
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(int) * 60, &faces, GL_STATIC_DRAW);
+	m_lightGeometries.sphereIndexCount = 60;
 
 	glBindVertexArray(0);
 }
 
 void LightingPass::Prepare(Scene const & scene, glm::vec2 const & windowSize) const
 {
-	dynamic_cast<DeferredRenderer const *>(m_renderer)->BindDefaultFramebuffer();
+	DeferredRenderer const * deferredRenderer = dynamic_cast<DeferredRenderer const *>(m_renderer);
+	deferredRenderer->BlitDepthBuffers();
+	deferredRenderer->BindDefaultFramebuffer();
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	glEnable(GL_BLEND);
-	glDisable(GL_DEPTH_TEST);
 
 	m_lightingProgram.Use();
+	m_lightingProgram.SetUniform("uProjectionMatrix", scene.GetProjectionMatrix());
+	m_lightingProgram.SetUniform("uViewMatrix", scene.GetViewMatrix());
 	m_lightingProgram.SetUniform("uWindowSize", windowSize);
 	m_lightingProgram.SetUniform("uEye", glm::vec3(glm::inverse(scene.GetViewMatrix()) * glm::vec4(0, 0, 0, 1)));
 }
 
 void LightingPass::ProcessGlobalLights(std::vector<std::pair<Light const *,glm::vec3>> const & globalLights) const
 {
-	m_lightingProgram.SetUniform("uLight.isGlobal", 1);
+	glDisable(GL_DEPTH_TEST);
+	glDepthMask(GL_FALSE);
+
+	m_lightingProgram.SetUniform("uLight.isGlobal", true);
 
 	for (auto const & lightPair : globalLights)
 	{
@@ -140,24 +156,31 @@ void LightingPass::ProcessGlobalLights(std::vector<std::pair<Light const *,glm::
 		glBindVertexArray(0);
 
 	}
+
 }
 
 void LightingPass::ProcessLocalLights(std::vector<std::pair<Light const *, glm::vec3>> const & localLights) const
 {
-	m_lightingProgram.SetUniform("uLight.isGlobal", 0);
+	glEnable(GL_DEPTH_TEST);
+
+	m_lightingProgram.SetUniform("uLight.isGlobal", false);
 
 	for (auto const & lightPair : localLights)
 	{
 		m_lightingProgram.SetUniform("uLight.position", lightPair.second);
 		m_lightingProgram.SetUniform("uLight.ambient", lightPair.first->GetAmbientIntensity());
 		m_lightingProgram.SetUniform("uLight.intensity", lightPair.first->GetIntensity());
+		m_lightingProgram.SetUniform("uLight.radius", lightPair.first->GetRadius());
 
 		glBindVertexArray(m_lightGeometries.sphereVAO);
 		glEnableVertexAttribArray(0);
-		glDrawElements(GL_QUADS, m_lightGeometries.sphereIndexCount, GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, m_lightGeometries.sphereIndexCount, GL_UNSIGNED_INT, 0);
 		glDisableVertexAttribArray(0);
 		glBindVertexArray(0);
 	}
+
+	glDepthMask(GL_TRUE);
+	
 }
 
 void LightingPass::Finalize()

@@ -2,12 +2,12 @@
 #include <Framework/Defaults.h>
 #include <GL/glew.h>
 
-Light::Light(std::string const & name, glm::vec3 const & ambient, glm::vec3 const & intensity, bool const & isGlobal) : Node(name), m_ambient(ambient), m_intensity(intensity), m_isGlobal(isGlobal), m_shadowTexture(0)
+Light::Light(std::string const & name, glm::vec3 const & ambient, glm::vec3 const & intensity, bool const & isGlobal, float const & radius) : Node(name), m_ambient(ambient), m_intensity(intensity), m_isGlobal(isGlobal), m_radius(radius), m_shadowTexture(0)
 {
 	if (m_isGlobal)
 	{
 		glGenTextures(1, &m_shadowTexture);
-		glActiveTexture(GL_TEXTURE5);
+		glActiveTexture(GL_TEXTURE6);
 		glBindTexture(GL_TEXTURE_2D, m_shadowTexture);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, DEFAULT_SHADOW_WIDTH, DEFAULT_SHADOW_HEIGHT, 0, GL_RGBA, GL_FLOAT, 0);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -30,6 +30,11 @@ glm::vec3 const & Light::GetIntensity() const
 	return m_intensity;
 }
 
+float const & Light::GetRadius() const
+{
+	return m_radius;
+}
+
 unsigned int const & Light::GetShadowTexture() const
 {
 	return m_shadowTexture;
@@ -48,6 +53,11 @@ void Light::SetAmbientIntensity(glm::vec3 const & ambient)
 void Light::SetIntensity(glm::vec3 const & intensity)
 {
 	m_intensity = intensity;
+}
+
+void Light::SetRadius(float const & radius)
+{
+	m_radius = radius;
 }
 
 Node::NodeType Light::GetNodeType() const
