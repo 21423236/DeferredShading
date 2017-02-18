@@ -1,6 +1,7 @@
 #include <Framework/Application.h>
 #include <Framework/Object.h>
-#include <Framework/Light.h>
+#include <Framework/GlobalLight.h>
+#include <Framework/LocalLight.h>
 #include <GL/glew.h>
 #include <Windows.h>
 #include <iostream>
@@ -137,7 +138,7 @@ float Application::dt() const
 void Application::Initialize()
 {
 	Mesh * bunnyMesh = m_scene->CreateMesh("bunny", "Resources/Meshes/dragon.obj");
-	Material * bunnyMaterial = m_scene->CreateMaterial("bunny", glm::vec3(1, 1, 1), glm::vec3(1, 1, 1), 100);
+	Material * bunnyMaterial = m_scene->CreateMaterial("bunny", glm::vec3(1, 1, 1), glm::vec3(0.04f, 0.04f, 0.04f), 2);
 
 	Object * bunnyObject1 = new Object("bunny1", bunnyMesh, bunnyMaterial);
 	Object * bunnyObject2 = new Object("bunny2", bunnyMesh, bunnyMaterial);
@@ -150,7 +151,7 @@ void Application::Initialize()
 	bunnyObject3->SetScale(glm::vec3(1.0f, 1.0f, 1.0f));
 
 	Mesh * planeMesh = m_scene->CreateMesh("plane", "Resources/Meshes/plane.obj");
-	Material * planeMaterial = m_scene->CreateMaterial("plane", glm::vec3(0.2, 0.2, 0.2), glm::vec3(1, 1, 1), 500);
+	Material * planeMaterial = m_scene->CreateMaterial("plane", glm::vec3(0.2f, 0.2f, 0.2f), glm::vec3(0.02f, 0.02f, 0.02f), 10);
 
 	Object * planeObject = new Object("plane", planeMesh, planeMaterial);
 	planeObject->SetScale(glm::vec3(8, 8, 8));
@@ -165,7 +166,7 @@ void Application::Initialize()
 	{
 		for (int c = 0; c < 100; c++)
 		{
-			Light * localLight = new Light(std::to_string((r*10) + c), glm::vec3(0.2f, 0.5f, 0.2f), glm::vec3(sinf(c*r/10000.0f*M_PI), sinf(c/100.0f*M_PI), sinf(r/100.0f*M_PI)), false);
+			LocalLight * localLight = new LocalLight(std::to_string((r*10) + c), glm::vec3(sinf(c*r/10000.0f*M_PI), sinf(c/100.0f*M_PI), sinf(r/100.0f*M_PI)), 1.0f);
 			localLight->SetTranslation(glm::vec3(-3.5 + (7.0f / 100.0f) * c, sinf(r/100.0f * M_PI)*0.05f, -3.5 + (7.0f / 100.0f) * r));
 			localLight->SetRadius(0.1f + sinf(r/100.0f * M_PI)*0.15f);
 			lights->AddChild(localLight);
@@ -173,11 +174,11 @@ void Application::Initialize()
 	}
 	m_scene->AddNode(lights);
 
-	Light * globalLight1 = new Light("global1", glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(1, 1, 1));
+	GlobalLight * globalLight1 = new GlobalLight("global1", glm::vec3(1, 1, 1));
 	globalLight1->SetTranslation(glm::vec3(4, 10, -4));
 	m_scene->AddNode(globalLight1);
 
-	Light * globalLight2 = new Light("global2", glm::vec3(0.1f, 0.1f, 0.1f), glm::vec3(1, 1, 1));
+	GlobalLight * globalLight2 = new GlobalLight("global2", glm::vec3(1, 1, 1));
 	globalLight2->SetTranslation(glm::vec3(-4, 10, 4));
 	m_scene->AddNode(globalLight2);
 

@@ -1,6 +1,6 @@
 #include <Framework/ShadowPass.h>
 #include <Framework/Scene.h>
-#include <Framework/Light.h>
+#include <Framework/GlobalLight.h>
 #include <Framework/Object.h>
 #include <Framework/Mesh.h>
 #include <Framework/DeferredRenderer.h>
@@ -48,12 +48,12 @@ void ShadowPass::Prepare(Scene const & scene) const
 	m_shadowProgram.Use();
 }
 
-void ShadowPass::ProcessScene(Scene const & scene, std::vector<std::pair<Light const *, glm::vec3>> const & globalLights) const
+void ShadowPass::ProcessScene(Scene const & scene, std::vector<std::pair<GlobalLight const *, glm::vec3>> const & globalLights) const
 {
 	for (auto const & lightPair : globalLights)
 	{
 		//bind shadow framebuffer
-		dynamic_cast<DeferredRenderer const *>(m_renderer)->BindShadowBuffer(lightPair.first->GetShadowTexture());
+		dynamic_cast<DeferredRenderer const *>(m_renderer)->BindShadowBuffer(lightPair.first->GetShadowMap());
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glm::mat4 shadowMatrix = g_projectionMatrix * glm::lookAt(lightPair.second, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));

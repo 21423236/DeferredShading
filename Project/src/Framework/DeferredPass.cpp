@@ -2,7 +2,8 @@
 #include <Framework/DeferredRenderer.h>
 #include <Framework/Scene.h>
 #include <Framework/Object.h>
-#include <Framework/Light.h>
+#include <Framework/GlobalLight.h>
+#include <Framework/LocalLight.h>
 #include <Framework/Material.h>
 #include <Framework/Mesh.h>
 
@@ -45,7 +46,7 @@ void DeferredPass::Prepare(Scene const & scene) const
 	m_deferredProgram.SetUniform("uViewMatrix", scene.GetViewMatrix());
 }
 
-void DeferredPass::ProcessScene(Scene const & scene, std::vector<std::pair<Light const *, glm::vec3>> * globalLights, std::vector<std::pair<Light const *, glm::vec3>> * localLights, std::vector<Object const *> * reflectiveObjects) const
+void DeferredPass::ProcessScene(Scene const & scene, std::vector<std::pair<GlobalLight const *, glm::vec3>> * globalLights, std::vector<std::pair<LocalLight const *, glm::vec3>> * localLights, std::vector<Object const *> * reflectiveObjects) const
 {
 	m_globalLights = globalLights;
 	m_localLights = localLights;
@@ -82,15 +83,18 @@ void DeferredPass::ProcessNode(Node const * const & node, glm::mat4 const & mode
 		glDisableVertexAttribArray(0);
 
 	}
-	else if (node->GetNodeType() == Node::LIGHT_NODE)
+	else if (node->GetNodeType() == Node::GLOBAL_LIGHT_NODE)
 	{
-		//record light and world position, dependent of whether it is global or not
-		Light const * light = dynamic_cast<Light const *>(node);
+		GlobalLight const * light = dynamic_cast<GlobalLight const *>(node);
 		glm::vec3 position(modelMatrix[3][0], modelMatrix[3][1], modelMatrix[3][2]);
-		if (light->IsGlobal())
-			m_globalLights->push_back(std::make_pair(light, position));
-		else
-			m_localLights->push_back(std::make_pair(light, position));
+		m_globalLights->push_back(std::make_pair(light, position));
+			
+	}
+	else if (node->GetNodeType() == Node::LOCAL_LIGHT_NODE)
+	{
+		LocalLight const * light = dynamic_cast<LocalLight const*>(node);
+		glm::vec3 position(modelMatrix[3][0], modelMatrix[3][1], modelMatrix[3][2]);
+		m_localLights->push_back(std::make_pair(light, position));
 	}
 }
 

@@ -5,7 +5,8 @@
 
 class IRenderer;
 class Scene;
-class Light;
+class GlobalLight;
+class LocalLight;
 
 class LightingPass
 {
@@ -18,8 +19,8 @@ public:
 	//public methods
 	void Initialize();
 	void Prepare(Scene const & scene, glm::vec2 const & windowSize) const;
-	void ProcessGlobalLights(std::vector<std::pair<Light const *,glm::vec3>> const & globalLights) const;
-	void ProcessLocalLights(std::vector<std::pair<Light const *, glm::vec3>> const & localLights) const;
+	void ProcessGlobalLights(std::vector<std::pair<GlobalLight const *,glm::vec3>> const & globalLights) const;
+	void ProcessLocalLights(std::vector<std::pair<LocalLight const *, glm::vec3>> const & localLights) const;
 	void Finalize();
 
 protected:

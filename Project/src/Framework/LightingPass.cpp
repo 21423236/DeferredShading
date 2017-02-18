@@ -1,6 +1,7 @@
 #include <Framework/LightingPass.h>
 #include <Framework/Program.h>
-#include <Framework/Light.h>
+#include <Framework/GlobalLight.h>
+#include <Framework/LocalLight.h>
 #include <Framework/DeferredRenderer.h>
 #include <Framework/Scene.h>
 
@@ -147,7 +148,7 @@ void LightingPass::Prepare(Scene const & scene, glm::vec2 const & windowSize) co
 	m_localLightProgram.SetUniform("uViewMatrix", scene.GetViewMatrix());
 }
 
-void LightingPass::ProcessGlobalLights(std::vector<std::pair<Light const *,glm::vec3>> const & globalLights) const
+void LightingPass::ProcessGlobalLights(std::vector<std::pair<GlobalLight const *,glm::vec3>> const & globalLights) const
 {
 	glDisable(GL_DEPTH_TEST);
 	glDepthMask(GL_FALSE);
@@ -157,12 +158,12 @@ void LightingPass::ProcessGlobalLights(std::vector<std::pair<Light const *,glm::
 	for (auto const & lightPair : globalLights)
 	{
 		m_globalLightProgram.SetUniform("uLight.position", lightPair.second);
-		m_globalLightProgram.SetUniform("uLight.ambient", lightPair.first->GetAmbientIntensity());
+		m_globalLightProgram.SetUniform("uLight.ambient", glm::vec3(0.1f, 0.1f, 0.1f));
 		m_globalLightProgram.SetUniform("uLight.intensity", lightPair.first->GetIntensity());
 
 		m_globalLightProgram.SetUniform("uShadow.matrix", lightPair.first->GetShadowMatrix());
 		glActiveTexture(GL_TEXTURE5);
-		glBindTexture(GL_TEXTURE_2D, lightPair.first->GetShadowTexture()); 
+		glBindTexture(GL_TEXTURE_2D, lightPair.first->GetShadowMap()); 
 
 		glBindVertexArray(m_lightGeometries.fsqVAO);
 		glEnableVertexAttribArray(0);
@@ -173,7 +174,7 @@ void LightingPass::ProcessGlobalLights(std::vector<std::pair<Light const *,glm::
 
 }
 
-void LightingPass::ProcessLocalLights(std::vector<std::pair<Light const *, glm::vec3>> const & localLights) const
+void LightingPass::ProcessLocalLights(std::vector<std::pair<LocalLight const *, glm::vec3>> const & localLights) const
 {
 	//glEnable(GL_DEPTH_TEST);
 
@@ -182,7 +183,7 @@ void LightingPass::ProcessLocalLights(std::vector<std::pair<Light const *, glm::
 	for (auto const & lightPair : localLights)
 	{
 		m_localLightProgram.SetUniform("uLight.position", lightPair.second);
-		m_localLightProgram.SetUniform("uLight.ambient", lightPair.first->GetAmbientIntensity());
+		m_localLightProgram.SetUniform("uLight.ambient", glm::vec3(0.1f, 0.1f, 0.1f));
 		m_localLightProgram.SetUniform("uLight.intensity", lightPair.first->GetIntensity());
 		m_localLightProgram.SetUniform("uLight.radius", lightPair.first->GetRadius());
 

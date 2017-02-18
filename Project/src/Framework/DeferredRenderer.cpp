@@ -5,7 +5,6 @@
 #include <Framework/Mesh.h>
 #include <Framework/Object.h>
 #include <Framework/Material.h>
-#include <Framework/Light.h>
 
 #include <imgui/imgui.h>
 #include <iostream>
@@ -53,8 +52,8 @@ bool DeferredRenderer::Initialize()
 
 void DeferredRenderer::RenderScene(Scene const & scene) const
 {
-	static std::vector<std::pair<Light const *, glm::vec3>> globalLights(100);
-	static std::vector<std::pair<Light const *, glm::vec3>> localLights(1000);
+	static std::vector<std::pair<GlobalLight const *, glm::vec3>> globalLights(100);
+	static std::vector<std::pair<LocalLight const *, glm::vec3>> localLights(1000);
 	static std::vector<Object const *> reflectiveObjects(1000);
 
 	globalLights.clear();

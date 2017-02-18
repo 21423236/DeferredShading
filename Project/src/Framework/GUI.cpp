@@ -3,9 +3,10 @@
 #include <Framework/Scene.h>
 #include <Framework/Material.h>
 #include <Framework/Node.h>
-#include <Framework/Light.h>
 #include <Framework/Object.h>
 #include <Framework/Mesh.h>
+#include <Framework/GlobalLight.h>
+#include <Framework/LocalLight.h>
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl.h>
 
@@ -59,15 +60,14 @@ void GUI::TraverseGraph(Node * node)
 				ImGui::TreePop();
 			}
 			break;
-		case Node::LIGHT_NODE:
+		case Node::GLOBAL_LIGHT_NODE:
 			if (ImGui::TreeNode(child, child->m_name.c_str()))
 			{
-				Light * light = dynamic_cast<Light*>(child);
+				GlobalLight * light = dynamic_cast<GlobalLight*>(child);
 				if (ImGui::TreeNode("Attributes"))
 				{
-					ImGui::Checkbox("IsGlobal", &light->m_isGlobal);
-					ImGui::InputFloat3("Ia", &light->m_ambient[0]);
 					ImGui::InputFloat3("Is", &light->m_intensity[0]);
+					ImGui::Image((void*)(intptr_t)light->m_shadowMap, ImVec2(150, 150), ImVec2(0, 1), ImVec2(1, 0));
 					ImGui::TreePop();
 				}
 				if (ImGui::TreeNode("Transform"))
@@ -82,6 +82,31 @@ void GUI::TraverseGraph(Node * node)
 				TraverseGraph(child);
 				ImGui::Unindent(16.0f);
 				
+				ImGui::TreePop();
+			}
+			break;
+		case Node::LOCAL_LIGHT_NODE:
+			if (ImGui::TreeNode(child, child->m_name.c_str()))
+			{
+				LocalLight * light = dynamic_cast<LocalLight*>(child);
+				if (ImGui::TreeNode("Attributes"))
+				{
+					ImGui::InputFloat3("Is", &light->m_intensity[0]);
+					ImGui::InputFloat("R", &light->m_radius);
+					ImGui::TreePop();
+				}
+				if (ImGui::TreeNode("Transform"))
+				{
+					NodeInformation(child);
+					ImGui::TreePop();
+				}
+
+				if (child->m_children.size())
+					ImGui::Text("Children");
+				ImGui::Indent(16.0f);
+				TraverseGraph(child);
+				ImGui::Unindent(16.0f);
+
 				ImGui::TreePop();
 			}
 			break;
