@@ -38,8 +38,9 @@ private:
 		unsigned int sphereIBO;
 		unsigned int sphereIndexCount;
 	} m_lightGeometries;
-
-	Program m_lightingProgram;
+	
+	Program m_globalLightProgram;
+	Program m_localLightProgram;
 
 };
 

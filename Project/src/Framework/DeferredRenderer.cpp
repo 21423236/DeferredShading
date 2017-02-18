@@ -159,7 +159,7 @@ void DeferredRenderer::BindDefaultFramebuffer() const
 void DeferredRenderer::BindShadowBuffer(unsigned int const & shadowTexture) const
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, m_shadowBuffer.framebuffer);
-	glActiveTexture(GL_TEXTURE6);
+	glActiveTexture(GL_TEXTURE5);
 	glBindTexture(GL_TEXTURE_2D, shadowTexture);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, shadowTexture, 0);
 

@@ -190,8 +190,10 @@
     <None Include="src\Shaders\Basic.vert" />
     <None Include="src\Shaders\DeferredPass.frag" />
     <None Include="src\Shaders\DeferredPass.vert" />
-    <None Include="src\Shaders\LightingPass.frag" />
-    <None Include="src\Shaders\LightingPass.vert" />
+    <None Include="src\Shaders\GlobalLightPass.frag" />
+    <None Include="src\Shaders\GlobalLightPass.vert" />
+    <None Include="src\Shaders\LocalLightPass.frag" />
+    <None Include="src\Shaders\LocalLightPass.vert" />
     <None Include="src\Shaders\ShadowPass.frag" />
     <None Include="src\Shaders\ShadowPass.vert" />
   </ItemGroup>

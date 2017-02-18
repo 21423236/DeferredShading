@@ -7,7 +7,7 @@ Light::Light(std::string const & name, glm::vec3 const & ambient, glm::vec3 cons
 	if (m_isGlobal)
 	{
 		glGenTextures(1, &m_shadowTexture);
-		glActiveTexture(GL_TEXTURE6);
+		glActiveTexture(GL_TEXTURE5);
 		glBindTexture(GL_TEXTURE_2D, m_shadowTexture);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, DEFAULT_SHADOW_WIDTH, DEFAULT_SHADOW_HEIGHT, 0, GL_RGBA, GL_FLOAT, 0);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
