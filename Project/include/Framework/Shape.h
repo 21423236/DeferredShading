@@ -9,13 +9,15 @@ public:
 	typedef enum {
 		POINTS = 1,
 		LINES = 2,
-		TRIANGLES = 3,
-		QUADS = 4
+		LINE_LOOP = 3,
+		TRIANGLES = 4,
+		QUADS = 5
 	} PrimitiveType;
 
 	//static methods
 	static Shape * GetFullScreenQuad();
 	static Shape * GetIcosahedron();
+	static Shape * GetWireCircle();
 	static void FreeMemory();
 	
 	~Shape();
@@ -29,6 +31,7 @@ private:
 
 	static void GenerateScreenQuad(Shape * & shape);
 	static void GenerateIcosahedron(Shape * & shape);
+	static void GenerateWireCircle(Shape * & shape);
 
 	struct Vertex {
 		float x, y, z;
@@ -42,6 +45,10 @@ private:
 		int a, b;
 	};
 
+	struct LineLoop {
+		int a;
+	};
+
 	struct Triangle {
 		int a, b, c;
 	};
@@ -52,6 +59,7 @@ private:
 
 	Shape(std::vector<struct Vertex> const & vertices, std::vector<struct Point> const & indices);
 	Shape(std::vector<struct Vertex> const & vertices, std::vector<struct Line> const & indices);
+	Shape(std::vector<struct Vertex> const & vertices, std::vector<struct LineLoop> const & indices);
 	Shape(std::vector<struct Vertex> const & vertices, std::vector<struct Triangle> const & indices);
 	Shape(std::vector<struct Vertex> const & vertices, std::vector<struct Quad> const & indices);
 

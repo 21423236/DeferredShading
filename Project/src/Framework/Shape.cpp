@@ -2,6 +2,9 @@
 
 #include <GL/glew.h>
 
+#define _USE_MATH_DEFINES
+#include <math.h>
+
 #pragma region "Constructor/Destructor"
 
 Shape::Shape(std::vector<struct Vertex> const & vertices, std::vector<struct Point> const & indices) : m_vao(0), m_vbo(0), m_ibo(0), m_indexCount(indices.size()), m_primitiveType(POINTS)
@@ -15,7 +18,7 @@ Shape::Shape(std::vector<struct Vertex> const & vertices, std::vector<struct Poi
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(struct Point)*indices.size(), &indices[0], GL_STATIC_DRAW);
 	glBindVertexArray(0);
 }
-Shape::Shape(std::vector<struct Vertex> const & vertices, std::vector<struct Line> const & indices) : m_vao(0), m_vbo(0), m_ibo(0), m_indexCount(indices.size()), m_primitiveType(LINES)
+Shape::Shape(std::vector<struct Vertex> const & vertices, std::vector<struct Line> const & indices) : m_vao(0), m_vbo(0), m_ibo(0), m_indexCount(indices.size()*2), m_primitiveType(LINES)
 {
 	CreateHandles();
 	glBindVertexArray(m_vao);
@@ -26,7 +29,18 @@ Shape::Shape(std::vector<struct Vertex> const & vertices, std::vector<struct Lin
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(struct Line)*indices.size(), &indices[0], GL_STATIC_DRAW);
 	glBindVertexArray(0);
 }
-Shape::Shape(std::vector<struct Vertex> const & vertices, std::vector<struct Triangle> const & indices) : m_vao(0), m_vbo(0), m_ibo(0), m_indexCount(indices.size()), m_primitiveType(TRIANGLES)
+Shape::Shape(std::vector<struct Vertex> const & vertices, std::vector<struct LineLoop> const & indices) : m_vao(0), m_vbo(0), m_ibo(0), m_indexCount(indices.size()), m_primitiveType(LINE_LOOP)
+{
+	CreateHandles();
+	glBindVertexArray(m_vao);
+	glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(struct Vertex)*vertices.size(), &vertices[0], GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(struct Vertex), 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(struct LineLoop) * indices.size(), &indices[0], GL_STATIC_DRAW);
+	glBindVertexArray(0);
+}
+Shape::Shape(std::vector<struct Vertex> const & vertices, std::vector<struct Triangle> const & indices) : m_vao(0), m_vbo(0), m_ibo(0), m_indexCount(indices.size()*3), m_primitiveType(TRIANGLES)
 {
 	CreateHandles();
 	glBindVertexArray(m_vao);
@@ -37,7 +51,7 @@ Shape::Shape(std::vector<struct Vertex> const & vertices, std::vector<struct Tri
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(struct Triangle)*indices.size(), &indices[0], GL_STATIC_DRAW);
 	glBindVertexArray(0);
 }
-Shape::Shape(std::vector<struct Vertex> const & vertices, std::vector<struct Quad> const & indices) : m_vao(0), m_vbo(0), m_ibo(0), m_indexCount(indices.size()), m_primitiveType(QUADS)
+Shape::Shape(std::vector<struct Vertex> const & vertices, std::vector<struct Quad> const & indices) : m_vao(0), m_vbo(0), m_ibo(0), m_indexCount(indices.size()*4), m_primitiveType(QUADS)
 {
 	CreateHandles();
 	glBindVertexArray(m_vao);
@@ -60,6 +74,7 @@ Shape::~Shape()
 
 static Shape * g_fsq = nullptr;
 static Shape * g_icosahedron = nullptr;
+static Shape * g_wireCircle = nullptr;
 
 Shape * Shape::GetFullScreenQuad()
 {
@@ -73,6 +88,13 @@ Shape * Shape::GetIcosahedron()
 	if (!g_icosahedron)
 		GenerateIcosahedron(g_icosahedron);
 	return g_icosahedron;
+}
+
+Shape * Shape::GetWireCircle()
+{
+	if (!g_wireCircle)
+		GenerateWireCircle(g_wireCircle);
+	return g_wireCircle;
 }
 
 void Shape::GenerateScreenQuad(Shape * & shape)
@@ -142,12 +164,31 @@ void Shape::GenerateIcosahedron(Shape * & shape)
 	shape = new Shape(std::vector<struct Vertex>(vertices, vertices + 12), std::vector<struct Triangle>(faces, faces + 20));
 }
 
+void Shape::GenerateWireCircle(Shape * & shape)
+{
+	float const slices = 25;
+
+	std::vector<struct Vertex> vertices;
+	std::vector<struct LineLoop> indices;
+	
+	for (float i = 0; i < slices; i+=1.0f)
+	{
+		float angle = (i / slices) * 2 * M_PI;
+		vertices.push_back({ cosf(angle), sin(angle), 0.0f });
+		indices.push_back({(int)i});
+	}
+
+	shape = new Shape(vertices, indices);
+}
+
 void Shape::FreeMemory()
 {
 	if (g_fsq)
 		delete g_fsq;
 	if (g_icosahedron)
 		delete g_icosahedron;
+	if (g_wireCircle)
+		delete g_wireCircle;
 }
 
 #pragma endregion

@@ -88,7 +88,7 @@ void LightingPass::ProcessGlobalLights(std::vector<std::pair<GlobalLight const *
 		glActiveTexture(GL_TEXTURE5);
 		glBindTexture(GL_TEXTURE_2D, lightPair.first->GetShadowMap()); 
 
-		glDrawElements(GL_TRIANGLES, Shape::GetFullScreenQuad()->GetIndexCount()*3, GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, Shape::GetFullScreenQuad()->GetIndexCount(), GL_UNSIGNED_INT, 0);
 	}
 
 	glDisableVertexAttribArray(0);
@@ -111,7 +111,7 @@ void LightingPass::ProcessLocalLights(std::vector<std::pair<LocalLight const *, 
 		m_localLightProgram.SetUniform("uLight.intensity", lightPair.first->GetIntensity());
 		m_localLightProgram.SetUniform("uLight.radius", lightPair.first->GetRadius());
 
-		glDrawElements(GL_TRIANGLES, Shape::GetIcosahedron()->GetIndexCount()*3, GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, Shape::GetIcosahedron()->GetIndexCount(), GL_UNSIGNED_INT, 0);
 	}
 	
 	glDisableVertexAttribArray(0);

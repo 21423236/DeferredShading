@@ -108,16 +108,17 @@ void DeferredRenderer::RenderScene(Scene const & scene) const
 	glDisable(GL_BLEND);
 	glEnable(GL_DEPTH_TEST);
 	glDepthMask(GL_TRUE);
-	glBindVertexArray(Shape::GetIcosahedron()->GetVAO());
+	glBindVertexArray(Shape::GetWireCircle()->GetVAO());
 	glEnableVertexAttribArray(0);
 	m_debugProgram.SetUniform("uProjectionMatrix", scene.GetProjectionMatrix());
 	m_debugProgram.SetUniform("uViewMatrix", scene.GetViewMatrix());
 	for (auto const & lightPair : localLights)
 	{
 		m_debugProgram.SetUniform("uPosition", lightPair.second);
-		m_debugProgram.SetUniform("uScale", lightPair.first->GetRadius() * (1.0f/1.6f));
-		for (int i = 0; i < Shape::GetIcosahedron()->GetIndexCount(); ++i)
-			glDrawElements(GL_LINE_LOOP, 3, GL_UNSIGNED_INT, (void const *)(sizeof(int)*i * 3)); 
+		m_debugProgram.SetUniform("uScale", lightPair.first->GetRadius());
+		/*for (int i = 0; i < Shape::GetIcosahedron()->GetIndexCount(); ++i)
+			glDrawElements(GL_LINE_LOOP, 3, GL_UNSIGNED_INT, (void const *)(sizeof(int)*i * 3));*/
+		glDrawElements(GL_LINE_LOOP, Shape::GetWireCircle()->GetIndexCount(), GL_UNSIGNED_INT, 0);
 	}
 
 	glDisableVertexAttribArray(0);
