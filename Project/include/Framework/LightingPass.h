@@ -7,6 +7,7 @@ class IRenderer;
 class Scene;
 class GlobalLight;
 class LocalLight;
+class Shape;
 
 class LightingPass
 {
@@ -28,17 +29,6 @@ protected:
 	IRenderer const * m_renderer;
 
 private:
-
-
-	struct LightGeometries
-	{
-		unsigned int fsqVAO;
-		unsigned int fsqVBO;
-		unsigned int sphereVAO;
-		unsigned int sphereVBO;
-		unsigned int sphereIBO;
-		unsigned int sphereIndexCount;
-	} m_lightGeometries;
 	
 	Program m_globalLightProgram;
 	Program m_localLightProgram;

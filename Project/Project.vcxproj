@@ -134,6 +134,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Framework\Shape.cpp" />
     <ClCompile Include="src\Framework\LocalLight.cpp" />
     <ClCompile Include="src\Framework\GlobalLight.cpp" />
     <ClCompile Include="src\Framework\ShadowPass.cpp" />
@@ -186,10 +187,13 @@
     <ClInclude Include="include\Framework\LightingPass.h" />
     <ClInclude Include="include\Framework\ShadowPass.h" />
     <ClInclude Include="include\Framework\LocalLight.h" />
+    <ClInclude Include="include\Framework\Shape.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\Shaders\Basic.frag" />
     <None Include="src\Shaders\Basic.vert" />
+    <None Include="src\Shaders\DebugPass.frag" />
+    <None Include="src\Shaders\DebugPass.vert" />
     <None Include="src\Shaders\DeferredPass.frag" />
     <None Include="src\Shaders\DeferredPass.vert" />
     <None Include="src\Shaders\GlobalLightPass.frag" />

@@ -64,6 +64,7 @@ private:
 		unsigned int drawBuffers;
 	} m_defaultFramebuffer;
 
+	Program m_debugProgram;
 	DeferredPass m_deferredPass;
 	ShadowPass m_shadowPass;
 	LightingPass m_lightingPass;

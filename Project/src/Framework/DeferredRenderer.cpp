@@ -5,6 +5,8 @@
 #include <Framework/Mesh.h>
 #include <Framework/Object.h>
 #include <Framework/Material.h>
+#include <Framework/Shape.h>
+#include <Framework/LocalLight.h>
 
 #include <imgui/imgui.h>
 #include <iostream>
@@ -40,6 +42,11 @@ bool DeferredRenderer::Initialize()
 	CreateGBuffer(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
 	CreateShadowBuffer(DEFAULT_SHADOW_WIDTH, DEFAULT_SHADOW_HEIGHT);
 	
+	m_debugProgram.CreateHandle();
+	m_debugProgram.AttachShader(Program::VERTEX_SHADER_TYPE, "src/Shaders/DebugPass.vert");
+	m_debugProgram.AttachShader(Program::FRAGMENT_SHADER_TYPE, "src/Shaders/DebugPass.frag");
+	m_debugProgram.Link();
+
 	//initialize passes
 	m_deferredPass.Initialize();
 	m_shadowPass.Initialize();
@@ -86,12 +93,35 @@ void DeferredRenderer::RenderScene(Scene const & scene) const
 //-------------------------------------------------------------------------------------------------------
 
 	//enable gamma correction
-	glEnable(GL_FRAMEBUFFER_SRGB);
 
 	m_lightingPass.Prepare(scene, glm::vec2(m_defaultFramebuffer.width, m_defaultFramebuffer.height));
+	glEnable(GL_FRAMEBUFFER_SRGB);
 	m_lightingPass.ProcessGlobalLights(globalLights);
 	m_lightingPass.ProcessLocalLights(localLights);
 	
+//-------------------------------------------------------------------------------------------------------
+//DEBUG PASS
+//-------------------------------------------------------------------------------------------------------
+	
+	static int test = 0;
+	m_debugProgram.Use();
+	glDisable(GL_BLEND);
+	glEnable(GL_DEPTH_TEST);
+	glDepthMask(GL_TRUE);
+	glBindVertexArray(Shape::GetIcosahedron()->GetVAO());
+	glEnableVertexAttribArray(0);
+	m_debugProgram.SetUniform("uProjectionMatrix", scene.GetProjectionMatrix());
+	m_debugProgram.SetUniform("uViewMatrix", scene.GetViewMatrix());
+	for (auto const & lightPair : localLights)
+	{
+		m_debugProgram.SetUniform("uPosition", lightPair.second);
+		m_debugProgram.SetUniform("uScale", lightPair.first->GetRadius() * (1.0f/1.6f));
+		for (int i = 0; i < Shape::GetIcosahedron()->GetIndexCount(); ++i)
+			glDrawElements(GL_LINE_LOOP, 3, GL_UNSIGNED_INT, (void const *)(sizeof(int)*i * 3)); 
+	}
+
+	glDisableVertexAttribArray(0);
+
 	//disable gamma correction
 	glDisable(GL_FRAMEBUFFER_SRGB);
 
@@ -170,6 +200,7 @@ void DeferredRenderer::BlitDepthBuffers() const
 {
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, m_gBuffer.framebuffer);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	glClear(GL_DEPTH_BUFFER_BIT);
 	glBlitFramebuffer(0, 0, m_gBuffer.width, m_gBuffer.height, 0, 0, m_defaultFramebuffer.width, m_defaultFramebuffer.height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 }
 
@@ -224,19 +255,9 @@ void DeferredRenderer::CreateGBuffer(int const & width, int const & height)
 
 	glGenRenderbuffers(1, &m_gBuffer.depthBuffer);
 	glBindRenderbuffer(GL_RENDERBUFFER, m_gBuffer.depthBuffer);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32, width, height);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_gBuffer.depthBuffer);
 	glBindRenderbuffer(GL_RENDERBUFFER, 0);
-
-	/*glGenTextures(1, &m_gBuffer.depthBuffer);
-	glActiveTexture(GL_TEXTURE5);
-	glBindTexture(GL_TEXTURE_2D, m_gBuffer.depthBuffer);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_gBuffer.depthBuffer, 0);*/
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -254,7 +275,6 @@ void DeferredRenderer::FreeGBuffer()
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glDeleteRenderbuffers(1, &m_gBuffer.depthBuffer);
-	//glDeleteTextures(1, &m_gBuffer.depthBuffer);
 	glDeleteTextures(4, m_gBuffer.colorBuffers);
 	glDeleteFramebuffers(1, &m_gBuffer.framebuffer);
 }

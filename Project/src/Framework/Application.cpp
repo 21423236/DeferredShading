@@ -2,6 +2,7 @@
 #include <Framework/Object.h>
 #include <Framework/GlobalLight.h>
 #include <Framework/LocalLight.h>
+#include <Framework/Shape.h>
 #include <GL/glew.h>
 #include <Windows.h>
 #include <iostream>
@@ -116,6 +117,7 @@ int Application::Run()
 	}
 
 	//finalize renderer and destroy window
+	Shape::FreeMemory();
 	m_input->Finalize();
 	m_gui->Finalize();
 	m_scene->FreeMemory();
@@ -160,7 +162,7 @@ void Application::Initialize()
 
 	m_scene->AddNode(planeObject);
 
-	Node * lights = new Node("local_lights", glm::vec3(0, 0, 0), glm::quat());
+	/*Node * lights = new Node("local_lights", glm::vec3(0, 0, 0), glm::quat());
 	for (int r = 0; r < 100; r++)
 	{
 		for (int c = 0; c < 100; c++)
@@ -171,7 +173,19 @@ void Application::Initialize()
 			lights->AddChild(localLight);
 		}
 	}
-	m_scene->AddNode(lights);
+	m_scene->AddNode(lights);*/
+
+	LocalLight * localLight1 = new LocalLight("local1", glm::vec3(4, 0, 0), 1.0f);
+	localLight1->SetTranslation(glm::vec3(-2.0f, 1.0f, 0));
+	m_scene->AddNode(localLight1);
+
+	LocalLight * localLight2 = new LocalLight("local2", glm::vec3(0, 4, 0), 1.0f);
+	localLight2->SetTranslation(glm::vec3(0.0f, 1.0f, 0.0f));
+	m_scene->AddNode(localLight2);
+
+	LocalLight * localLight3 = new LocalLight("local3", glm::vec3(0, 0, 4), 1.0f);
+	localLight3->SetTranslation(glm::vec3(2.0f, 1.0f, 0.0f));
+	m_scene->AddNode(localLight3);
 
 	GlobalLight * globalLight1 = new GlobalLight("global1", glm::vec3(1, 1, 1));
 	globalLight1->SetTranslation(glm::vec3(4, 10, -4));
