@@ -166,16 +166,16 @@ void Shape::GenerateIcosahedron(Shape * & shape)
 
 void Shape::GenerateWireCircle(Shape * & shape)
 {
-	float const slices = 25;
+	int const slices = 25;
 
 	std::vector<struct Vertex> vertices;
 	std::vector<struct LineLoop> indices;
 	
-	for (float i = 0; i < slices; i+=1.0f)
+	for (unsigned int i = 0; i < slices; ++i)
 	{
-		float angle = (i / slices) * 2 * M_PI;
+		float angle = (i / (float)slices) * 2 * M_PI;
 		vertices.push_back({ cosf(angle), sin(angle), 0.0f });
-		indices.push_back({(int)i});
+		indices.push_back({i});
 	}
 
 	shape = new Shape(vertices, indices);

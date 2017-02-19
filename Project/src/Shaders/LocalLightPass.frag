@@ -65,4 +65,8 @@ void main()
 		float attenuation = ((radiusSquared - distanceSquared)/uLight.radius);
 		fragColor =  vec4(attenuation * uLight.intensity * lambertian * BRDF(L, N, H, ks.rgb, kd, ks.w), 1);
 	}
+	else
+	{
+		fragColor = vec4(0, 0, 0, 1);
+	}
 }

@@ -95,37 +95,40 @@ void DeferredRenderer::RenderScene(Scene const & scene) const
 	//enable gamma correction
 
 	m_lightingPass.Prepare(scene, glm::vec2(m_defaultFramebuffer.width, m_defaultFramebuffer.height));
+
+	//enable gamme correction
 	glEnable(GL_FRAMEBUFFER_SRGB);
+
 	m_lightingPass.ProcessGlobalLights(globalLights);
 	m_lightingPass.ProcessLocalLights(localLights);
+	
+	//disable gamma correction
+	glDisable(GL_FRAMEBUFFER_SRGB);
 	
 //-------------------------------------------------------------------------------------------------------
 //DEBUG PASS
 //-------------------------------------------------------------------------------------------------------
 	
-	static int test = 0;
-	m_debugProgram.Use();
 	glDisable(GL_BLEND);
 	glEnable(GL_DEPTH_TEST);
-	glDepthMask(GL_TRUE);
-	glBindVertexArray(Shape::GetWireCircle()->GetVAO());
-	glEnableVertexAttribArray(0);
+	
+	m_debugProgram.Use();
+	
 	m_debugProgram.SetUniform("uProjectionMatrix", scene.GetProjectionMatrix());
 	m_debugProgram.SetUniform("uViewMatrix", scene.GetViewMatrix());
+
+	glBindVertexArray(Shape::GetWireCircle()->GetVAO());
+	glEnableVertexAttribArray(0);
+	
 	for (auto const & lightPair : localLights)
 	{
 		m_debugProgram.SetUniform("uPosition", lightPair.second);
 		m_debugProgram.SetUniform("uScale", lightPair.first->GetRadius());
-		/*for (int i = 0; i < Shape::GetIcosahedron()->GetIndexCount(); ++i)
-			glDrawElements(GL_LINE_LOOP, 3, GL_UNSIGNED_INT, (void const *)(sizeof(int)*i * 3));*/
 		glDrawElements(GL_LINE_LOOP, Shape::GetWireCircle()->GetIndexCount(), GL_UNSIGNED_INT, 0);
 	}
 
 	glDisableVertexAttribArray(0);
-
-	//disable gamma correction
-	glDisable(GL_FRAMEBUFFER_SRGB);
-
+	glBindVertexArray(0);
 }
 
 void DeferredRenderer::Resize(int const & width, int const & height)

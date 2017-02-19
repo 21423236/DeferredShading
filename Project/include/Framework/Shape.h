@@ -38,23 +38,23 @@ private:
 	};
 
 	struct Point {
-		int a;
+		unsigned int a;
 	};
 
 	struct Line {
-		int a, b;
+		unsigned int a, b;
 	};
 
 	struct LineLoop {
-		int a;
+		unsigned int a;
 	};
 
 	struct Triangle {
-		int a, b, c;
+		unsigned int a, b, c;
 	};
 
 	struct Quad {
-		int a, b, c, d;
+		unsigned int a, b, c, d;
 	};
 
 	Shape(std::vector<struct Vertex> const & vertices, std::vector<struct Point> const & indices);
