@@ -1,4 +1,17 @@
-#version 440
+#version 440 core
+
+struct SceneInformation 
+{
+	mat4 ProjectionMatrix;
+	mat4 ViewMatrix;
+	vec2 WindowSize;
+	vec3 SceneSize;
+};
+
+layout(std140, binding = 0) uniform SceneBlock 
+{
+	SceneInformation uScene;
+};
 
 uniform mat4 uProjectionMatrix;
 uniform mat4 uViewMatrix;
@@ -24,5 +37,5 @@ void main()
 	outData.position = worldPosition.xyz;
 	outData.normal = worldNormal.xyz;
 	outData.uv = in_uv;
-	gl_Position = uProjectionMatrix * uViewMatrix * worldPosition;
+	gl_Position = uScene.ProjectionMatrix * uScene.ViewMatrix * worldPosition;
 }

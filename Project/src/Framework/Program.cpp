@@ -93,6 +93,11 @@ void Program::CreateHandle()
 	m_handle = glCreateProgram();
 }
 
+unsigned int const & Program::GetHandle() const
+{
+	return m_handle;
+}
+
 void Program::DestroyHandle()
 {
 	glDeleteProgram(m_handle);

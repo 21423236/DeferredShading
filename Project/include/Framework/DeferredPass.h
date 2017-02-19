@@ -24,6 +24,9 @@ public:
 	void ProcessNode(Node const * const & node, glm::mat4 const & modelMatrix) const;
 	void Finalize();
 
+	//getters
+	Program const & GetProgram() const;
+
 private:
 
 	//private state

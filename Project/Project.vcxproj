@@ -159,6 +159,7 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Framework\Window.cpp" />
     <ClCompile Include="src\Framework\Texture.cpp" />
+    <ClCompile Include="src\Framework\UniformBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Framework\GlobalLight.h" />
@@ -190,6 +191,7 @@
     <ClInclude Include="include\Framework\LocalLight.h" />
     <ClInclude Include="include\Framework\Shape.h" />
     <ClInclude Include="include\Framework\Texture.h" />
+    <ClInclude Include="include\Framework\UniformBuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\Shaders\Basic.frag" />

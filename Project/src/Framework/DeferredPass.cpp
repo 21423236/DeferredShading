@@ -104,3 +104,12 @@ void DeferredPass::Finalize()
 }
 
 #pragma endregion
+
+#pragma region "Getters"
+
+Program const & DeferredPass::GetProgram() const
+{
+	return m_deferredProgram;
+}
+
+#pragma endregion

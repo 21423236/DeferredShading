@@ -15,7 +15,7 @@
 
 #pragma region "Constructors/Destructor"
 
-DeferredRenderer::DeferredRenderer() : m_gBuffer({ 0, Texture(1, Texture::POSITIONS), Texture(2, Texture::NORMALS), Texture(3), Texture(4), 0, 0, 0, {0, 0, 0, 0} }), m_shadowBuffer({ 0, 0, 0, 0, 0 }), m_defaultFramebuffer({ 0, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, GL_BACK_LEFT }), m_deferredPass(this), m_shadowPass(this), m_lightingPass(this)
+DeferredRenderer::DeferredRenderer() : m_gBuffer({ 0, Texture(1, Texture::POSITIONS), Texture(2, Texture::NORMALS), Texture(3), Texture(4), 0, 0, 0, {0, 0, 0, 0} }), m_shadowBuffer({ 0, 0, 0, 0, 0 }), m_defaultFramebuffer({ 0, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, GL_BACK_LEFT }), m_sceneUniformBuffer(0), m_debugProgram(), m_deferredPass(this), m_shadowPass(this), m_lightingPass(this)
 {
 	
 }
@@ -39,6 +39,13 @@ bool DeferredRenderer::Initialize()
 	m_debugProgram.AttachShader(Program::FRAGMENT_SHADER_TYPE, "src/Shaders/DebugPass.frag");
 	m_debugProgram.Link();
 
+	//initialize uniform buffer
+	m_sceneUniformBuffer.AddUniform("uScene.ProjectionMatrix", GL_FLOAT_MAT4);
+	m_sceneUniformBuffer.AddUniform("uScene.ViewMatrix", GL_FLOAT_MAT4);
+	m_sceneUniformBuffer.AddUniform("uScene.WindowSize", GL_FLOAT_VEC2);
+	m_sceneUniformBuffer.AddUniform("uScene.SceneSize", GL_FLOAT_VEC2);
+	m_sceneUniformBuffer.Initialize();
+
 	//initialize passes
 	m_deferredPass.Initialize();
 	m_shadowPass.Initialize();
@@ -58,6 +65,10 @@ void DeferredRenderer::RenderScene(Scene const & scene) const
 	globalLights.clear();
 	localLights.clear();
 	reflectiveObjects.clear();
+
+	m_sceneUniformBuffer.SetUniform("uScene.ProjectionMatrix", scene.GetProjectionMatrix());
+	m_sceneUniformBuffer.SetUniform("uScene.ViewMatrix", scene.GetViewMatrix());
+	m_sceneUniformBuffer.UploadBuffer();
 
 //-------------------------------------------------------------------------------------------------------
 //DEFERRED PASS
@@ -217,36 +228,6 @@ void DeferredRenderer::CreateGBuffer(int const & width, int const & height)
 {
 	glGenFramebuffers(1, &m_gBuffer.framebuffer);
 	glBindFramebuffer(GL_FRAMEBUFFER, m_gBuffer.framebuffer);
-
-	/*glActiveTexture(GL_TEXTURE1);
-	glGenTextures(4, m_gBuffer.colorBuffers);
-
-	glBindTexture(GL_TEXTURE_2D, m_gBuffer.colorBuffers[0]);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, 0);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_gBuffer.colorBuffers[0], 0);
-
-	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, m_gBuffer.colorBuffers[1]);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, 0);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, m_gBuffer.colorBuffers[1], 0);
-
-	glActiveTexture(GL_TEXTURE3);
-	glBindTexture(GL_TEXTURE_2D, m_gBuffer.colorBuffers[2]);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, 0);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, m_gBuffer.colorBuffers[2], 0);
-
-	glActiveTexture(GL_TEXTURE4);
-	glBindTexture(GL_TEXTURE_2D, m_gBuffer.colorBuffers[3]);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, 0);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, m_gBuffer.colorBuffers[3], 0);*/
 
 	m_gBuffer.colorBuffer0.Initialize(width, height, GL_RGBA32F, GL_RGBA, GL_FLOAT, 0);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_gBuffer.colorBuffer0.m_handle, 0);

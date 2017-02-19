@@ -29,6 +29,7 @@ public:
 	void SetUniform(char const * name, bool const & value) const;
 
 	void CreateHandle();
+	unsigned int const & GetHandle() const;
 	void DestroyHandle();
 	void AttachShader(ShaderType const & type, char const * path);
 	void Link();

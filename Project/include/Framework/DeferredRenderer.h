@@ -6,6 +6,7 @@
 #include <Framework/LightingPass.h>
 #include <Framework/ShadowPass.h>
 #include <Framework/Texture.h>
+#include <Framework/UniformBuffer.h>
 
 #include <vector>
 
@@ -69,7 +70,10 @@ private:
 		unsigned int drawBuffers;
 	} m_defaultFramebuffer;
 
+	mutable UniformBuffer m_sceneUniformBuffer;
+
 	Program m_debugProgram;
+
 	DeferredPass m_deferredPass;
 	ShadowPass m_shadowPass;
 	LightingPass m_lightingPass;
