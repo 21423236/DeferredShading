@@ -125,7 +125,7 @@ void ImGui_Impl_NewFrame(int width, int height)
 	display_w = w = width;
 	display_h = h = height;
 	io.DisplaySize = ImVec2((float)w, (float)h);
-	io.DisplayFramebufferScale = ImVec2(1, 1);//ImVec2(w > 0 ? ((float)display_w / w) : 0, h > 0 ? ((float)display_h / h) : 0);
+	io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);//ImVec2(w > 0 ? ((float)display_w / w) : 0, h > 0 ? ((float)display_h / h) : 0);
 
 											  // Setup time step
 											  //double current_time = glfwGetTime();

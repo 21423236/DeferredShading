@@ -158,6 +158,7 @@
     <ClCompile Include="src\imgui\imgui_draw.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Framework\Window.cpp" />
+    <ClCompile Include="src\Framework\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Framework\GlobalLight.h" />
@@ -188,6 +189,7 @@
     <ClInclude Include="include\Framework\ShadowPass.h" />
     <ClInclude Include="include\Framework\LocalLight.h" />
     <ClInclude Include="include\Framework\Shape.h" />
+    <ClInclude Include="include\Framework\Texture.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\Shaders\Basic.frag" />

@@ -4,12 +4,12 @@
 
 #pragma region "Constructors/Destructor"
 
-GlobalLight::GlobalLight(std::string const & name, glm::vec3 const & intensity, glm::vec3 const & translation, glm::quat const & orientation) : Node(name, translation, orientation), m_intensity(intensity)
+GlobalLight::GlobalLight(std::string const & name, glm::vec3 const & intensity, glm::vec3 const & translation, glm::quat const & orientation) : Node(name, translation, orientation), m_intensity(intensity), m_shadowMatrix(1.0f), m_shadowMap(5, Texture::DEPTH)
 {
 	CreateHandle();
 }
 
-GlobalLight::GlobalLight(std::string const & name, glm::vec3 const & intensity) : Node(name), m_intensity(intensity)
+GlobalLight::GlobalLight(std::string const & name, glm::vec3 const & intensity) : Node(name), m_intensity(intensity), m_shadowMatrix(1.0f), m_shadowMap(5, Texture::DEPTH)
 {
 	CreateHandle();
 }
@@ -33,7 +33,7 @@ glm::mat4 const & GlobalLight::GetShadowMatrix() const
 	return m_shadowMatrix;
 }
 
-unsigned int const & GlobalLight::GetShadowMap() const
+Texture const & GlobalLight::GetShadowMap() const
 {
 	return m_shadowMap;
 }
@@ -58,18 +58,19 @@ void GlobalLight::SetIntensity(glm::vec3 const & intensity)
 
 void GlobalLight::CreateHandle()
 {
-	glGenTextures(1, &m_shadowMap);
+	/*glGenTextures(1, &m_shadowMap);
 	glActiveTexture(GL_TEXTURE5);
 	glBindTexture(GL_TEXTURE_2D, m_shadowMap);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, DEFAULT_SHADOW_WIDTH, DEFAULT_SHADOW_HEIGHT, 0, GL_RGBA, GL_FLOAT, 0);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);*/
+	m_shadowMap.Initialize(DEFAULT_SHADOW_WIDTH, DEFAULT_SHADOW_HEIGHT, GL_RGBA32F, GL_RGBA, GL_FLOAT, 0);
 }
 
 void GlobalLight::DestroyHandle()
 {
-	glDeleteTextures(1, &m_shadowMap);
+	m_shadowMap.Free();
 }
 
 #pragma endregion

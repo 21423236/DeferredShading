@@ -5,6 +5,7 @@
 #include <Framework/DeferredPass.h>
 #include <Framework/LightingPass.h>
 #include <Framework/ShadowPass.h>
+#include <Framework/Texture.h>
 
 #include <vector>
 
@@ -27,7 +28,7 @@ public:
 
 	void BindGBuffer() const;
 	void BindDefaultFramebuffer() const;
-	void BindShadowBuffer(unsigned int const & shadowTexture) const;
+	void BindShadowBuffer(Texture const & shadowTexture) const;
 	void BlitDepthBuffers() const;
 
 private:
@@ -40,7 +41,11 @@ private:
 	struct gBuffer
 	{
 		unsigned int framebuffer;
-		unsigned int colorBuffers[4];
+		//unsigned int colorBuffers[4];
+		Texture colorBuffer0;
+		Texture colorBuffer1;
+		Texture colorBuffer2;
+		Texture colorBuffer3;
 		unsigned int depthBuffer;
 		unsigned int width;
 		unsigned int height;

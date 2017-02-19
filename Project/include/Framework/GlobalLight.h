@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Framework/Node.h>
+#include <Framework/Texture.h>
 
 class GlobalLight : public Node
 {
@@ -17,7 +18,7 @@ public:
 	//getters
 	glm::vec3 const &		GetIntensity() const;
 	glm::mat4 const &		GetShadowMatrix() const;
-	unsigned int const &	GetShadowMap() const;
+	Texture const &			GetShadowMap() const;
 	NodeType				GetNodeType() const;
 
 	//setters
@@ -31,6 +32,6 @@ private:
 
 	glm::vec3			m_intensity;
 	mutable glm::mat4	m_shadowMatrix;
-	unsigned int		m_shadowMap;
+	Texture				m_shadowMap;
 };
 

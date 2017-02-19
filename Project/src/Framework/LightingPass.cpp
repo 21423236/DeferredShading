@@ -85,8 +85,9 @@ void LightingPass::ProcessGlobalLights(std::vector<std::pair<GlobalLight const *
 		m_globalLightProgram.SetUniform("uLight.intensity", lightPair.first->GetIntensity());
 
 		m_globalLightProgram.SetUniform("uShadow.matrix", lightPair.first->GetShadowMatrix());
-		glActiveTexture(GL_TEXTURE5);
-		glBindTexture(GL_TEXTURE_2D, lightPair.first->GetShadowMap()); 
+		//glActiveTexture(GL_TEXTURE5);
+		//glBindTexture(GL_TEXTURE_2D, lightPair.first->GetShadowMap()); 
+		lightPair.first->GetShadowMap().Bind();
 
 		glDrawElements(GL_TRIANGLES, Shape::GetFullScreenQuad()->GetIndexCount(), GL_UNSIGNED_INT, 0);
 	}

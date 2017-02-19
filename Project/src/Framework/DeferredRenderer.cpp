@@ -15,17 +15,9 @@
 
 #pragma region "Constructors/Destructor"
 
-DeferredRenderer::DeferredRenderer() : m_defaultFramebuffer({ 0, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, GL_BACK_LEFT }), m_deferredPass(this), m_shadowPass(this), m_lightingPass(this)
+DeferredRenderer::DeferredRenderer() : m_gBuffer({ 0, Texture(1, Texture::POSITIONS), Texture(2, Texture::NORMALS), Texture(3), Texture(4), 0, 0, 0, {0, 0, 0, 0} }), m_shadowBuffer({ 0, 0, 0, 0, 0 }), m_defaultFramebuffer({ 0, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, GL_BACK_LEFT }), m_deferredPass(this), m_shadowPass(this), m_lightingPass(this)
 {
-	m_gBuffer.framebuffer = 0;
-	memset(m_gBuffer.colorBuffers, 0, sizeof(int) * 4);
-	m_gBuffer.depthBuffer = 0;
-	m_gBuffer.width = DEFAULT_WINDOW_WIDTH;
-	m_gBuffer.height = DEFAULT_WINDOW_HEIGHT;
-	m_gBuffer.drawBuffers[0] = GL_COLOR_ATTACHMENT0;
-	m_gBuffer.drawBuffers[1] = GL_COLOR_ATTACHMENT1;
-	m_gBuffer.drawBuffers[2] = GL_COLOR_ATTACHMENT2;
-	m_gBuffer.drawBuffers[3] = GL_COLOR_ATTACHMENT3;
+	
 }
 
 DeferredRenderer::~DeferredRenderer()
@@ -148,25 +140,25 @@ void DeferredRenderer::GenerateGUI()
 
 	if (ImGui::TreeNode("Positions"))
 	{
-		ImGui::Image((void *)(intptr_t)m_gBuffer.colorBuffers[0], ImVec2(300, 300), ImVec2(0, 1), ImVec2(1, 0));
+		ImGui::Image((void *)(intptr_t)m_gBuffer.colorBuffer0.m_handle, ImVec2(300, 300), ImVec2(0, 1), ImVec2(1, 0));
 		ImGui::TreePop();
 	}
 
 	if (ImGui::TreeNode("Normals"))
 	{
-		ImGui::Image((void*)(intptr_t)m_gBuffer.colorBuffers[1], ImVec2(300, 300), ImVec2(0, 1), ImVec2(1, 0));
+		ImGui::Image((void*)(intptr_t)m_gBuffer.colorBuffer1.m_handle, ImVec2(300, 300), ImVec2(0, 1), ImVec2(1, 0));
 		ImGui::TreePop();
 	}
 
 	if (ImGui::TreeNode("Kd"))
 	{
-		ImGui::Image((void*)(intptr_t)m_gBuffer.colorBuffers[2], ImVec2(300, 300), ImVec2(0, 1), ImVec2(1, 0));
+		ImGui::Image((void*)(intptr_t)m_gBuffer.colorBuffer2.m_handle, ImVec2(300, 300), ImVec2(0, 1), ImVec2(1, 0));
 		ImGui::TreePop();
 	}
 
 	if (ImGui::TreeNode("Ks/alpha"))
 	{
-		ImGui::Image((void*)(intptr_t)m_gBuffer.colorBuffers[3], ImVec2(300, 300), ImVec2(0, 1), ImVec2(1, 0));
+		ImGui::Image((void*)(intptr_t)m_gBuffer.colorBuffer3.m_handle, ImVec2(300, 300), ImVec2(0, 1), ImVec2(1, 0));
 		ImGui::TreePop();
 	}
 
@@ -189,12 +181,13 @@ void DeferredRenderer::BindDefaultFramebuffer() const
 	glViewport(0, 0, m_defaultFramebuffer.width, m_defaultFramebuffer.height);
 }
 
-void DeferredRenderer::BindShadowBuffer(unsigned int const & shadowTexture) const
+void DeferredRenderer::BindShadowBuffer(Texture const & shadowTexture) const
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, m_shadowBuffer.framebuffer);
-	glActiveTexture(GL_TEXTURE5);
-	glBindTexture(GL_TEXTURE_2D, shadowTexture);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, shadowTexture, 0);
+	/*glActiveTexture(GL_TEXTURE5);
+	glBindTexture(GL_TEXTURE_2D, shadowTexture);*/
+	shadowTexture.Bind();
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, shadowTexture.m_handle, 0);
 
 	glDrawBuffers(1, &m_shadowBuffer.drawBuffers);
 	glViewport(0, 0, m_shadowBuffer.width, m_shadowBuffer.height);
@@ -227,7 +220,7 @@ void DeferredRenderer::CreateGBuffer(int const & width, int const & height)
 	glGenFramebuffers(1, &m_gBuffer.framebuffer);
 	glBindFramebuffer(GL_FRAMEBUFFER, m_gBuffer.framebuffer);
 
-	glActiveTexture(GL_TEXTURE1);
+	/*glActiveTexture(GL_TEXTURE1);
 	glGenTextures(4, m_gBuffer.colorBuffers);
 
 	glBindTexture(GL_TEXTURE_2D, m_gBuffer.colorBuffers[0]);
@@ -255,13 +248,27 @@ void DeferredRenderer::CreateGBuffer(int const & width, int const & height)
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, 0);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, m_gBuffer.colorBuffers[3], 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, m_gBuffer.colorBuffers[3], 0);*/
+
+	m_gBuffer.colorBuffer0.Initialize(width, height, GL_RGBA32F, GL_RGBA, GL_FLOAT, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_gBuffer.colorBuffer0.m_handle, 0);
+	m_gBuffer.colorBuffer1.Initialize(width, height, GL_RGBA32F, GL_RGBA, GL_FLOAT, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, m_gBuffer.colorBuffer1.m_handle, 0);
+	m_gBuffer.colorBuffer2.Initialize(width, height, GL_RGBA32F, GL_RGBA, GL_FLOAT, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, m_gBuffer.colorBuffer2.m_handle, 0);
+	m_gBuffer.colorBuffer3.Initialize(width, height, GL_RGBA32F, GL_RGBA, GL_FLOAT, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, m_gBuffer.colorBuffer3.m_handle, 0);
 
 	glGenRenderbuffers(1, &m_gBuffer.depthBuffer);
 	glBindRenderbuffer(GL_RENDERBUFFER, m_gBuffer.depthBuffer);
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32, width, height);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_gBuffer.depthBuffer);
 	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	{
+		int blah = 45;
+	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -279,7 +286,10 @@ void DeferredRenderer::FreeGBuffer()
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glDeleteRenderbuffers(1, &m_gBuffer.depthBuffer);
-	glDeleteTextures(4, m_gBuffer.colorBuffers);
+	m_gBuffer.colorBuffer0.Free();
+	m_gBuffer.colorBuffer1.Free();
+	m_gBuffer.colorBuffer2.Free();
+	m_gBuffer.colorBuffer3.Free();
 	glDeleteFramebuffers(1, &m_gBuffer.framebuffer);
 }
 
