@@ -9,10 +9,10 @@ public:
 	
 	typedef enum DebugCorrection
 	{
-		NONE,
-		POSITIONS,
-		NORMALS,
-		DEPTH
+		NONE = 0,
+		POSITIONS = 1,
+		NORMALS = 2,
+		DEPTH = 3
 	} DebugCorrectionType;
 
 	//constructors/destructor
@@ -23,6 +23,10 @@ public:
 	void Initialize(unsigned int width, unsigned int height, unsigned int internalFormat, unsigned int format, unsigned int type, void * pixels);
 	void Bind() const;
 	void Free();
+
+	//getters
+	unsigned int const & GetHandle() const;
+	DebugCorrectionType const & GetCorrectionType() const;
 
 private:
 

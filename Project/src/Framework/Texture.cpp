@@ -25,7 +25,7 @@ void Texture::Initialize(unsigned int width, unsigned int height, unsigned int i
 	glGenTextures(1, &m_handle);
 	glActiveTexture(GL_TEXTURE0 + m_unit);
 	glBindTexture(GL_TEXTURE_2D, m_handle);
-	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, type, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, type, pixels);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }
@@ -40,6 +40,20 @@ void Texture::Free()
 {
 	glDeleteTextures(1, &m_handle);
 	m_handle = 0;
+}
+
+#pragma endregion
+
+#pragma region "Getters"
+
+unsigned int const & Texture::GetHandle() const
+{
+	return m_handle;
+}
+
+Texture::DebugCorrectionType const & Texture::GetCorrectionType() const
+{
+	return m_correction;
 }
 
 #pragma endregion

@@ -67,7 +67,7 @@ void GUI::TraverseGraph(Node * node)
 				if (ImGui::TreeNode("Attributes"))
 				{
 					ImGui::InputFloat3("Is", &light->m_intensity[0]);
-					ImGui::Image((void*)(intptr_t)light->m_shadowMap.m_handle, ImVec2(150, 150), ImVec2(0, 1), ImVec2(1, 0));
+					ImGui::Image((void*)&light->m_shadowMap, ImVec2(150, 150), ImVec2(0, 1), ImVec2(1, 0));
 					ImGui::TreePop();
 				}
 				if (ImGui::TreeNode("Transform"))

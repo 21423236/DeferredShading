@@ -140,25 +140,25 @@ void DeferredRenderer::GenerateGUI()
 
 	if (ImGui::TreeNode("Positions"))
 	{
-		ImGui::Image((void *)(intptr_t)m_gBuffer.colorBuffer0.m_handle, ImVec2(300, 300), ImVec2(0, 1), ImVec2(1, 0));
+		ImGui::Image((void *)&m_gBuffer.colorBuffer0, ImVec2(300, 300), ImVec2(0, 1), ImVec2(1, 0));
 		ImGui::TreePop();
 	}
 
 	if (ImGui::TreeNode("Normals"))
 	{
-		ImGui::Image((void*)(intptr_t)m_gBuffer.colorBuffer1.m_handle, ImVec2(300, 300), ImVec2(0, 1), ImVec2(1, 0));
+		ImGui::Image((void*)&m_gBuffer.colorBuffer1, ImVec2(300, 300), ImVec2(0, 1), ImVec2(1, 0));
 		ImGui::TreePop();
 	}
 
 	if (ImGui::TreeNode("Kd"))
 	{
-		ImGui::Image((void*)(intptr_t)m_gBuffer.colorBuffer2.m_handle, ImVec2(300, 300), ImVec2(0, 1), ImVec2(1, 0));
+		ImGui::Image((void*)&m_gBuffer.colorBuffer2, ImVec2(300, 300), ImVec2(0, 1), ImVec2(1, 0));
 		ImGui::TreePop();
 	}
 
 	if (ImGui::TreeNode("Ks/alpha"))
 	{
-		ImGui::Image((void*)(intptr_t)m_gBuffer.colorBuffer3.m_handle, ImVec2(300, 300), ImVec2(0, 1), ImVec2(1, 0));
+		ImGui::Image((void*)&m_gBuffer.colorBuffer3, ImVec2(300, 300), ImVec2(0, 1), ImVec2(1, 0));
 		ImGui::TreePop();
 	}
 
@@ -184,8 +184,6 @@ void DeferredRenderer::BindDefaultFramebuffer() const
 void DeferredRenderer::BindShadowBuffer(Texture const & shadowTexture) const
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, m_shadowBuffer.framebuffer);
-	/*glActiveTexture(GL_TEXTURE5);
-	glBindTexture(GL_TEXTURE_2D, shadowTexture);*/
 	shadowTexture.Bind();
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, shadowTexture.m_handle, 0);
 

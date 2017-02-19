@@ -2,10 +2,11 @@
 #include <imgui/imgui.h>
 #include <GL/glew.h>
 #include <Windows.h>
+#include <Framework/Texture.h>
 
-static GLuint       g_FontTexture = 0;
+static Texture      g_FontTexture(0, Texture::NONE);
 static int          g_ShaderHandle = 0, g_VertHandle = 0, g_FragHandle = 0;
-static int          g_AttribLocationTex = 0, g_AttribLocationProjMtx = 0;
+static int          g_AttribLocationTex = 0, g_AttribLocationProjMtx = 0, g_AttribLocationCorrection = 0;
 static int          g_AttribLocationPosition = 0, g_AttribLocationUV = 0, g_AttribLocationColor = 0;
 static unsigned int g_VboHandle = 0, g_VaoHandle = 0, g_ElementsHandle = 0;
 
@@ -20,14 +21,10 @@ bool ImGui_Impl_CreateFontsTexture()
 															  // Upload texture to graphics system
 	GLint last_texture;
 	glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
-	glGenTextures(1, &g_FontTexture);
-	glBindTexture(GL_TEXTURE_2D, g_FontTexture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+	g_FontTexture.Initialize(width, height, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
 	// Store our identifier
-	io.Fonts->TexID = (void *)(intptr_t)g_FontTexture;
+	io.Fonts->TexID = (void *)&g_FontTexture;
 
 	// Restore state
 	glBindTexture(GL_TEXTURE_2D, last_texture);
@@ -61,12 +58,29 @@ bool ImGui_Impl_CreateDeviceObjects()
 	const GLchar* fragment_shader =
 		"#version 330\n"
 		"uniform sampler2D Texture;\n"
+		"uniform int Correction;\n"
 		"in vec2 Frag_UV;\n"
 		"in vec4 Frag_Color;\n"
 		"out vec4 Out_Color;\n"
 		"void main()\n"
 		"{\n"
-		"	Out_Color = Frag_Color * texture( Texture, Frag_UV.st);\n"
+		"	vec4 texel = texture(Texture, Frag_UV.st);\n"
+		"	if(Correction == 1)\n"
+		"	{\n"
+		"		texel.xyz *= 0.125f;\n"
+		"		texel.xyz *= 0.5f;\n"
+		"		texel.xyz += 0.5f;\n"
+		"	}\n"
+		"	else if(Correction == 2)\n"
+		"	{\n"
+		"		texel.xyz *= 0.5f;\n"
+		"		texel.xyz += 0.5f;\n"
+		"	}\n"
+		"	else if(Correction == 3)\n"
+		"	{\n"
+		"		texel.xyz /= 14.0f;\n"
+		"	}\n"
+		"	Out_Color = Frag_Color * texel;\n"
 		"}\n";
 
 	g_ShaderHandle = glCreateProgram();
@@ -82,6 +96,7 @@ bool ImGui_Impl_CreateDeviceObjects()
 
 	g_AttribLocationTex = glGetUniformLocation(g_ShaderHandle, "Texture");
 	g_AttribLocationProjMtx = glGetUniformLocation(g_ShaderHandle, "ProjMtx");
+	g_AttribLocationCorrection = glGetUniformLocation(g_ShaderHandle, "Correction");
 	g_AttribLocationPosition = glGetAttribLocation(g_ShaderHandle, "Position");
 	g_AttribLocationUV = glGetAttribLocation(g_ShaderHandle, "UV");
 	g_AttribLocationColor = glGetAttribLocation(g_ShaderHandle, "Color");
@@ -114,7 +129,7 @@ bool ImGui_Impl_CreateDeviceObjects()
 
 void ImGui_Impl_NewFrame(int width, int height)
 {
-	if (!g_FontTexture)
+	if (!g_VaoHandle)
 		ImGui_Impl_CreateDeviceObjects();
 
 	ImGuiIO& io = ImGui::GetIO();
@@ -229,7 +244,8 @@ void ImGui_Impl_RenderDrawList(ImDrawData * draw_data)
 			}
 			else
 			{
-				glBindTexture(GL_TEXTURE_2D, (GLuint)(intptr_t)pcmd->TextureId);
+				glBindTexture(GL_TEXTURE_2D, ((Texture*)pcmd->TextureId)->GetHandle());
+				glUniform1i(g_AttribLocationCorrection, ((Texture*)pcmd->TextureId)->GetCorrectionType());
 				glScissor((int)pcmd->ClipRect.x, (int)(fb_height - pcmd->ClipRect.w), (int)(pcmd->ClipRect.z - pcmd->ClipRect.x), (int)(pcmd->ClipRect.w - pcmd->ClipRect.y));
 				glDrawElements(GL_TRIANGLES, (GLsizei)pcmd->ElemCount, sizeof(ImDrawIdx) == 2 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, idx_buffer_offset);
 			}
@@ -272,12 +288,8 @@ void    ImGui_Impl_InvalidateDeviceObjects()
 	if (g_ShaderHandle) glDeleteProgram(g_ShaderHandle);
 	g_ShaderHandle = 0;
 
-	if (g_FontTexture)
-	{
-		glDeleteTextures(1, &g_FontTexture);
-		ImGui::GetIO().Fonts->TexID = 0;
-		g_FontTexture = 0;
-	}
+	g_FontTexture.Free();
+	ImGui::GetIO().Fonts->TexID = 0;
 }
 
 void ImGui_Impl_Shutdown()
