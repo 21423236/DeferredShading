@@ -41,7 +41,7 @@ bool ImGui_Impl_CreateDeviceObjects()
 	glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &last_vertex_array);
 
 	const GLchar *vertex_shader =
-		"#version 330\n"
+		"#version 440\n"
 		"uniform mat4 ProjMtx;\n"
 		"in vec2 Position;\n"
 		"in vec2 UV;\n"
@@ -56,7 +56,21 @@ bool ImGui_Impl_CreateDeviceObjects()
 		"}\n";
 
 	const GLchar* fragment_shader =
-		"#version 330\n"
+		"#version 440\n"
+		"struct SceneInformation\n"
+		"{\n"
+		"	mat4 ProjectionMatrix;\n"
+		"	mat4 ViewMatrix;\n"
+		"	vec2 WindowSize;\n"
+		"	vec3 SceneSize;\n"
+		"	vec3 EyePosition;\n"
+		"};\n"
+
+		"layout(std140, binding = 0) uniform SceneBlock\n"
+		"{\n"
+		"	SceneInformation uScene;\n"
+		"};\n"
+
 		"uniform sampler2D Texture;\n"
 		"uniform int Correction;\n"
 		"in vec2 Frag_UV;\n"
@@ -67,7 +81,7 @@ bool ImGui_Impl_CreateDeviceObjects()
 		"	vec4 texel = texture(Texture, Frag_UV.st);\n"
 		"	if(Correction == 1)\n"
 		"	{\n"
-		"		texel.xyz *= 0.125f;\n"
+		"		texel.xyz /= uScene.SceneSize;\n"
 		"		texel.xyz *= 0.5f;\n"
 		"		texel.xyz += 0.5f;\n"
 		"	}\n"
@@ -78,7 +92,7 @@ bool ImGui_Impl_CreateDeviceObjects()
 		"	}\n"
 		"	else if(Correction == 3)\n"
 		"	{\n"
-		"		texel.xyz /= 14.0f;\n"
+		"		texel.xyz /= uScene.SceneSize;\n"
 		"	}\n"
 		"	Out_Color = Frag_Color * texel;\n"
 		"}\n";
