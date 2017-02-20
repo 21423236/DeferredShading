@@ -82,7 +82,7 @@ void main()
 	float distanceSquared = (distance.x*distance.x + distance.y * distance.y + distance.z * distance.z);
 	if(distanceSquared < radiusSquared)
 	{
-		float attenuation = ((radiusSquared - distanceSquared)/uLight.radius);
+		float attenuation = ((radiusSquared - distanceSquared)/lightRadius);
 		fragColor =  vec4(attenuation * lightIntensity * lambertian * BRDF(L, N, H, ks.rgb, kd, ks.w), 1);
 	}
 	else
