@@ -29,6 +29,10 @@ void DeferredPass::Initialize()
 	m_deferredProgram.AttachShader(Program::VERTEX_SHADER_TYPE, "src/Shaders/DeferredPass.vert");
 	m_deferredProgram.AttachShader(Program::FRAGMENT_SHADER_TYPE, "src/Shaders/DeferredPass.frag");
 	m_deferredProgram.Link();
+
+	m_deferredProgram.SetUniform("uMaterial.diffuseMap", 7);
+	m_deferredProgram.SetUniform("uMaterial.normalMap", 8);
+	m_deferredProgram.SetUniform("uMaterial.specularMap", 9);
 }
 
 void DeferredPass::Prepare(Scene const & scene) const
@@ -67,6 +71,34 @@ void DeferredPass::ProcessNode(Node const * const & node, glm::mat4 const & mode
 		m_deferredProgram.SetUniform("uMaterial.kd", object->GetMaterial()->GetKd());
 		m_deferredProgram.SetUniform("uMaterial.ks", object->GetMaterial()->GetKs());
 		m_deferredProgram.SetUniform("uMaterial.alpha", object->GetMaterial()->GetAlpha());
+
+		if (object->GetMaterial()->HasDiffuseMap())
+		{
+			m_deferredProgram.SetUniform("uMaterial.hasDiffuseMap", true);
+			glActiveTexture(GL_TEXTURE7);
+			glBindTexture(GL_TEXTURE_2D, object->GetMaterial()->GetDiffuseMap()->GetHandle());
+		}
+		else
+			m_deferredProgram.SetUniform("uMaterial.hasDiffuseMap", false);
+
+		if (object->GetMaterial()->HasNormalMap())
+		{
+			m_deferredProgram.SetUniform("uMaterial.hasNormalMap", true);
+			glActiveTexture(GL_TEXTURE8);
+			glBindTexture(GL_TEXTURE_2D, object->GetMaterial()->GetNormalMap()->GetHandle());
+		}
+		else
+			m_deferredProgram.SetUniform("uMaterial.hasNormalMap", false);
+
+		if (object->GetMaterial()->HasSpecularMap())
+		{
+			m_deferredProgram.SetUniform("uMaterial.hasSpecularMap", true);
+			glActiveTexture(GL_TEXTURE9);
+			glBindTexture(GL_TEXTURE_2D, object->GetMaterial()->GetSpecularMap()->GetHandle());
+		}
+		else
+			m_deferredProgram.SetUniform("uMaterial.hasSpecularMap", false);
+
 
 		glBindVertexArray(object->GetMesh()->GetVAO());
 		glEnableVertexAttribArray(0);

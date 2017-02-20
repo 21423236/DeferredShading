@@ -11,6 +11,7 @@
 class Mesh;
 class Material;
 class IRenderPass;
+class Texture;
 
 class Scene
 {
@@ -42,6 +43,8 @@ public:
 	//public methods
 	Mesh * CreateMesh(std::string const & name, std::string const & path);
 	Material * CreateMaterial(std::string const & name, glm::vec3 const & kd, glm::vec3 const & ks, float const & alpha);
+	Texture * CreateTexture(std::string const & name, std::string const & path, bool gamma = true);
+
 	void AddNode(Node * node);
 	void Traverse(IRenderPass const & pass) const;
 	void Resize(int const & width, int const & height);
@@ -58,6 +61,7 @@ private:
 
 	std::map<std::string, Mesh *> m_meshes;
 	std::map<std::string, Material *> m_materials;
+	std::map<std::string, Texture *> m_textures;
 
 	glm::mat4 m_projectionMatrix;
 	glm::mat4 m_viewMatrix;
