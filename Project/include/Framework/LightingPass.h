@@ -21,7 +21,7 @@ public:
 	void Initialize();
 	void Prepare(Scene const & scene) const;
 	void ProcessGlobalLights(std::vector<std::pair<GlobalLight const *,glm::vec3>> const & globalLights) const;
-	void ProcessLocalLights(std::vector<std::pair<LocalLight const *, glm::vec3>> const & localLights) const;
+	void ProcessLocalLights(unsigned int const & lightsCount) const;
 	void Finalize();
 
 protected:

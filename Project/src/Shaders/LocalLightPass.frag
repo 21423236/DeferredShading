@@ -17,10 +17,16 @@ layout(std140, binding = 0) uniform SceneBlock
 uniform struct LightInformation
 {
 	vec3 position;
-	vec3 ambient;
 	vec3 intensity;
 	float radius;
 } uLight;
+
+layout(std140, binding = 1) buffer LightInformationBuffer
+{
+	LightInformation Lights[];
+};
+
+flat in int instanceId;
 
 uniform sampler2D uColor0;
 uniform sampler2D uColor1;
@@ -61,20 +67,23 @@ void main()
 	vec3 kd = texture(uColor2, uv).rgb;
 	vec4 ks = texture(uColor3, uv);
 
+	vec3 lightPosition = Lights[instanceId].position;
+	vec3 lightIntensity = Lights[instanceId].intensity;
+	float lightRadius = Lights[instanceId].radius;
+
 	vec3 V = normalize(uScene.EyePosition - P.xyz);
-	vec3 L = normalize(uLight.position - P.xyz);
+	vec3 L = normalize(lightPosition - P.xyz);
 	vec3 H = normalize(L + V);
 
 	float lambertian = max(dot(L, N), 0.0);
 
-
-	float radiusSquared = uLight.radius * uLight.radius;
-	vec3 distance = P.xyz - uLight.position;
+	float radiusSquared = lightRadius * lightRadius;
+	vec3 distance = P.xyz - lightPosition;
 	float distanceSquared = (distance.x*distance.x + distance.y * distance.y + distance.z * distance.z);
 	if(distanceSquared < radiusSquared)
 	{
 		float attenuation = ((radiusSquared - distanceSquared)/uLight.radius);
-		fragColor =  vec4(attenuation * uLight.intensity * lambertian * BRDF(L, N, H, ks.rgb, kd, ks.w), 1);
+		fragColor =  vec4(attenuation * lightIntensity * lambertian * BRDF(L, N, H, ks.rgb, kd, ks.w), 1);
 	}
 	else
 	{

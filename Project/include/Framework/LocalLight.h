@@ -2,6 +2,13 @@
 
 #include <Framework/Node.h>
 
+struct LocalLightInformation
+{
+	float position[4];
+	float intensity[3];
+	float radius;
+};
+
 class LocalLight : public Node
 {
 public:

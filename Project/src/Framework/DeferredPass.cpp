@@ -43,7 +43,7 @@ void DeferredPass::Prepare(Scene const & scene) const
 	m_deferredProgram.Use();
 }
 
-void DeferredPass::ProcessScene(Scene const & scene, std::vector<std::pair<GlobalLight const *, glm::vec3>> * globalLights, std::vector<std::pair<LocalLight const *, glm::vec3>> * localLights, std::vector<Object const *> * reflectiveObjects) const
+void DeferredPass::ProcessScene(Scene const & scene, std::vector<std::pair<GlobalLight const *, glm::vec3>> * globalLights, std::vector<struct LocalLightInformation> * localLights, std::vector<Object const *> * reflectiveObjects) const
 {
 	m_globalLights = globalLights;
 	m_localLights = localLights;
@@ -91,7 +91,8 @@ void DeferredPass::ProcessNode(Node const * const & node, glm::mat4 const & mode
 	{
 		LocalLight const * light = dynamic_cast<LocalLight const*>(node);
 		glm::vec3 position(modelMatrix[3][0], modelMatrix[3][1], modelMatrix[3][2]);
-		m_localLights->push_back(std::make_pair(light, position));
+		glm::vec3 const & intensity = light->GetIntensity();
+		m_localLights->push_back({ {position.x, position.y, position.z, 0.0f}, {intensity.x, intensity.y, intensity.z}, light->GetRadius() });
 	}
 }
 

@@ -71,6 +71,12 @@ private:
 	} m_defaultFramebuffer;
 
 	mutable UniformBuffer m_sceneUniformBuffer;
+	
+	struct LightInformationBuffer
+	{
+		unsigned int handle;
+		unsigned int size;
+	} m_localLightBuffer;
 
 	Program m_debugProgram;
 

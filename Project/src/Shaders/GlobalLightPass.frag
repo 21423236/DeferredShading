@@ -17,7 +17,6 @@ layout(std140, binding = 0) uniform SceneBlock
 uniform struct LightInformation
 {
 	vec3 position;
-	vec3 ambient;
 	vec3 intensity;
 } uLight;
 
@@ -73,7 +72,7 @@ void main()
 
 	float lambertian = max(dot(N,L),0.0f);
 
-	fragColor = vec4(uLight.ambient * kd, 1);
+	fragColor = vec4(vec3(0.1,0.1,0.1) * kd, 1);
 
 	vec4 shadowCoord = uShadow.matrix * P;
 	vec2 shadowIndex = shadowCoord.xy / shadowCoord.w;

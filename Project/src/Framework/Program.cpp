@@ -148,7 +148,12 @@ void Program::Link()
 	glGetProgramiv(m_handle, GL_LINK_STATUS, &status);
 	if (status == GL_FALSE)
 	{
-		//report error;
+		GLint length;
+		glGetProgramiv(m_handle, GL_INFO_LOG_LENGTH, &length);
+		char * infoLog = (char*)malloc(length);
+		glGetProgramInfoLog(m_handle, length, &length, infoLog);
+		std::cout << infoLog << std::endl;
+		free(infoLog);
 	}
 }
 

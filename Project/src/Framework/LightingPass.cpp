@@ -25,6 +25,7 @@ LightingPass::~LightingPass()
 
 void LightingPass::Initialize()
 {
+
 	m_globalLightProgram.CreateHandle();
 	m_globalLightProgram.AttachShader(Program::VERTEX_SHADER_TYPE, "src/Shaders/GlobalLightPass.vert");
 	m_globalLightProgram.AttachShader(Program::FRAGMENT_SHADER_TYPE, "src/Shaders/GlobalLightPass.frag");
@@ -45,7 +46,6 @@ void LightingPass::Initialize()
 	m_localLightProgram.SetUniform("uColor1", 2);
 	m_localLightProgram.SetUniform("uColor2", 3);
 	m_localLightProgram.SetUniform("uColor3", 4);
-
 }
 
 void LightingPass::Prepare(Scene const & scene) const
@@ -71,7 +71,7 @@ void LightingPass::ProcessGlobalLights(std::vector<std::pair<GlobalLight const *
 	for (auto const & lightPair : globalLights)
 	{
 		m_globalLightProgram.SetUniform("uLight.position", lightPair.second);
-		m_globalLightProgram.SetUniform("uLight.ambient", glm::vec3(0.1f, 0.1f, 0.1f));
+		//m_globalLightProgram.SetUniform("uLight.ambient", glm::vec3(0.1f, 0.1f, 0.1f));
 		m_globalLightProgram.SetUniform("uLight.intensity", lightPair.first->GetIntensity());
 
 		m_globalLightProgram.SetUniform("uShadow.matrix", lightPair.first->GetShadowMatrix());
@@ -84,7 +84,7 @@ void LightingPass::ProcessGlobalLights(std::vector<std::pair<GlobalLight const *
 	glBindVertexArray(0);
 }
 
-void LightingPass::ProcessLocalLights(std::vector<std::pair<LocalLight const *, glm::vec3>> const & localLights) const
+void LightingPass::ProcessLocalLights(unsigned int const & lightsCount) const
 {
 	glEnable(GL_DEPTH_TEST);
 
@@ -93,15 +93,16 @@ void LightingPass::ProcessLocalLights(std::vector<std::pair<LocalLight const *, 
 	glBindVertexArray(Shape::GetIcosahedron()->GetVAO());
 	glEnableVertexAttribArray(0);
 
-	for (auto const & lightPair : localLights)
+	/*for (auto const & lightPair : localLights)
 	{
 		m_localLightProgram.SetUniform("uLight.position", lightPair.second);
-		m_localLightProgram.SetUniform("uLight.ambient", glm::vec3(0.1f, 0.1f, 0.1f));
+		//m_localLightProgram.SetUniform("uLight.ambient", glm::vec3(0.1f, 0.1f, 0.1f));
 		m_localLightProgram.SetUniform("uLight.intensity", lightPair.first->GetIntensity());
 		m_localLightProgram.SetUniform("uLight.radius", lightPair.first->GetRadius());
 
 		glDrawElements(GL_TRIANGLES, Shape::GetIcosahedron()->GetIndexCount(), GL_UNSIGNED_INT, 0);
-	}
+	}*/
+	glDrawElementsInstanced(GL_TRIANGLES, Shape::GetIcosahedron()->GetIndexCount(), GL_UNSIGNED_INT, 0, lightsCount);
 	
 	glDisableVertexAttribArray(0);
 	glBindVertexArray(0);

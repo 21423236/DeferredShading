@@ -83,7 +83,7 @@ int Application::Run()
 
 	m_gui->Initialize(*m_window);
 	m_input->Initialize();
-
+	
 	Initialize();
 
 	MSG msg;

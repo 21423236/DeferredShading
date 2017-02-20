@@ -47,11 +47,19 @@ bool DeferredRenderer::Initialize()
 	m_sceneUniformBuffer.AddUniform("uScene.EyePosition", GL_FLOAT_VEC3);
 	m_sceneUniformBuffer.Initialize();
 
+	//initialize local lights buffer
+	glGenBuffers(1, &m_localLightBuffer.handle);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_localLightBuffer.handle);
+	size_t size = sizeof(struct LocalLightInformation);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, size * 1000, 0, GL_DYNAMIC_DRAW);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, m_localLightBuffer.handle);
+	m_localLightBuffer.size = 1000;
+
+
 	//initialize passes
 	m_deferredPass.Initialize();
 	m_shadowPass.Initialize();
 	m_lightingPass.Initialize();
-
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	return true;
@@ -60,7 +68,7 @@ bool DeferredRenderer::Initialize()
 void DeferredRenderer::RenderScene(Scene const & scene) const
 {
 	static std::vector<std::pair<GlobalLight const *, glm::vec3>> globalLights(100);
-	static std::vector<std::pair<LocalLight const *, glm::vec3>> localLights(1000);
+	static std::vector<struct LocalLightInformation> localLights(1000);
 	static std::vector<Object const *> reflectiveObjects(1000);
 
 	globalLights.clear();
@@ -81,6 +89,9 @@ void DeferredRenderer::RenderScene(Scene const & scene) const
 
 	m_deferredPass.Prepare(scene);
 	m_deferredPass.ProcessScene(scene, &globalLights, &localLights, nullptr);
+
+	//upload local light information
+	glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(struct LocalLightInformation)*localLights.size(), &localLights[0]);
 
 //-------------------------------------------------------------------------------------------------------
 //SHADOW MAP PASS
@@ -108,7 +119,7 @@ void DeferredRenderer::RenderScene(Scene const & scene) const
 	glEnable(GL_FRAMEBUFFER_SRGB);
 
 	m_lightingPass.ProcessGlobalLights(globalLights);
-	m_lightingPass.ProcessLocalLights(localLights);
+	m_lightingPass.ProcessLocalLights(localLights.size());
 	
 	//disable gamma correction
 	glDisable(GL_FRAMEBUFFER_SRGB);
@@ -117,7 +128,7 @@ void DeferredRenderer::RenderScene(Scene const & scene) const
 //DEBUG PASS
 //-------------------------------------------------------------------------------------------------------
 	
-	glDisable(GL_BLEND);
+	/*glDisable(GL_BLEND);
 	glEnable(GL_DEPTH_TEST);
 	
 	m_debugProgram.Use();
@@ -133,7 +144,7 @@ void DeferredRenderer::RenderScene(Scene const & scene) const
 	}
 
 	glDisableVertexAttribArray(0);
-	glBindVertexArray(0);
+	glBindVertexArray(0);*/
 }
 
 void DeferredRenderer::Resize(int const & width, int const & height)
