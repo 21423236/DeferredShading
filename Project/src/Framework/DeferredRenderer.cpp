@@ -121,18 +121,18 @@ void DeferredRenderer::RenderScene(Scene const & scene) const
 //DEBUG DRAWING
 //-------------------------------------------------------------------------------------------------------
 	
-	//glDisable(GL_BLEND);
-	//glEnable(GL_DEPTH_TEST);
-	//
-	//m_debugProgram.Use();
+	glDisable(GL_BLEND);
+	glEnable(GL_DEPTH_TEST);
+	
+	m_debugProgram.Use();
 
-	//glBindVertexArray(Shape::GetWireCircle()->GetVAO());
-	//glEnableVertexAttribArray(0);
-	//
-	//glDrawElementsInstanced(GL_LINE_LOOP, Shape::GetWireCircle()->GetIndexCount(), GL_UNSIGNED_INT, 0, m_localLightsBuffer.m_buffer.size());
+	glBindVertexArray(Shape::GetWireCircle()->GetVAO());
+	glEnableVertexAttribArray(0);
+	
+	glDrawElementsInstanced(GL_LINE_LOOP, Shape::GetWireCircle()->GetIndexCount(), GL_UNSIGNED_INT, 0, m_localLightsBuffer.m_buffer.size());
 
-	//glDisableVertexAttribArray(0);
-	//glBindVertexArray(0);
+	glDisableVertexAttribArray(0);
+	glBindVertexArray(0);
 }
 
 void DeferredRenderer::Resize(int const & width, int const & height)

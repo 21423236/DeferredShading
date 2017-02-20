@@ -146,35 +146,58 @@ void GUI::NodeInformation(Node * node)
 	ImGui::InputFloat3("S", &node->m_scale[0]);
 }
 
+#define MAX(a, b)(a>b?a:b)
+#define MIN(a, b)(a<b?a:b)
+
 void GUI::GenerateGUI(Scene & scene)
 {
-	ImGui::Begin("Scene");
-
-	if (ImGui::TreeNode("Scene Graph"))
+	ImGui::SetNextWindowSize(ImVec2(300, 500), ImGuiSetCond_FirstUseEver);
+	if (!ImGui::Begin("Scene", 0, ImGuiWindowFlags_ShowBorders | ImGuiWindowFlags_MenuBar))
 	{
-		if (ImGui::TreeNode("Root"))
-		{
-			TraverseGraph(scene.m_rootNode);
-			ImGui::TreePop();
-		}
-		ImGui::TreePop();
+		ImGui::End();
+		return;
 	}
 
-	ImGui::Separator();
-	
-	if (ImGui::TreeNode("Materials"))
+	if (ImGui::CollapsingHeader("Scene Graph"))
 	{
-		for (auto materialPair : scene.m_materials)
+		static bool checkBox;
+		ImGui::Checkbox("Checkbox", &checkBox);
+		ImGui::Spacing();
+	}
+
+	if (ImGui::CollapsingHeader("Materials"))
+	{
+
+		ImGui::Spacing();
+	}
+
+	if (ImGui::CollapsingHeader("Meshes"))
+	{
+
+		ImGui::Spacing();
+	}
+
+	if(ImGui::CollapsingHeader("Textures"))
+	{
+		static float const textureDisplaySize = 100.0f;
+		float width = ImGui::GetWindowWidth();
+		int numberOfColumns = MIN(MAX((int)(width / textureDisplaySize), 1), scene.m_textures.size());
+		ImGui::Columns(numberOfColumns);
+		for (auto texturePair : scene.m_textures)
 		{
-			if (ImGui::TreeNode(materialPair.first.c_str()))
+			ImGui::Image((void*)texturePair.second, ImVec2(100, 100));
+			if (ImGui::IsItemHovered())
 			{
-				MaterialEditor(materialPair.second);
-				ImGui::TreePop();
+				ImGui::BeginTooltip();
+				ImGui::Text("This is a tooltip");
+				ImGui::EndTooltip();
 			}
+			ImGui::Text(texturePair.first.c_str());
+			ImGui::NextColumn();
 		}
-		ImGui::TreePop();
+		ImGui::Columns(1);
 	}
-
+	
 	ImGui::End();
 }
 
