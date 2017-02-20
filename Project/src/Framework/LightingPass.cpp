@@ -48,7 +48,7 @@ void LightingPass::Initialize()
 
 }
 
-void LightingPass::Prepare(Scene const & scene, glm::vec2 const & windowSize) const
+void LightingPass::Prepare(Scene const & scene) const
 {
 	DeferredRenderer const * deferredRenderer = dynamic_cast<DeferredRenderer const *>(m_renderer);
 	deferredRenderer->BlitDepthBuffers();
@@ -56,16 +56,6 @@ void LightingPass::Prepare(Scene const & scene, glm::vec2 const & windowSize) co
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	glEnable(GL_BLEND);
-
-	glm::vec3 eyePosition = glm::vec3(glm::inverse(scene.GetViewMatrix()) * glm::vec4(0, 0, 0, 1));
-
-	m_globalLightProgram.SetUniform("uWindowSize", windowSize);
-	m_globalLightProgram.SetUniform("uEye", eyePosition);
-
-	m_localLightProgram.SetUniform("uWindowSize", windowSize);
-	m_localLightProgram.SetUniform("uEye", eyePosition);
-	m_localLightProgram.SetUniform("uProjectionMatrix", scene.GetProjectionMatrix());
-	m_localLightProgram.SetUniform("uViewMatrix", scene.GetViewMatrix());
 }
 
 void LightingPass::ProcessGlobalLights(std::vector<std::pair<GlobalLight const *,glm::vec3>> const & globalLights) const
@@ -85,8 +75,6 @@ void LightingPass::ProcessGlobalLights(std::vector<std::pair<GlobalLight const *
 		m_globalLightProgram.SetUniform("uLight.intensity", lightPair.first->GetIntensity());
 
 		m_globalLightProgram.SetUniform("uShadow.matrix", lightPair.first->GetShadowMatrix());
-		//glActiveTexture(GL_TEXTURE5);
-		//glBindTexture(GL_TEXTURE_2D, lightPair.first->GetShadowMap()); 
 		lightPair.first->GetShadowMap().Bind();
 
 		glDrawElements(GL_TRIANGLES, Shape::GetFullScreenQuad()->GetIndexCount(), GL_UNSIGNED_INT, 0);

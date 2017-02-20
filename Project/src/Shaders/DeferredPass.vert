@@ -6,6 +6,7 @@ struct SceneInformation
 	mat4 ViewMatrix;
 	vec2 WindowSize;
 	vec3 SceneSize;
+	vec3 EyePosition;
 };
 
 layout(std140, binding = 0) uniform SceneBlock 
@@ -13,8 +14,6 @@ layout(std140, binding = 0) uniform SceneBlock
 	SceneInformation uScene;
 };
 
-uniform mat4 uProjectionMatrix;
-uniform mat4 uViewMatrix;
 uniform mat4 uModelMatrix;
 
 layout(location = 0) in vec3 in_position;

@@ -1,5 +1,19 @@
 #version 440
 
+struct SceneInformation 
+{
+	mat4 ProjectionMatrix;
+	mat4 ViewMatrix;
+	vec2 WindowSize;
+	vec3 SceneSize;
+	vec3 EyePosition;
+};
+
+layout(std140, binding = 0) uniform SceneBlock 
+{
+	SceneInformation uScene;
+};
+
 uniform struct LightInformation
 {
 	vec3 position;
@@ -18,8 +32,6 @@ uniform sampler2D uColor1;
 uniform sampler2D uColor2;
 uniform sampler2D uColor3;
 
-uniform vec2 uWindowSize;
-uniform vec3 uEye;
 
 out vec4 fragColor;
 
@@ -48,14 +60,14 @@ vec3 BRDF(vec3 L, vec3 N, vec3 H, vec3 Ks, vec3 Kd, float alpha)
 
 void main()
 {
-	vec2 uv = gl_FragCoord.xy / uWindowSize;
+	vec2 uv = gl_FragCoord.xy / uScene.WindowSize;
 
 	vec4 P = texture(uColor0, uv);
 	vec3 N = texture(uColor1, uv).rgb;
 	vec3 kd = texture(uColor2, uv).rgb;
 	vec4 ks = texture(uColor3, uv);
 
-	vec3 V = normalize(uEye - P.xyz);
+	vec3 V = normalize(uScene.EyePosition - P.xyz);
 	vec3 L = normalize(uLight.position - P.xyz);
 	vec3 H = normalize(L + V);
 

@@ -9,7 +9,6 @@ UniformBuffer::UniformBuffer(unsigned int const & blockIndex) : m_blockIndex(blo
 
 UniformBuffer::~UniformBuffer()
 {
-
 }
 
 #pragma endregion
@@ -40,7 +39,11 @@ void UniformBuffer::SetUniform(std::string const & name, glm::mat3 const & matri
 }
 void UniformBuffer::SetUniform(std::string const & name, glm::vec3 const & vector)
 {
-
+	if (m_uniforms.count(name))
+	{
+		Uniform const & uniform = m_uniforms[name];
+		CopyUniform(&vector[0], uniform.offset, MIN(uniform.size, sizeof(float) * 3));
+	}
 }
 void UniformBuffer::SetUniform(std::string const & name, glm::vec2 const & vector)
 {
@@ -95,7 +98,7 @@ size_t UniformBuffer::GetStorageSize(GLenum const & type)
 {
 	CASE(GL_FLOAT, 1, GLfloat);
 	CASE(GL_FLOAT_VEC2, 4, GLfloat);
-	CASE(GL_FLOAT_VEC3, 3, GLfloat);
+	CASE(GL_FLOAT_VEC3, 4, GLfloat);
 	CASE(GL_FLOAT_VEC4, 4, GLfloat);
 	CASE(GL_INT, 1, GLint);
 	CASE(GL_INT_VEC2, 2, GLint);

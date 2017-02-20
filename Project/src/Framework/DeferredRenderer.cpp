@@ -44,6 +44,7 @@ bool DeferredRenderer::Initialize()
 	m_sceneUniformBuffer.AddUniform("uScene.ViewMatrix", GL_FLOAT_MAT4);
 	m_sceneUniformBuffer.AddUniform("uScene.WindowSize", GL_FLOAT_VEC2);
 	m_sceneUniformBuffer.AddUniform("uScene.SceneSize", GL_FLOAT_VEC2);
+	m_sceneUniformBuffer.AddUniform("uScene.EyePosition", GL_FLOAT_VEC3);
 	m_sceneUniformBuffer.Initialize();
 
 	//initialize passes
@@ -66,8 +67,12 @@ void DeferredRenderer::RenderScene(Scene const & scene) const
 	localLights.clear();
 	reflectiveObjects.clear();
 
+	//upload global uniform data
 	m_sceneUniformBuffer.SetUniform("uScene.ProjectionMatrix", scene.GetProjectionMatrix());
 	m_sceneUniformBuffer.SetUniform("uScene.ViewMatrix", scene.GetViewMatrix());
+	m_sceneUniformBuffer.SetUniform("uScene.WindowSize", glm::vec2(m_defaultFramebuffer.width, m_defaultFramebuffer.height));
+	m_sceneUniformBuffer.SetUniform("uScene.SceneSize", glm::vec3(10, 10, 10));
+	m_sceneUniformBuffer.SetUniform("uScene.EyePosition", glm::vec3(glm::inverse(scene.GetViewMatrix()) * glm::vec4(0, 0, 0, 1)));
 	m_sceneUniformBuffer.UploadBuffer();
 
 //-------------------------------------------------------------------------------------------------------
@@ -97,7 +102,7 @@ void DeferredRenderer::RenderScene(Scene const & scene) const
 
 	//enable gamma correction
 
-	m_lightingPass.Prepare(scene, glm::vec2(m_defaultFramebuffer.width, m_defaultFramebuffer.height));
+	m_lightingPass.Prepare(scene);
 
 	//enable gamme correction
 	glEnable(GL_FRAMEBUFFER_SRGB);
@@ -116,9 +121,6 @@ void DeferredRenderer::RenderScene(Scene const & scene) const
 	glEnable(GL_DEPTH_TEST);
 	
 	m_debugProgram.Use();
-	
-	m_debugProgram.SetUniform("uProjectionMatrix", scene.GetProjectionMatrix());
-	m_debugProgram.SetUniform("uViewMatrix", scene.GetViewMatrix());
 
 	glBindVertexArray(Shape::GetWireCircle()->GetVAO());
 	glEnableVertexAttribArray(0);

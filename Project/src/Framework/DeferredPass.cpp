@@ -41,9 +41,6 @@ void DeferredPass::Prepare(Scene const & scene) const
 	glEnable(GL_DEPTH_TEST);
 
 	m_deferredProgram.Use();
-
-	m_deferredProgram.SetUniform("uProjectionMatrix", scene.GetProjectionMatrix());
-	m_deferredProgram.SetUniform("uViewMatrix", scene.GetViewMatrix());
 }
 
 void DeferredPass::ProcessScene(Scene const & scene, std::vector<std::pair<GlobalLight const *, glm::vec3>> * globalLights, std::vector<std::pair<LocalLight const *, glm::vec3>> * localLights, std::vector<Object const *> * reflectiveObjects) const
