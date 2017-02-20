@@ -93,9 +93,6 @@
     <ClCompile Include="src\Framework\UniformBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Framework\Buffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Framework\Window.h">
@@ -188,7 +185,7 @@
     <ClInclude Include="include\Framework\UniformBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\Framework\Buffer.h">
+    <ClInclude Include="include\Framework\ShaderStorageBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -205,5 +202,7 @@
     <None Include="src\Shaders\LocalLightPass.vert" />
     <None Include="src\Shaders\DebugPass.vert" />
     <None Include="src\Shaders\DebugPass.frag" />
+    <None Include="src\Shaders\AmbientLightPass.vert" />
+    <None Include="src\Shaders\AmbientLightPass.frag" />
   </ItemGroup>
 </Project>

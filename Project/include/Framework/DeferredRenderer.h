@@ -7,6 +7,7 @@
 #include <Framework/ShadowPass.h>
 #include <Framework/Texture.h>
 #include <Framework/UniformBuffer.h>
+#include <Framework/ShaderStorageBuffer.h>
 
 #include <vector>
 
@@ -42,7 +43,6 @@ private:
 	struct gBuffer
 	{
 		unsigned int framebuffer;
-		//unsigned int colorBuffers[4];
 		Texture colorBuffer0;
 		Texture colorBuffer1;
 		Texture colorBuffer2;
@@ -70,13 +70,8 @@ private:
 		unsigned int drawBuffers;
 	} m_defaultFramebuffer;
 
-	mutable UniformBuffer m_sceneUniformBuffer;
-	
-	struct LightInformationBuffer
-	{
-		unsigned int handle;
-		unsigned int size;
-	} m_localLightBuffer;
+	mutable UniformBuffer										m_sceneUniformBuffer;
+	mutable ShaderStorageBuffer<struct LocalLightInformation>	m_localLightsBuffer;
 
 	Program m_debugProgram;
 

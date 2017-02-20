@@ -134,7 +134,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\Framework\Buffer.cpp" />
     <ClCompile Include="src\Framework\Shape.cpp" />
     <ClCompile Include="src\Framework\LocalLight.cpp" />
     <ClCompile Include="src\Framework\GlobalLight.cpp" />
@@ -163,7 +162,7 @@
     <ClCompile Include="src\Framework\UniformBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\Framework\Buffer.h" />
+    <ClInclude Include="include\Framework\ShaderStorageBuffer.h" />
     <ClInclude Include="include\Framework\GlobalLight.h" />
     <ClInclude Include="include\Framework\DeferredPass.h" />
     <ClInclude Include="include\Framework\Defaults.h" />
@@ -196,6 +195,8 @@
     <ClInclude Include="include\Framework\UniformBuffer.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="src\Shaders\AmbientLightPass.frag" />
+    <None Include="src\Shaders\AmbientLightPass.vert" />
     <None Include="src\Shaders\Basic.frag" />
     <None Include="src\Shaders\Basic.vert" />
     <None Include="src\Shaders\DebugPass.frag" />

@@ -14,8 +14,17 @@ layout(std140, binding = 0) uniform SceneBlock
 	SceneInformation uScene;
 };
 
-uniform vec3 uPosition;
-uniform float uScale;
+struct LightInformation
+{
+	vec3 position;
+	vec3 intensity;
+	float radius;
+};
+
+layout(std140, binding=1) buffer LightInformationBuffer
+{
+	LightInformation Lights[];
+};
 
 layout(location = 0) in vec3 in_position;
 
@@ -28,6 +37,7 @@ mat4 billboard(mat3 viewMatrix, vec3 translation)
 
 void main()
 {
-	mat4 modelMatrix = billboard(mat3(uScene.ViewMatrix), uPosition) * mat4(vec4(uScale, 0, 0, 0), vec4(0, uScale, 0, 0), vec4(0, 0, uScale, 0), vec4(0, 0, 0, 1));
+	float scale = Lights[gl_InstanceID].radius;
+	mat4 modelMatrix = billboard(mat3(uScene.ViewMatrix), Lights[gl_InstanceID].position) * mat4(vec4(scale, 0, 0, 0), vec4(0, scale, 0, 0), vec4(0, 0, scale, 0), vec4(0, 0, 0, 1));
 	gl_Position = uScene.ProjectionMatrix * uScene.ViewMatrix * modelMatrix * vec4(in_position, 1);
 }

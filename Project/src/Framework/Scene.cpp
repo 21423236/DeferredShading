@@ -8,7 +8,7 @@
 
 #pragma region "Constructors/Destructor"
 
-Scene::Scene(unsigned const & windowWidth, unsigned const & windowHeight) : m_rootNode(new Node("Root")), m_camera(m_viewMatrix), m_meshes(), m_projectionMatrix(), m_viewMatrix(), m_windowWidth(windowWidth), m_windowHeight(windowHeight)
+Scene::Scene(unsigned const & windowWidth, unsigned const & windowHeight) : m_rootNode(new Node("Root")), m_camera(m_viewMatrix), m_meshes(), m_projectionMatrix(), m_viewMatrix(), m_sceneSize(glm::vec3(1, 1, 1)), m_ambientIntensity(glm::vec3(0, 0, 0)), m_windowWidth(windowWidth), m_windowHeight(windowHeight)
 {
 
 }
@@ -42,6 +42,16 @@ glm::mat4 const & Scene::GetViewMatrix() const
 	return m_viewMatrix;
 }
 
+glm::vec3 const & Scene::GetSceneSize() const
+{
+	return m_sceneSize;
+}
+
+glm::vec3 const & Scene::GetAmbientIntensity() const
+{
+	return m_ambientIntensity;
+}
+
 #pragma endregion
 
 #pragma region "Setters"
@@ -64,6 +74,16 @@ void Scene::SetWindowWidth(unsigned const & width)
 void Scene::SetWindowHeight(unsigned const & height)
 {
 	m_windowHeight = height;
+}
+
+void Scene::SetSceneSize(glm::vec3 const & sceneSize)
+{
+	m_sceneSize = sceneSize;
+}
+
+void Scene::SetAmbientIntensity(glm::vec3 const & ambientIntensity)
+{
+	m_ambientIntensity = ambientIntensity;
 }
 
 #pragma endregion

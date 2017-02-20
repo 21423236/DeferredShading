@@ -72,8 +72,6 @@ void main()
 
 	float lambertian = max(dot(N,L),0.0f);
 
-	fragColor = vec4(vec3(0.1,0.1,0.1) * kd, 1);
-
 	vec4 shadowCoord = uShadow.matrix * P;
 	vec2 shadowIndex = shadowCoord.xy / shadowCoord.w;
 		
@@ -83,10 +81,12 @@ void main()
 		float pixelDepth = shadowCoord.w;
 
 		if(lightDepth + 0.0025f > pixelDepth)
-			fragColor.xyz += uLight.intensity * lambertian * BRDF(L, N, H, ks.rgb, kd, ks.w);
+			fragColor = vec4(uLight.intensity * lambertian * BRDF(L, N, H, ks.rgb, kd, ks.w), 1);
+		else
+			fragColor = vec4(0, 0, 0, 1);
 	}
 	else
 	{
-		fragColor.xyz += uLight.intensity * lambertian * BRDF(L, N, H, ks.rgb, kd, ks.w);
+		fragColor = vec4(uLight.intensity * lambertian * BRDF(L, N, H, ks.rgb, kd, ks.w), 1);
 	}
 }

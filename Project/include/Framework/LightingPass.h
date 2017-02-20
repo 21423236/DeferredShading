@@ -20,6 +20,7 @@ public:
 	//public methods
 	void Initialize();
 	void Prepare(Scene const & scene) const;
+	void ProcessAmbientLight() const;
 	void ProcessGlobalLights(std::vector<std::pair<GlobalLight const *,glm::vec3>> const & globalLights) const;
 	void ProcessLocalLights(unsigned int const & lightsCount) const;
 	void Finalize();
@@ -30,6 +31,7 @@ protected:
 
 private:
 	
+	Program m_ambientLightProgram;
 	Program m_globalLightProgram;
 	Program m_localLightProgram;
 

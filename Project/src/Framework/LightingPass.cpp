@@ -25,6 +25,12 @@ LightingPass::~LightingPass()
 
 void LightingPass::Initialize()
 {
+	m_ambientLightProgram.CreateHandle();
+	m_ambientLightProgram.AttachShader(Program::VERTEX_SHADER_TYPE, "src/Shaders/AmbientLightPass.vert");
+	m_ambientLightProgram.AttachShader(Program::FRAGMENT_SHADER_TYPE, "src/Shaders/AmbientLightPass.frag");
+	m_ambientLightProgram.Link();
+
+	m_ambientLightProgram.SetUniform("uColor2", 3);
 
 	m_globalLightProgram.CreateHandle();
 	m_globalLightProgram.AttachShader(Program::VERTEX_SHADER_TYPE, "src/Shaders/GlobalLightPass.vert");
@@ -46,6 +52,7 @@ void LightingPass::Initialize()
 	m_localLightProgram.SetUniform("uColor1", 2);
 	m_localLightProgram.SetUniform("uColor2", 3);
 	m_localLightProgram.SetUniform("uColor3", 4);
+
 }
 
 void LightingPass::Prepare(Scene const & scene) const
@@ -53,25 +60,34 @@ void LightingPass::Prepare(Scene const & scene) const
 	DeferredRenderer const * deferredRenderer = dynamic_cast<DeferredRenderer const *>(m_renderer);
 	deferredRenderer->BlitDepthBuffers();
 	deferredRenderer->BindDefaultFramebuffer();
+	
 	glClear(GL_COLOR_BUFFER_BIT);
-
 	glEnable(GL_BLEND);
-}
 
-void LightingPass::ProcessGlobalLights(std::vector<std::pair<GlobalLight const *,glm::vec3>> const & globalLights) const
-{
 	glDisable(GL_DEPTH_TEST);
 	glDepthMask(GL_FALSE);
 
-	m_globalLightProgram.Use();
+	m_ambientLightProgram.SetUniform("uAmbientIntensity", scene.GetAmbientIntensity());
+}
+
+void LightingPass::ProcessAmbientLight() const
+{
+	m_ambientLightProgram.Use();
 
 	glBindVertexArray(Shape::GetFullScreenQuad()->GetVAO());
 	glEnableVertexAttribArray(0);
 
+	glDrawElements(GL_TRIANGLES, Shape::GetFullScreenQuad()->GetIndexCount(), GL_UNSIGNED_INT, 0);
+}
+
+void LightingPass::ProcessGlobalLights(std::vector<std::pair<GlobalLight const *,glm::vec3>> const & globalLights) const
+{
+	
+	m_globalLightProgram.Use();
+
 	for (auto const & lightPair : globalLights)
 	{
 		m_globalLightProgram.SetUniform("uLight.position", lightPair.second);
-		//m_globalLightProgram.SetUniform("uLight.ambient", glm::vec3(0.1f, 0.1f, 0.1f));
 		m_globalLightProgram.SetUniform("uLight.intensity", lightPair.first->GetIntensity());
 
 		m_globalLightProgram.SetUniform("uShadow.matrix", lightPair.first->GetShadowMatrix());
@@ -92,18 +108,7 @@ void LightingPass::ProcessLocalLights(unsigned int const & lightsCount) const
 
 	glBindVertexArray(Shape::GetIcosahedron()->GetVAO());
 	glEnableVertexAttribArray(0);
-
-	/*for (auto const & lightPair : localLights)
-	{
-		m_localLightProgram.SetUniform("uLight.position", lightPair.second);
-		//m_localLightProgram.SetUniform("uLight.ambient", glm::vec3(0.1f, 0.1f, 0.1f));
-		m_localLightProgram.SetUniform("uLight.intensity", lightPair.first->GetIntensity());
-		m_localLightProgram.SetUniform("uLight.radius", lightPair.first->GetRadius());
-
-		glDrawElements(GL_TRIANGLES, Shape::GetIcosahedron()->GetIndexCount(), GL_UNSIGNED_INT, 0);
-	}*/
 	glDrawElementsInstanced(GL_TRIANGLES, Shape::GetIcosahedron()->GetIndexCount(), GL_UNSIGNED_INT, 0, lightsCount);
-	
 	glDisableVertexAttribArray(0);
 	glBindVertexArray(0);
 
@@ -115,6 +120,7 @@ void LightingPass::Finalize()
 {
 	m_localLightProgram.DestroyHandle();
 	m_globalLightProgram.DestroyHandle();
+	m_ambientLightProgram.DestroyHandle();
 }
 
 #pragma endregion

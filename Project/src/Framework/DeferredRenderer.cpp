@@ -15,7 +15,7 @@
 
 #pragma region "Constructors/Destructor"
 
-DeferredRenderer::DeferredRenderer() : m_gBuffer({ 0, Texture(1, Texture::POSITIONS), Texture(2, Texture::NORMALS), Texture(3), Texture(4), 0, 0, 0, {0, 0, 0, 0} }), m_shadowBuffer({ 0, 0, 0, 0, 0 }), m_defaultFramebuffer({ 0, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, GL_BACK_LEFT }), m_sceneUniformBuffer(0), m_debugProgram(), m_deferredPass(this), m_shadowPass(this), m_lightingPass(this)
+DeferredRenderer::DeferredRenderer() : m_gBuffer({ 0, Texture(1, Texture::POSITIONS), Texture(2, Texture::NORMALS), Texture(3), Texture(4), 0, 0, 0, {0, 0, 0, 0} }), m_shadowBuffer({ 0, 0, 0, 0, 0 }), m_defaultFramebuffer({ 0, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, GL_BACK_LEFT }), m_sceneUniformBuffer(0), m_localLightsBuffer(1, 1000), m_debugProgram(), m_deferredPass(this), m_shadowPass(this), m_lightingPass(this)
 {
 	
 }
@@ -48,13 +48,7 @@ bool DeferredRenderer::Initialize()
 	m_sceneUniformBuffer.Initialize();
 
 	//initialize local lights buffer
-	glGenBuffers(1, &m_localLightBuffer.handle);
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_localLightBuffer.handle);
-	size_t size = sizeof(struct LocalLightInformation);
-	glBufferData(GL_SHADER_STORAGE_BUFFER, size * 1000, 0, GL_DYNAMIC_DRAW);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, m_localLightBuffer.handle);
-	m_localLightBuffer.size = 1000;
-
+	m_localLightsBuffer.Initialize();
 
 	//initialize passes
 	m_deferredPass.Initialize();
@@ -68,18 +62,17 @@ bool DeferredRenderer::Initialize()
 void DeferredRenderer::RenderScene(Scene const & scene) const
 {
 	static std::vector<std::pair<GlobalLight const *, glm::vec3>> globalLights(100);
-	static std::vector<struct LocalLightInformation> localLights(1000);
 	static std::vector<Object const *> reflectiveObjects(1000);
 
 	globalLights.clear();
-	localLights.clear();
+	m_localLightsBuffer.m_buffer.clear();
 	reflectiveObjects.clear();
 
 	//upload global uniform data
 	m_sceneUniformBuffer.SetUniform("uScene.ProjectionMatrix", scene.GetProjectionMatrix());
 	m_sceneUniformBuffer.SetUniform("uScene.ViewMatrix", scene.GetViewMatrix());
 	m_sceneUniformBuffer.SetUniform("uScene.WindowSize", glm::vec2(m_defaultFramebuffer.width, m_defaultFramebuffer.height));
-	m_sceneUniformBuffer.SetUniform("uScene.SceneSize", glm::vec3(10, 10, 10));
+	m_sceneUniformBuffer.SetUniform("uScene.SceneSize", scene.GetSceneSize());
 	m_sceneUniformBuffer.SetUniform("uScene.EyePosition", glm::vec3(glm::inverse(scene.GetViewMatrix()) * glm::vec4(0, 0, 0, 1)));
 	m_sceneUniformBuffer.UploadBuffer();
 
@@ -88,10 +81,10 @@ void DeferredRenderer::RenderScene(Scene const & scene) const
 //-------------------------------------------------------------------------------------------------------
 
 	m_deferredPass.Prepare(scene);
-	m_deferredPass.ProcessScene(scene, &globalLights, &localLights, nullptr);
+	m_deferredPass.ProcessScene(scene, &globalLights, &m_localLightsBuffer.m_buffer, nullptr);
 
 	//upload local light information
-	glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(struct LocalLightInformation)*localLights.size(), &localLights[0]);
+	m_localLightsBuffer.Upload();
 
 //-------------------------------------------------------------------------------------------------------
 //SHADOW MAP PASS
@@ -111,24 +104,23 @@ void DeferredRenderer::RenderScene(Scene const & scene) const
 //LIGHTING PASS
 //-------------------------------------------------------------------------------------------------------
 
-	//enable gamma correction
-
 	m_lightingPass.Prepare(scene);
 
 	//enable gamme correction
 	glEnable(GL_FRAMEBUFFER_SRGB);
 
+	m_lightingPass.ProcessAmbientLight();
 	m_lightingPass.ProcessGlobalLights(globalLights);
-	m_lightingPass.ProcessLocalLights(localLights.size());
+	m_lightingPass.ProcessLocalLights(m_localLightsBuffer.m_buffer.size());
 	
 	//disable gamma correction
 	glDisable(GL_FRAMEBUFFER_SRGB);
 	
 //-------------------------------------------------------------------------------------------------------
-//DEBUG PASS
+//DEBUG DRAWING
 //-------------------------------------------------------------------------------------------------------
 	
-	/*glDisable(GL_BLEND);
+	glDisable(GL_BLEND);
 	glEnable(GL_DEPTH_TEST);
 	
 	m_debugProgram.Use();
@@ -136,15 +128,10 @@ void DeferredRenderer::RenderScene(Scene const & scene) const
 	glBindVertexArray(Shape::GetWireCircle()->GetVAO());
 	glEnableVertexAttribArray(0);
 	
-	for (auto const & lightPair : localLights)
-	{
-		m_debugProgram.SetUniform("uPosition", lightPair.second);
-		m_debugProgram.SetUniform("uScale", lightPair.first->GetRadius());
-		glDrawElements(GL_LINE_LOOP, Shape::GetWireCircle()->GetIndexCount(), GL_UNSIGNED_INT, 0);
-	}
+	glDrawElementsInstanced(GL_LINE_LOOP, Shape::GetWireCircle()->GetIndexCount(), GL_UNSIGNED_INT, 0, m_localLightsBuffer.m_buffer.size());
 
 	glDisableVertexAttribArray(0);
-	glBindVertexArray(0);*/
+	glBindVertexArray(0);
 }
 
 void DeferredRenderer::Resize(int const & width, int const & height)
@@ -227,6 +214,8 @@ void DeferredRenderer::Finalize()
 {
 	FreeGBuffer();
 	FreeShadowBuffer();
+
+	m_localLightsBuffer.Free();
 
 	m_lightingPass.Finalize();
 	m_shadowPass.Finalize();

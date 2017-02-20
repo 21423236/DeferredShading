@@ -27,12 +27,15 @@ public:
 	//getters
 	Camera const & GetCamera() const;
 	Camera & GetCamera();
-
 	glm::mat4 const & GetProjectionMatrix() const;
 	glm::mat4 const & GetViewMatrix() const;
+	glm::vec3 const & GetSceneSize() const;
+	glm::vec3 const & GetAmbientIntensity() const;
 
 	//setters
 	void SetProjection(float const & ry, float const & front, float const & back);
+	void SetSceneSize(glm::vec3 const & sceneSize);
+	void SetAmbientIntensity(glm::vec3 const & ambientIntensity);
 	void SetWindowWidth(unsigned const & width);
 	void SetWindowHeight(unsigned const & height);
 
@@ -58,6 +61,8 @@ private:
 
 	glm::mat4 m_projectionMatrix;
 	glm::mat4 m_viewMatrix;
+	glm::vec3 m_sceneSize;
+	glm::vec3 m_ambientIntensity;
 
 	unsigned m_windowWidth;
 	unsigned m_windowHeight;

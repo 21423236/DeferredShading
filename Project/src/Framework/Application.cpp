@@ -167,13 +167,13 @@ void Application::Initialize()
 	{
 		for (int c = 0; c < 100; c++)
 		{
-			LocalLight * localLight = new LocalLight(std::to_string((r*10) + c), glm::vec3(sinf(c*r/10000.0f*M_PI), sinf(c/100.0f*M_PI), sinf(r/100.0f*M_PI)), 1.0f);
+			LocalLight * localLight = new LocalLight(std::to_string((r*100) + c), glm::vec3(sinf(c*r/10000.0f*M_PI), sinf(c/100.0f*M_PI), sinf(r/100.0f*M_PI)), 1.0f);
 			localLight->SetTranslation(glm::vec3(-3.5 + (7.0f / 100.0f) * c, sinf(r/100.0f * M_PI)*0.05f, -3.5 + (7.0f / 100.0f) * r));
-			localLight->SetRadius(0.1f + sinf(r/100.0f * M_PI)*0.25f);
+			localLight->SetRadius(0.5f + sinf(r/100.0f * M_PI)*0.25f);
 			lights->AddChild(localLight);
 		}
 	}
-	m_scene->AddNode(lights);*/
+	m_scene->AddNode(lights);*/ 
 
 	LocalLight * localLight1 = new LocalLight("local1", glm::vec3(4, 0, 0), 1.0f);
 	localLight1->SetTranslation(glm::vec3(-2.0f, 1.0f, 0));
@@ -196,6 +196,8 @@ void Application::Initialize()
 	m_scene->AddNode(globalLight2);
 
 	m_scene->SetProjection(0.2f, 0.1f, 1000.0f);
+	m_scene->SetSceneSize(glm::vec3(14.0f, 14.0f, 14.0f));
+	m_scene->SetAmbientIntensity(glm::vec3(0.1f, 0.1f, 0.1f));
 	m_scene->GetCamera().SetZoom(10.0f);
 }
 
