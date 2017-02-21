@@ -491,7 +491,9 @@ void GUI::GenerateGUI(Scene & scene)
 		ImGui::Spacing();
 		if (ImGui::Button("Load Mesh"))
 		{
-
+			std::string path = scene.OpenFile("Wavefront OBJ\0*.obj\0");
+			if (path != "")
+				scene.CreateMesh(std::string(path.end() - 5, path.end()), path);
 		}
 		ImGui::Spacing();
 	}
@@ -521,29 +523,9 @@ void GUI::GenerateGUI(Scene & scene)
 		
 		if (ImGui::Button("Load Texture"))
 		{
-			ImGui::OpenPopup("Load from file");
-		}
-
-		ImGui::SetNextWindowSize(ImVec2(300, 150));
-		if (ImGui::BeginPopupModal("Load from file", 0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings))
-		{
-			static char pathBuffer[500];
-			static char nameBuffer[128];
-
-			ImGui::InputText("File Path", pathBuffer, 500);
-			ImGui::InputText("Texture Name", nameBuffer, 128);
-
-			if (ImGui::Button("Load"))
-			{
-				scene.CreateTexture(std::string(nameBuffer), std::string(pathBuffer), true);
-				ImGui::CloseCurrentPopup();
-			}
-			ImGui::SameLine();
-			if (ImGui::Button("Cancel"))
-			{
-				ImGui::CloseCurrentPopup();
-			}
-			ImGui::EndPopup();
+			std::string path = scene.OpenFile("PNG\0*.png\0");
+			if(path != "")
+				scene.CreateTexture(std::string(path.end() - 5, path.end()), path, true);
 		}
 
 		ImGui::Separator();

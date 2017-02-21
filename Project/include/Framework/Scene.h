@@ -7,7 +7,7 @@
 #include <map>
 #include <string>
 
-
+class Application;
 class Mesh;
 class Material;
 class IRenderPass;
@@ -42,7 +42,7 @@ public:
 	friend class GUI;
 
 	//constructors/destructor
-	Scene(unsigned const & windowWidth, unsigned const & windowHeight);
+	Scene(Application & application, unsigned const & windowWidth, unsigned const & windowHeight);
 	~Scene();
 
 	//getters
@@ -65,6 +65,8 @@ public:
 	Material * CreateMaterial(std::string const & name, glm::vec3 const & kd, glm::vec3 const & ks, float const & alpha);
 	Texture * CreateTexture(std::string const & name, std::string const & path, bool gamma = true);
 
+	std::string OpenFile(char const * filter);
+
 	void AddNode(Node * node);
 	void Traverse(IRenderPass const & pass) const;
 	void Resize(int const & width, int const & height);
@@ -82,6 +84,8 @@ private:
 
 	//private methods
 	void TraverseNode(Node * const & node, IRenderPass const & pass, glm::mat4 const & modelMatrix) const;
+
+	Application & m_application;
 
 	Node * m_rootNode;
 

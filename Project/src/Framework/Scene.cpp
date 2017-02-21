@@ -1,3 +1,4 @@
+#include <Framework/Application.h>
 #include <Framework/Scene.h>
 #include <Framework/Mesh.h>
 #include <Framework/Material.h>
@@ -10,7 +11,7 @@
 
 #pragma region "Constructors/Destructor"
 
-Scene::Scene(unsigned const & windowWidth, unsigned const & windowHeight) : m_rootNode(new Node("Root")), m_camera(m_viewMatrix), m_meshes(), m_materials(), m_textures(), m_projectionMatrix(), m_viewMatrix(), m_sceneSize(glm::vec3(1, 1, 1)), m_ambientIntensity(glm::vec3(0, 0, 0)), m_windowWidth(windowWidth), m_windowHeight(windowHeight)
+Scene::Scene(Application & application, unsigned const & windowWidth, unsigned const & windowHeight) : m_application(application), m_rootNode(new Node("Root")), m_camera(m_viewMatrix), m_meshes(), m_materials(), m_textures(), m_projectionMatrix(), m_viewMatrix(), m_sceneSize(glm::vec3(1, 1, 1)), m_ambientIntensity(glm::vec3(0, 0, 0)), m_windowWidth(windowWidth), m_windowHeight(windowHeight)
 {
 
 }
@@ -255,6 +256,11 @@ Texture * Scene::CreateTexture(std::string const & name, std::string const & pat
 	struct TextureInfo info = { path, texture, 0 };
 	m_textures.push_back(std::make_pair(name, info));
 	return texture;
+}
+
+std::string Scene::OpenFile(char const * filter)
+{
+	return m_application.OpenFile(filter);
 }
 
 void Scene::AddNode(Node * node)

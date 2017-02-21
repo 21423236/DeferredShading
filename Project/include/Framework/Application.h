@@ -30,6 +30,8 @@ public:
 	void RenderFrame() const;
 	int Run();
 
+	std::string OpenFile(char const * filter);
+
 	float dt() const;
 
 protected:

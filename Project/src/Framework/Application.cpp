@@ -22,7 +22,7 @@ std::map<HWND, Application*> Application::s_applicationDictionary;
 
 #pragma region "Constructors/Destructor"
 
-Application::Application(IRenderer * renderer) : m_window(new Window(WndProcRouter)), m_scene(new Scene(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT)), m_renderer(renderer), m_gui(new GUI()), m_input(new Input(this)), m_running(false), m_isPaused(false), m_width(DEFAULT_WINDOW_WIDTH), m_height(DEFAULT_WINDOW_HEIGHT)
+Application::Application(IRenderer * renderer) : m_window(new Window(WndProcRouter)), m_scene(new Scene(*this, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT)), m_renderer(renderer), m_gui(new GUI()), m_input(new Input(this)), m_running(false), m_isPaused(false), m_width(DEFAULT_WINDOW_WIDTH), m_height(DEFAULT_WINDOW_HEIGHT)
 {
 
 }
@@ -127,6 +127,36 @@ int Application::Run()
 	m_window->Destroy();
 
 	return retValue;
+}
+
+std::string Application::OpenFile(char const * filter)
+{
+	m_isPaused = true;
+
+	char szFile[100];
+
+	OPENFILENAME ofn;
+	ZeroMemory(&ofn, sizeof(ofn));
+	ofn.lStructSize = sizeof(ofn);
+	ofn.hwndOwner = NULL;
+	ofn.lpstrFile = szFile;
+	ofn.lpstrFile[0] = '\0';
+	ofn.nMaxFile = sizeof(szFile);
+	ofn.lpstrFilter = filter;
+	ofn.nFilterIndex = 1;
+	ofn.lpstrFileTitle = NULL;
+	ofn.nMaxFileTitle = 0;
+	ofn.lpstrInitialDir = NULL;
+	ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+
+	if (GetOpenFileName(&ofn))
+	{
+		m_isPaused = false;
+		return std::string(szFile);
+	}
+
+	m_isPaused = false;
+	return "";
 }
 
 float Application::dt() const
