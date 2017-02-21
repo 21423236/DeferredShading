@@ -28,25 +28,16 @@ static char const * DefaultName = "None";
 struct MaterialCombo {
 	static bool choices (void * data, int index, char const ** outName)
 	{
-		if (index == 0)
-		{
-			*outName = DefaultName;
-			return true;
-		}
-
 		std::vector<std::pair<std::string, Material*>> * materials = (std::vector<std::pair<std::string, Material*>>*)data;
-		*outName = (*materials)[index-1].first.c_str();
+		*outName = (*materials)[index].first.c_str();
 		return true;
 	}
 
 	static int indexForMaterial(Material * material, std::vector<std::pair<std::string, Material*>>* materials)
 	{
-		if (!material)
-			return 0;
-
-		for (int i = 1; i <= materials->size(); ++i)
+		for (int i = 0; i < materials->size(); ++i)
 		{
-			if ((*materials)[i - 1].second == material)
+			if ((*materials)[i].second == material)
 				return i;
 		}
 
@@ -57,25 +48,16 @@ struct MaterialCombo {
 struct MeshCombo {
 	static bool choices(void * data, int index, char const ** outName)
 	{
-		if (index == 0)
-		{
-			*outName = DefaultName;
-			return true;
-		}
-
 		std::vector<std::pair<std::string, Mesh*>> *meshes = (std::vector<std::pair<std::string, Mesh*>>*)data;
-		*outName = (*meshes)[index - 1].first.c_str();
+		*outName = (*meshes)[index].first.c_str();
 		return true;
 	}
 
 	static int indexForMesh(Mesh * mesh, std::vector<std::pair<std::string, Mesh*>>* meshes)
 	{
-		if (!mesh)
-			return 0;
-
-		for (int i = 1; i <= meshes->size(); ++i)
+		for (int i = 0; i < meshes->size(); ++i)
 		{
-			if ((*meshes)[i - 1].second == mesh)
+			if ((*meshes)[i].second == mesh)
 				return i;
 		}
 
@@ -172,9 +154,9 @@ void GUI::TraverseNode(Node * node, Scene & scene)
 			ImGui::PushItemWidth(-1);
 			ImGui::PushID(0);
 			int currentMesh = MeshCombo::indexForMesh(object->m_mesh, &scene.m_meshes);
-			if (ImGui::Combo("", &currentMesh, MeshCombo::choices, &scene.m_meshes, scene.m_meshes.size()+1))
+			if (ImGui::Combo("", &currentMesh, MeshCombo::choices, &scene.m_meshes, scene.m_meshes.size()))
 			{
-
+				object->m_mesh = scene.m_meshes[currentMesh].second;
 			}
 			ImGui::PopID();
 			ImGui::PopItemWidth();
@@ -186,9 +168,9 @@ void GUI::TraverseNode(Node * node, Scene & scene)
 			ImGui::PushItemWidth(-1);
 			ImGui::PushID(1);
 			int currentMaterial = MaterialCombo::indexForMaterial(object->m_material, &scene.m_materials);
-			if (ImGui::Combo("", &currentMaterial, MaterialCombo::choices, &scene.m_materials, scene.m_materials.size()+1))
+			if (ImGui::Combo("", &currentMaterial, MaterialCombo::choices, &scene.m_materials, scene.m_materials.size()))
 			{
-
+				object->m_material = scene.m_materials[currentMaterial].second;
 			}
 			ImGui::PopID();
 			ImGui::PopItemWidth();
