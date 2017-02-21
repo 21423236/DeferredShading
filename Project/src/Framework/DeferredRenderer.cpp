@@ -15,7 +15,7 @@
 
 #pragma region "Constructors/Destructor"
 
-DeferredRenderer::DeferredRenderer() : m_gBuffer({ 0, Texture(1, Texture::POSITIONS), Texture(2, Texture::NORMALS), Texture(3), Texture(4), 0, 0, 0, {0, 0, 0, 0} }), m_shadowBuffer({ 0, 0, 0, 0, 0 }), m_defaultFramebuffer({ 0, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, GL_BACK_LEFT }), m_sceneUniformBuffer(0), m_localLightsBuffer(1, 1000), m_debugProgram(), m_deferredPass(this), m_shadowPass(this), m_lightingPass(this)
+DeferredRenderer::DeferredRenderer() : m_gBuffer({ 0, Texture(1, Texture::POSITIONS), Texture(2, Texture::NORMALS), Texture(3), Texture(4), 0, 0, 0, {0, 0, 0, 0} }), m_shadowBuffer({ 0, 0, 0, 0, 0 }), m_defaultFramebuffer({ 0, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, GL_BACK_LEFT }), m_sceneUniformBuffer(0), m_localLightsBuffer(1, 1000), m_debugProgram(), m_deferredPass(this), m_shadowPass(this), m_lightingPass(this), m_gatherStatistics(false), m_displayLightVolumes(false)
 {
 	
 }
@@ -118,21 +118,30 @@ void DeferredRenderer::RenderScene(Scene const & scene) const
 	glDisable(GL_FRAMEBUFFER_SRGB);
 	
 //-------------------------------------------------------------------------------------------------------
+//FORWARD PASS (skydome, transparent objects)
+//-------------------------------------------------------------------------------------------------------
+
+
+
+//-------------------------------------------------------------------------------------------------------
 //DEBUG DRAWING
 //-------------------------------------------------------------------------------------------------------
 	
-	glDisable(GL_BLEND);
-	glEnable(GL_DEPTH_TEST);
-	
-	m_debugProgram.Use();
+	if (m_displayLightVolumes)
+	{
+		glDisable(GL_BLEND);
+		glEnable(GL_DEPTH_TEST);
 
-	glBindVertexArray(Shape::GetWireCircle()->GetVAO());
-	glEnableVertexAttribArray(0);
-	
-	glDrawElementsInstanced(GL_LINE_LOOP, Shape::GetWireCircle()->GetIndexCount(), GL_UNSIGNED_INT, 0, m_localLightsBuffer.m_buffer.size());
+		m_debugProgram.Use();
 
-	glDisableVertexAttribArray(0);
-	glBindVertexArray(0);
+		glBindVertexArray(Shape::GetWireCircle()->GetVAO());
+		glEnableVertexAttribArray(0);
+
+		glDrawElementsInstanced(GL_LINE_LOOP, Shape::GetWireCircle()->GetIndexCount(), GL_UNSIGNED_INT, 0, m_localLightsBuffer.m_buffer.size());
+
+		glDisableVertexAttribArray(0);
+		glBindVertexArray(0);
+	}
 }
 
 void DeferredRenderer::Resize(int const & width, int const & height)
@@ -145,38 +154,129 @@ void DeferredRenderer::Resize(int const & width, int const & height)
 
 void DeferredRenderer::GenerateGUI()
 {
-	ImGui::Begin("Deferred Renderer");
-
-	ImGui::Text("Intermediate Data:");
-	ImGui::Indent(16.0f);
-
-	if (ImGui::TreeNode("Positions"))
+	if (!ImGui::Begin("Deferred Renderer", 0, ImGuiWindowFlags_ShowBorders))
 	{
-		ImGui::Image((void *)&m_gBuffer.colorBuffer0, ImVec2(300, 300), ImVec2(0, 1), ImVec2(1, 0));
-		ImGui::TreePop();
+		ImGui::End();
+		return;
 	}
 
-	if (ImGui::TreeNode("Normals"))
+	if (ImGui::CollapsingHeader("Debug Options"))
 	{
-		ImGui::Image((void*)&m_gBuffer.colorBuffer1, ImVec2(300, 300), ImVec2(0, 1), ImVec2(1, 0));
-		ImGui::TreePop();
+		ImGui::Checkbox("Gather Statistics", &m_gatherStatistics);
+		ImGui::Checkbox("Display Light Volumes", &m_displayLightVolumes);
 	}
 
-	if (ImGui::TreeNode("Kd"))
+	if (ImGui::CollapsingHeader("Geometry Pass"))
 	{
-		ImGui::Image((void*)&m_gBuffer.colorBuffer2, ImVec2(300, 300), ImVec2(0, 1), ImVec2(1, 0));
-		ImGui::TreePop();
+		ImGui::Text("Statistics:");
+		ImGui::Text("Elapsed Time:");
+		ImGui::SameLine();
+		
+		if (m_gatherStatistics)
+			ImGui::Text("time");
+		else
+			ImGui::Text("N/A");
+
+		ImGui::Separator();
+		
+		ImGui::Text("Intermediate Results:");
+		if (ImGui::TreeNode("Positions"))
+		{
+			ImGui::Image((void*)&m_gBuffer.colorBuffer0, ImVec2(300, 300), ImVec2(0, 1), ImVec2(1, 0));
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::BeginTooltip();
+				ImGui::Text("Format: (P.x, P.y, P.z, P.w)");
+				ImGui::Text("Size: %i x %i", m_gBuffer.colorBuffer0.m_width, m_gBuffer.colorBuffer0.m_height);
+				ImGui::EndTooltip();
+			}
+			ImGui::TreePop();
+		}
+		if (ImGui::TreeNode("Normals"))
+		{
+			ImGui::Image((void*)&m_gBuffer.colorBuffer1, ImVec2(300, 300), ImVec2(0, 1), ImVec2(1, 0));
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::BeginTooltip();
+				ImGui::Text("Format: (N.x, N.y, N.z, 1)");
+				ImGui::Text("Size: %i x %i", m_gBuffer.colorBuffer1.m_width, m_gBuffer.colorBuffer1.m_height);
+				ImGui::EndTooltip();
+			}
+			ImGui::TreePop();
+		}
+		if (ImGui::TreeNode("Kd"))
+		{
+			ImGui::Image((void*)&m_gBuffer.colorBuffer2, ImVec2(300, 300), ImVec2(0, 1), ImVec2(1, 0));
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::BeginTooltip();
+				ImGui::Text("Format: (Kd.r, Kd.g, Kd.b, 1");
+				ImGui::Text("Size: %i x %i", m_gBuffer.colorBuffer2.m_width, m_gBuffer.colorBuffer3.m_height);
+				ImGui::EndTooltip();
+			}
+			ImGui::TreePop();
+		}
+		if (ImGui::TreeNode("Ks/alpha"))
+		{
+			ImGui::Image((void*)&m_gBuffer.colorBuffer3, ImVec2(300, 300), ImVec2(0, 1), ImVec2(1, 0));
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::BeginTooltip();
+				ImGui::Text("Format: (Ks.r, Ks.g, Ks.b, alpha)");
+				ImGui::Text("Size: %i x %i", m_gBuffer.colorBuffer3.m_width, m_gBuffer.colorBuffer3.m_height);
+				ImGui::EndTooltip();
+			}
+			ImGui::TreePop();
+		}
 	}
 
-	if (ImGui::TreeNode("Ks/alpha"))
+	if (ImGui::CollapsingHeader("Shadow Pass"))
 	{
-		ImGui::Image((void*)&m_gBuffer.colorBuffer3, ImVec2(300, 300), ImVec2(0, 1), ImVec2(1, 0));
-		ImGui::TreePop();
+		ImGui::Text("Statistics:");
+		ImGui::Spacing();
+		ImGui::Text("Elapsed Time:");
+		ImGui::SameLine();
+
+		if (m_gatherStatistics)
+			ImGui::Text("time");
+		else
+			ImGui::Text("N/A");
+
+		ImGui::Text("Lights Processed: %i", m_shadowPass.GetNumberOfProcessedLights());
+
+		ImGui::Separator();
 	}
 
-	ImGui::Unindent(16.0f);
+	if (ImGui::CollapsingHeader("Lighting Pass"))
+	{
+		ImGui::Text("Statistics:");
+		ImGui::Text("Elapsed Time:");
+		ImGui::SameLine();
+
+		if (m_gatherStatistics)
+			ImGui::Text("time");
+		else
+			ImGui::Text("N/A");
+
+		ImGui::Separator();
+	}
+
+	if (ImGui::CollapsingHeader("Forward Pass"))
+	{
+		ImGui::Text("Statistics:");
+		ImGui::Text("Elapsed Time:");
+		ImGui::SameLine();
+
+		if (m_gatherStatistics)
+			ImGui::Text("time");
+		else
+			ImGui::Text("N/A");
+
+		ImGui::Separator();
+	}
 
 	ImGui::End();
+	
 }
 
 void DeferredRenderer::BindGBuffer() const

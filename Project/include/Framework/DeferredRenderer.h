@@ -79,4 +79,7 @@ private:
 	ShadowPass m_shadowPass;
 	LightingPass m_lightingPass;
 
+	bool m_gatherStatistics;
+	bool m_displayLightVolumes;
+
 };

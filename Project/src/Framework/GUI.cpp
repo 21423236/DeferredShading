@@ -361,30 +361,32 @@ void GUI::GenerateGUI(Scene & scene)
 		return;
 	}
 
-	ImGui::Columns(2);
+	if (ImGui::CollapsingHeader("Environment"))
+	{
+		ImGui::Columns(2);
 
-	ImGui::Text("Scene Size:");
-	ImGui::NextColumn();
+		ImGui::Text("Scene Size:");
+		ImGui::NextColumn();
 
-	ImGui::PushItemWidth(-1);
-	ImGui::PushID(300);
-	ImGui::InputFloat3("", &scene.m_sceneSize[0]);
-	ImGui::PopID();
-	ImGui::PopItemWidth();
-	ImGui::NextColumn();
+		ImGui::PushItemWidth(-1);
+		ImGui::PushID(300);
+		ImGui::InputFloat3("", &scene.m_sceneSize[0]);
+		ImGui::PopID();
+		ImGui::PopItemWidth();
+		ImGui::NextColumn();
 
-	ImGui::Text("Ambient Intensity:");
-	ImGui::NextColumn();
+		ImGui::Text("Ambient Intensity:");
+		ImGui::NextColumn();
 
-	ImGui::PushItemWidth(-1);
-	ImGui::PushID(301);
-	ImGui::InputFloat3("", &scene.m_ambientIntensity[0]);
-	ImGui::PopID();
-	ImGui::PopItemWidth();
-	ImGui::NextColumn();
+		ImGui::PushItemWidth(-1);
+		ImGui::PushID(301);
+		ImGui::InputFloat3("", &scene.m_ambientIntensity[0]);
+		ImGui::PopID();
+		ImGui::PopItemWidth();
+		ImGui::NextColumn();
 
-	ImGui::Columns(1);
-	ImGui::Spacing();
+		ImGui::Columns(1);
+	}
 
 	if (ImGui::CollapsingHeader("Camera"))
 	{
@@ -457,6 +459,11 @@ void GUI::GenerateGUI(Scene & scene)
 				ImGui::TreePop();
 			}
 			ImGui::Separator();
+			
+		}
+		if (ImGui::Button("Create Material"))
+		{
+			scene.CreateMaterial("test", glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), 1.0f);
 		}
 	}
 

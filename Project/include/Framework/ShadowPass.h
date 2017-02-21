@@ -21,7 +21,12 @@ public:
 	void ProcessNode(Node const * const & node, glm::mat4 const & modelMatrix) const;
 	void Finalize();
 
+	//statistical information
+	unsigned int const & GetNumberOfProcessedLights() const;
+
 private:
+
+	mutable std::vector<std::pair<GlobalLight const *, glm::vec3>> const * m_globalLights;
 
 	Program m_shadowProgram;
 

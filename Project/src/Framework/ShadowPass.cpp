@@ -11,7 +11,7 @@
 
 #pragma region "Constructors/Destructor"
 
-ShadowPass::ShadowPass(IRenderer const * renderer) : IRenderPass(renderer)
+ShadowPass::ShadowPass(IRenderer const * renderer) : IRenderPass(renderer), m_shadowProgram(), m_globalLights(nullptr)
 {
 }
 
@@ -50,6 +50,8 @@ void ShadowPass::Prepare(Scene const & scene) const
 
 void ShadowPass::ProcessScene(Scene const & scene, std::vector<std::pair<GlobalLight const *, glm::vec3>> const & globalLights) const
 {
+	m_globalLights = &globalLights;
+
 	for (auto const & lightPair : globalLights)
 	{
 		//bind shadow framebuffer
@@ -82,6 +84,17 @@ void ShadowPass::ProcessNode(Node const * const & node, glm::mat4 const & modelM
 void ShadowPass::Finalize()
 {
 
+}
+
+#pragma endregion
+
+#pragma region "Statistical Information"
+
+unsigned int const & ShadowPass::GetNumberOfProcessedLights() const
+{
+	if(m_globalLights)
+		return m_globalLights->size();
+	return 0;
 }
 
 #pragma endregion
