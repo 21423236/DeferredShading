@@ -32,6 +32,7 @@ public:
 	glm::mat4 const & GetViewMatrix() const;
 	glm::vec3 const & GetSceneSize() const;
 	glm::vec3 const & GetAmbientIntensity() const;
+	char const * GetMaterialName(int index) const;
 
 	//setters
 	void SetProjection(float const & ry, float const & front, float const & back);
@@ -61,7 +62,14 @@ private:
 
 	std::map<std::string, Mesh *> m_meshes;
 	std::map<std::string, Material *> m_materials;
-	std::map<std::string, Texture *> m_textures;
+
+	struct TextureInfo
+	{
+		std::string path;
+		Texture * texture;
+	};
+
+	std::map<std::string, struct TextureInfo> m_textures;
 
 	glm::mat4 m_projectionMatrix;
 	glm::mat4 m_viewMatrix;

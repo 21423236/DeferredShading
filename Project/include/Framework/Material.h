@@ -6,6 +6,9 @@
 class Material
 {
 public:
+
+	friend class GUI;
+
 	Material(glm::vec3 const & kd, glm::vec3 const & ks, float const & alpha);
 	~Material();
 

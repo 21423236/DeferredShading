@@ -4,6 +4,9 @@ class Window;
 class Scene;
 class Node;
 class Material;
+class Object;
+class GlobalLight;
+class LocalLight;
 
 class GUI
 {
@@ -20,9 +23,7 @@ public:
 
 private:
 
-	void TraverseGraph(Node * node);
-	void MaterialEditor(Material * material);
-	void NodeInformation(Node * node);
-
+	void TraverseNode(Node * node, Scene & scene);
+	void MaterialEditor(Material * material, Scene & scene);
 };
 

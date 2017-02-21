@@ -54,6 +54,15 @@ glm::vec3 const & Scene::GetAmbientIntensity() const
 	return m_ambientIntensity;
 }
 
+char const * Scene::GetMaterialName(int index) const
+{
+	int i = 0;
+	for (auto it = m_materials.cbegin(); it != m_materials.cend(); ++it, ++i)
+		if (i == index)
+			return it->first.c_str();
+	return "";
+}
+
 #pragma endregion
 
 #pragma region "Setters"
@@ -117,7 +126,7 @@ Material * Scene::CreateMaterial(std::string const & name, glm::vec3 const & kd,
 
 Texture * Scene::CreateTexture(std::string const & name, std::string const & path, bool gamma)
 {
-	m_textures[name] = new Texture(7, Texture::NONE);
+	m_textures[name] = { path, new Texture(7, Texture::NONE) };
 
 	png_byte header[8];
 
@@ -233,7 +242,7 @@ Texture * Scene::CreateTexture(std::string const & name, std::string const & pat
 	png_read_image(png_ptr, row_pointers);
 
 	// initialize texture object
-	m_textures[name]->Initialize(temp_width, temp_height, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, image_data);
+	m_textures[name].texture->Initialize(temp_width, temp_height, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, image_data);
 
 	// clean up
 	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
@@ -241,7 +250,7 @@ Texture * Scene::CreateTexture(std::string const & name, std::string const & pat
 	free(row_pointers);
 	fclose(fp);
 
-	return m_textures[name];
+	return m_textures[name].texture;
 }
 
 void Scene::AddNode(Node * node)
@@ -276,7 +285,8 @@ void Scene::FreeMemory()
 		delete material.second;
 
 	for (auto texture : m_textures)
-		delete texture.second;
+		delete texture.second.texture;
+	m_textures.clear();
 }
 
 #pragma endregion

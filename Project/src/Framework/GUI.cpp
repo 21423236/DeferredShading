@@ -10,6 +10,52 @@
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl.h>
 
+#define _USE_MATH_DEFINES
+#include <math.h>
+
+struct Grapher {
+	static float graph(void * data, int idx)
+	{
+		float const & alpha = ((Material*)data)->GetAlpha();
+		float radian = (float)idx*(M_PI / 70.0f);
+		float result = ((alpha + 2.0f) / 2 * M_PI) * powf(sinf(radian), alpha);
+		return result;
+	}
+};
+
+static char const * DefaultName = "None";
+
+struct MaterialCombo {
+	static bool choices (void * data, int index, char const ** outName)
+	{
+		if (index == 0)
+		{
+			*outName = DefaultName;
+			return true;
+		}
+
+		Scene * scene = (Scene*)data;
+		*outName = scene->GetMaterialName(index-1);
+		return true;
+	}
+};
+
+struct MeshCombo {
+	static bool choices(void * data, int index, char const ** outName)
+	{
+		if (index == 0)
+		{
+			*outName = DefaultName;
+			return true;
+		}
+
+		Scene * scene = (Scene*)data;
+		*outName = scene->GetMaterialName(index-1);
+		return true;
+	}
+};
+
+
 GUI::GUI()
 {
 }
@@ -29,130 +75,225 @@ void GUI::NewFrame(int const & width, int const & height)
 	ImGui_Impl_NewFrame(width, height);
 }
 
-void GUI::TraverseGraph(Node * node)
+#define MAX(a, b)(a>b?a:b)
+#define MIN(a, b)(a<b?a:b)
+
+void GUI::TraverseNode(Node * node, Scene & scene)
 {
 	if (!node)
 		return;
+	ImGui::Separator();
+	ImGui::PushID(node);
+	ImGui::AlignFirstTextHeightToWidgets();
+	
+	bool node_open;
 
-	for (auto child : node->m_children)
+	if (node->GetNodeType() == Node::BASE_NODE)
+		node_open = ImGui::TreeNode("Node");
+	else if (node->GetNodeType() == Node::OBJECT_NODE)
+		node_open = ImGui::TreeNode("Object");
+	else if (node->GetNodeType() == Node::GLOBAL_LIGHT_NODE)
+		node_open = ImGui::TreeNode("Global Light");
+	else if (node->GetNodeType() == Node::LOCAL_LIGHT_NODE)
+		node_open = ImGui::TreeNode("Local Light");
+
+	ImGui::NextColumn();
+	ImGui::AlignFirstTextHeightToWidgets();
+	ImGui::Text(node->GetName().c_str());
+
+	ImGui::NextColumn();
+
+	if (node_open)
 	{
-		switch (child->GetNodeType())
+		if (node->GetNodeType() == Node::OBJECT_NODE)
 		{
-		case Node::OBJECT_NODE:
-			if (ImGui::TreeNode(child, child->m_name.c_str()))
-			{
-				Object * object = dynamic_cast<Object*>(child);
-				if (ImGui::TreeNode("Material"))
-				{
-					MaterialEditor(object->m_material);
-					ImGui::TreePop();
-				}
-				if (ImGui::TreeNode("Transform"))
-				{
-					NodeInformation(child);
-					ImGui::TreePop();
-				}
-				if (child->m_children.size())
-					ImGui::Text("Children:");
-				ImGui::Indent(16.0f);
-				TraverseGraph(child);
-				ImGui::Unindent(16.0f);
-				ImGui::TreePop();
-			}
-			break;
-		case Node::GLOBAL_LIGHT_NODE:
-			if (ImGui::TreeNode(child, child->m_name.c_str()))
-			{
-				GlobalLight * light = dynamic_cast<GlobalLight*>(child);
-				if (ImGui::TreeNode("Attributes"))
-				{
-					ImGui::InputFloat3("Is", &light->m_intensity[0]);
-					ImGui::Image((void*)&light->m_shadowMap, ImVec2(150, 150), ImVec2(0, 1), ImVec2(1, 0));
-					ImGui::TreePop();
-				}
-				if (ImGui::TreeNode("Transform"))
-				{
-					NodeInformation(child);
-					ImGui::TreePop();
-				}
+			Object * object = dynamic_cast<Object*>(node);
 
-				if (child->m_children.size())
-					ImGui::Text("Children:");
-				ImGui::Indent(16.0f);
-				TraverseGraph(child);
-				ImGui::Unindent(16.0f);
-				
-				ImGui::TreePop();
-			}
-			break;
-		case Node::LOCAL_LIGHT_NODE:
-			if (ImGui::TreeNode(child, child->m_name.c_str()))
+			ImGui::Text("Mesh:");
+			ImGui::NextColumn();
+			
+			ImGui::PushItemWidth(-1);
+			ImGui::PushID(0);
+			int currentMesh = 0;
+			if (ImGui::Combo("", &currentMesh, MeshCombo::choices, &scene, scene.m_meshes.size()+1))
 			{
-				LocalLight * light = dynamic_cast<LocalLight*>(child);
-				if (ImGui::TreeNode("Attributes"))
-				{
-					ImGui::InputFloat3("Is", &light->m_intensity[0]);
-					ImGui::InputFloat("R", &light->m_radius);
-					ImGui::TreePop();
-				}
-				if (ImGui::TreeNode("Transform"))
-				{
-					NodeInformation(child);
-					ImGui::TreePop();
-				}
 
-				if (child->m_children.size())
-					ImGui::Text("Children");
-				ImGui::Indent(16.0f);
-				TraverseGraph(child);
-				ImGui::Unindent(16.0f);
-
-				ImGui::TreePop();
 			}
-			break;
-		case Node::BASE_NODE:
-			if (ImGui::TreeNode(child, child->m_name.c_str()))
+			ImGui::PopID();
+			ImGui::PopItemWidth();
+			ImGui::NextColumn();
+
+			ImGui::Text("Material:");
+			ImGui::NextColumn();
+			
+			ImGui::PushItemWidth(-1);
+			ImGui::PushID(1);
+			int currentMaterial = 0;
+			if (ImGui::Combo("", &currentMaterial, MaterialCombo::choices, &scene, scene.m_materials.size()+1))
 			{
-				if (ImGui::TreeNode("Transform"))
-				{
-					NodeInformation(child);
-					ImGui::TreePop();
-				}
-				
-				if (child->m_children.size())
-					ImGui::Text("Children:");
-				ImGui::Indent(16.0f);
-				TraverseGraph(child);
-				ImGui::Unindent(16.0f);
 
-				ImGui::TreePop();
 			}
-			break;
+			ImGui::PopID();
+			ImGui::PopItemWidth();
+			ImGui::NextColumn();
 		}
+		else if (node->GetNodeType() == Node::GLOBAL_LIGHT_NODE)
+		{
+			GlobalLight * globalLight = dynamic_cast<GlobalLight*>(node);
+
+			ImGui::Text("Intensity:");
+			ImGui::NextColumn();
+			
+			ImGui::PushItemWidth(-1);
+			ImGui::PushID(0);
+			ImGui::InputFloat3("", &globalLight->m_intensity[0]);
+			ImGui::PopID();
+			ImGui::PopItemWidth();
+			ImGui::NextColumn();
+
+			ImGui::Text("Shadow Map:");
+			ImGui::NextColumn();
+
+			ImGui::PushItemWidth(-1);
+			ImGui::Image((void*)&globalLight->m_shadowMap, ImVec2(100, 100));
+			ImGui::PopItemWidth();
+			ImGui::NextColumn();
+		}
+		else if (node->GetNodeType() == Node::LOCAL_LIGHT_NODE)
+		{
+			//LocalLightEditor(dynamic_cast<LocalLight*>(node), true);
+			LocalLight * localLight = dynamic_cast<LocalLight*>(node);
+
+			ImGui::Text("Intensity:");
+			ImGui::NextColumn();
+
+			ImGui::PushItemWidth(-1);
+			ImGui::PushID(0);
+			ImGui::InputFloat3("", &localLight->m_intensity[0]);
+			ImGui::PopID();
+			ImGui::PopItemWidth();
+			ImGui::NextColumn();
+
+			ImGui::Text("Radius:");
+			ImGui::NextColumn();
+
+			ImGui::PushItemWidth(-1);
+			ImGui::PushID(1);
+			ImGui::InputFloat("", &localLight->m_radius);
+			ImGui::PopID();
+			ImGui::PopItemWidth();
+			ImGui::NextColumn();
+		}
+
+		ImGui::Text("Translation:");
+		ImGui::NextColumn();
+		
+		ImGui::PushItemWidth(-1);
+		ImGui::PushID(10);
+		ImGui::InputFloat3("", &node->m_translation[0]);
+		ImGui::PopID();
+		ImGui::PopItemWidth();
+		ImGui::NextColumn();
+		
+		ImGui::Text("Scale:");
+		ImGui::NextColumn();
+		
+		ImGui::PushItemWidth(-1);
+		ImGui::PushID(11);
+		ImGui::InputFloat3("", &node->m_scale[0]);
+		ImGui::PopID();
+		ImGui::PopItemWidth();
+		ImGui::NextColumn();
+
+		ImGui::Text("Orientation");
+		ImGui::NextColumn();
+
+		ImGui::PushItemWidth(-1);
+		ImGui::PushID(12);
+		ImGui::InputFloat4("", &node->m_orientation[0]);
+		ImGui::PopID();
+		ImGui::PopItemWidth();
+		ImGui::NextColumn();
+
+		for (auto child : node->m_children)
+			TraverseNode(child, scene);
+		ImGui::TreePop();
 	}
+
+	ImGui::PopID();
 }
 
-void GUI::MaterialEditor(Material * material)
+void GUI::MaterialEditor(Material * material, Scene & scene)
 {
-	ImGui::InputFloat3("Kd", &material->GetKd()[0]);
-	ImGui::InputFloat3("Ks", &material->GetKs()[0]);
-	ImGui::InputFloat("A", &material->GetAlpha());
-}
+	ImGui::PushItemWidth(-1);
+	ImGui::Text("Kd:   ");ImGui::SameLine();
+	ImGui::DragFloat3("Kd", &material->m_kd[0], 0.01f, 0.0f, 1.0f);
+	ImGui::Text("Ks:   ");ImGui::SameLine();
+	ImGui::DragFloat3("Ks", &material->m_ks[0], 0.01f, 0.0f, 1.0f);
+	ImGui::Text("Alpha:"); ImGui::SameLine();
+	ImGui::SliderFloat("Alpha", &material->m_alpha, 1.0f, 500.0f);
+	ImGui::Text("D(H): "); ImGui::SameLine();
+	ImGui::PlotLines("D(H)", Grapher::graph, material, 70, 0, NULL, 0.0f, 500.0f, ImVec2(0, 60));
+	ImGui::PopItemWidth();
+	
+	ImGui::Spacing();
 
-void GUI::NodeInformation(Node * node)
-{
-	ImGui::InputFloat3("T", &node->m_translation[0]);
-	ImGui::InputFloat4("R", &node->m_orientation[0]);
-	ImGui::InputFloat3("S", &node->m_scale[0]);
-}
+	ImGui::Columns(3);
+	ImGui::Text("D:");
+	ImGui::SameLine();
+	int currentDiffuse = 0;
+	ImGui::PushID(100);
+	if (ImGui::Combo("", &currentDiffuse, MaterialCombo::choices, &scene, scene.m_materials.size() + 1))
+	{
 
-#define MAX(a, b)(a>b?a:b)
-#define MIN(a, b)(a<b?a:b)
+	}
+	ImGui::PopID();
+	if (material->HasDiffuseMap())
+	{
+		ImGui::Spacing();
+		ImGui::Image((void*)(material->m_diffuseMap), ImVec2(100, 100));
+	}
+
+	ImGui::NextColumn();
+	ImGui::Text("N:");
+	ImGui::SameLine();
+	int currentNormal = 0;
+	ImGui::PushID(101);
+	if (ImGui::Combo("", &currentNormal, MaterialCombo::choices, &scene, scene.m_materials.size() + 1))
+	{
+
+	}
+	ImGui::PopID();
+	if (material->HasNormalMap())
+	{
+		ImGui::Spacing();
+		ImGui::Image((void*)(material->m_normalMap), ImVec2(100, 100));
+	}
+
+	ImGui::NextColumn();
+	ImGui::Text("S:");
+	ImGui::SameLine();
+	int currentSpecular = 0;
+	ImGui::PushID(102);
+	if (ImGui::Combo("", &currentSpecular, MaterialCombo::choices, &scene, scene.m_materials.size() + 1))
+	{
+
+	}
+	ImGui::PopID();
+	if (material->HasSpecularMap())
+	{
+		ImGui::Spacing();
+		ImGui::Image((void*)(material->m_specularMap), ImVec2(100, 100));
+	}
+
+	ImGui::Columns(1);
+	ImGui::Spacing();
+}
 
 void GUI::GenerateGUI(Scene & scene)
 {
 	ImGui::SetNextWindowSize(ImVec2(300, 500), ImGuiSetCond_FirstUseEver);
-	if (!ImGui::Begin("Scene", 0, ImGuiWindowFlags_ShowBorders | ImGuiWindowFlags_MenuBar))
+	if (!ImGui::Begin("Scene", 0, ImGuiWindowFlags_ShowBorders))
 	{
 		ImGui::End();
 		return;
@@ -160,21 +301,31 @@ void GUI::GenerateGUI(Scene & scene)
 
 	if (ImGui::CollapsingHeader("Scene Graph"))
 	{
-		static bool checkBox;
-		ImGui::Checkbox("Checkbox", &checkBox);
-		ImGui::Spacing();
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2, 2));
+		ImGui::Columns(2);
+		for (auto child : scene.m_rootNode->m_children)
+			TraverseNode(child, scene);
+		ImGui::Columns(1);
+		ImGui::PopStyleVar();
+		ImGui::Separator();
 	}
 
 	if (ImGui::CollapsingHeader("Materials"))
 	{
-
-		ImGui::Spacing();
+		for (auto materialPair : scene.m_materials)
+		{
+			if (ImGui::TreeNode(materialPair.first.c_str()))
+			{
+				MaterialEditor(materialPair.second, scene);
+				ImGui::TreePop();
+			}
+			ImGui::Separator();
+		}
 	}
 
 	if (ImGui::CollapsingHeader("Meshes"))
 	{
 
-		ImGui::Spacing();
 	}
 
 	if(ImGui::CollapsingHeader("Textures"))
@@ -185,17 +336,41 @@ void GUI::GenerateGUI(Scene & scene)
 		ImGui::Columns(numberOfColumns);
 		for (auto texturePair : scene.m_textures)
 		{
-			ImGui::Image((void*)texturePair.second, ImVec2(100, 100));
+			ImGui::Image((void*)texturePair.second.texture, ImVec2(100, 100));
 			if (ImGui::IsItemHovered())
 			{
 				ImGui::BeginTooltip();
-				ImGui::Text("This is a tooltip");
+				ImGui::Text("Size: %i x %i", texturePair.second.texture->GetWidth(), texturePair.second.texture->GetHeight());
+				ImGui::Text("Path: %s", texturePair.second.path.c_str());
 				ImGui::EndTooltip();
 			}
 			ImGui::Text(texturePair.first.c_str());
 			ImGui::NextColumn();
 		}
 		ImGui::Columns(1);
+		ImGui::Spacing();
+		if (ImGui::Button("Load Texture..."))
+		{
+			ImGui::OpenPopup("Load Texture...");
+		}
+
+		if(ImGui::BeginPopupModal("Load Texture..."))
+		{
+			ImGui::Text("Path: ");
+			ImGui::SameLine();
+			static char pathBuffer[500];
+			ImGui::InputText("", pathBuffer, 500);
+			if (ImGui::Button("Load"))
+			{
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Cancel"))
+				ImGui::CloseCurrentPopup();
+			ImGui::EndPopup();
+		}
+
+		ImGui::Separator();
 	}
 	
 	ImGui::End();

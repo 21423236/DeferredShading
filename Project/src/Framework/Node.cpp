@@ -68,6 +68,11 @@ glm::mat4 Node::GetTransformMatrixWithScale() const
 	) * glm::mat4_cast(m_orientation);
 }
 
+std::string const & Node::GetName() const
+{
+	return m_name;
+}
+
 #pragma endregion
 
 #pragma region "Setters"
@@ -85,6 +90,11 @@ void Node::SetScale(glm::vec3 const & scale)
 void Node::SetOrientation(glm::quat const & orientation)
 {
 	m_orientation = orientation;
+}
+
+void Node::SetName(std::string const & name)
+{
+	m_name = name;
 }
 
 #pragma endregion

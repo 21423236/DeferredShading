@@ -27,12 +27,16 @@ public:
 	//getters
 	unsigned int const & GetHandle() const;
 	DebugCorrectionType const & GetCorrectionType() const;
+	unsigned int const & GetWidth() const;
+	unsigned int const & GetHeight() const;
 
 private:
 
 	unsigned int m_handle;
 	unsigned int m_unit;
 	DebugCorrectionType m_correction;
+	unsigned int m_width;
+	unsigned int m_height;
 
 };
 

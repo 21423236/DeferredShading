@@ -28,11 +28,13 @@ public:
 	glm::quat const & GetOrientation() const;
 	glm::mat4 GetTransformMatrix() const;
 	glm::mat4 GetTransformMatrixWithScale() const;
+	std::string const & GetName() const;
 
 	//setters
 	void SetTranslation(glm::vec3 const & translation);
 	void SetScale(glm::vec3 const & scale);
 	void SetOrientation(glm::quat const & orientation);
+	void SetName(std::string const & name);
 
 	typedef enum NodeType
 	{
