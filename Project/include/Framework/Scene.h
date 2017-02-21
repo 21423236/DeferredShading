@@ -18,10 +18,24 @@ class Scene
 
 public:
 
+	struct MeshInfo
+	{
+		std::string path;
+		Mesh * mesh;
+		int referenceCount;
+	};
+
+	struct MaterialInfo
+	{
+		Material * material;
+		int referenceCount;
+	};
+
 	struct TextureInfo
 	{
 		std::string path;
 		Texture * texture;
+		int referenceCount;
 	};
 
 	friend class IRenderer;
@@ -56,6 +70,14 @@ public:
 	void Resize(int const & width, int const & height);
 	void FreeMemory();
 
+	//reference counting
+	void IncrementReference(Material * material);
+	void DecrementReference(Material * material);
+	void IncrementReference(Mesh * mesh);
+	void DecrementReference(Mesh * mesh);
+	void IncrementReference(Texture const * texture);
+	void DecrementReference(Texture const * texture);
+
 private:
 
 	//private methods
@@ -65,8 +87,8 @@ private:
 
 	Camera m_camera;
 
-	std::vector<std::pair<std::string, Mesh*>> m_meshes;
-	std::vector < std::pair<std::string, Material *>> m_materials;
+	std::vector<std::pair<std::string, struct MeshInfo>> m_meshes;
+	std::vector < std::pair<std::string, struct MaterialInfo>> m_materials;
 
 	std::vector<std::pair<std::string, struct TextureInfo>> m_textures;
 

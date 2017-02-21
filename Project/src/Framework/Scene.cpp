@@ -103,15 +103,16 @@ Mesh * Scene::CreateMesh(std::string const & name, std::string const & path)
 	//process the object
 	aiMesh * assimpMesh = scene->mMeshes[0];
 	Mesh * mesh = new Mesh(assimpMesh->mNumFaces, assimpMesh->mFaces, assimpMesh->mVertices, assimpMesh->mNormals, assimpMesh->mTangents, assimpMesh->mTextureCoords);
-	m_meshes.push_back(std::make_pair(name, mesh));
-
+	MeshInfo meshInfo = { path, mesh, 0 };
+	m_meshes.push_back(std::make_pair(name, meshInfo));
 	return mesh;
 }
 
 Material * Scene::CreateMaterial(std::string const & name, glm::vec3 const & kd, glm::vec3 const & ks, float const & alpha)
 {
 	Material * material = new Material(kd, ks, alpha);
-	m_materials.push_back(std::make_pair(name, material));
+	MaterialInfo materialInfo = { material, 0 };
+	m_materials.push_back(std::make_pair(name, materialInfo));
 	return material;
 }
 
@@ -241,7 +242,7 @@ Texture * Scene::CreateTexture(std::string const & name, std::string const & pat
 	free(row_pointers);
 	fclose(fp);
 
-	struct TextureInfo info = { name, texture };
+	struct TextureInfo info = { path, texture, 0 };
 	m_textures.push_back(std::make_pair(name, info));
 	return texture;
 }
@@ -272,15 +273,88 @@ void Scene::Resize(int const & width, int const & height)
 void Scene::FreeMemory()
 {
 	for (auto mesh : m_meshes)
-		delete mesh.second;
+		delete mesh.second.mesh;
+	m_meshes.clear();
 
 	for (auto material : m_materials)
-		delete material.second;
+		delete material.second.material;
+	m_meshes.clear();
 
 	for (auto texture : m_textures)
 		delete texture.second.texture;
 	m_textures.clear();
 }
+
+#pragma endregion
+
+#pragma region "Reference Counting"
+
+void Scene::IncrementReference(Material * material)
+{
+	for (auto & materialPair : m_materials)
+		if (materialPair.second.material == material)
+		{
+			materialPair.second.referenceCount++;
+			break;
+		}
+}
+
+void Scene::DecrementReference(Material * material)
+{
+	for (auto & materialPair : m_materials)
+		if (materialPair.second.material == material)
+		{
+			materialPair.second.referenceCount--;
+			break;
+		}
+}
+
+void Scene::IncrementReference(Mesh * mesh)
+{
+	for (auto & meshPair : m_meshes)
+		if (meshPair.second.mesh == mesh)
+		{
+			meshPair.second.referenceCount++;
+			break;
+		}
+}
+
+void Scene::DecrementReference(Mesh * mesh)
+{
+	for (auto & meshPair : m_meshes)
+		if (meshPair.second.mesh == mesh)
+		{
+			meshPair.second.referenceCount--;
+			break;
+		}
+}
+
+void Scene::IncrementReference(Texture const * texture)
+{
+	if (!texture)
+		return;
+
+	for (auto & texturePair : m_textures)
+		if (texturePair.second.texture == texture)
+		{
+			texturePair.second.referenceCount++;
+			break;
+		}
+}
+
+void Scene::DecrementReference(Texture const * texture)
+{
+	if (!texture)
+		return;
+
+	for (auto & texturePair : m_textures)
+		if (texturePair.second.texture == texture)
+		{
+			texturePair.second.referenceCount--;
+			break;
+		}
+}
+
 
 #pragma endregion
 

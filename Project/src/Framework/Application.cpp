@@ -144,8 +144,14 @@ void Application::Initialize()
 	Material * bunnyMaterial = m_scene->CreateMaterial("bunny", glm::vec3(1, 1, 1), glm::vec3(0.04f, 0.04f, 0.04f), 2);
 
 	Object * bunnyObject1 = new Object("bunny1", bunnyMesh, bunnyMaterial);
+	m_scene->IncrementReference(bunnyMesh);
+	m_scene->IncrementReference(bunnyMaterial);
 	Object * bunnyObject2 = new Object("bunny2", bunnyMesh, bunnyMaterial);
+	m_scene->IncrementReference(bunnyMesh);
+	m_scene->IncrementReference(bunnyMaterial);
 	Object * bunnyObject3 = new Object("bunny3", bunnyMesh, bunnyMaterial);
+	m_scene->IncrementReference(bunnyMesh);
+	m_scene->IncrementReference(bunnyMaterial);
 	bunnyObject1->SetTranslation(glm::vec3(-2.0f, 0.0f, 0));
 	bunnyObject1->SetScale(glm::vec3(1.0f, 1.0f, 1.0f));
 	bunnyObject2->SetTranslation(glm::vec3(0, 0.0f, 0));
@@ -161,6 +167,10 @@ void Application::Initialize()
 	planeMaterial->SetNormalMap(normalMap);
 
 	Object * planeObject = new Object("plane", planeMesh, planeMaterial);
+	m_scene->IncrementReference(planeMesh);
+	m_scene->IncrementReference(planeMaterial);
+	m_scene->IncrementReference(diffuseMap);
+	m_scene->IncrementReference(normalMap);
 	planeObject->SetScale(glm::vec3(8, 8, 8));
 	planeObject->AddChild(bunnyObject1);
 	planeObject->AddChild(bunnyObject2);

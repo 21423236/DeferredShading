@@ -28,16 +28,16 @@ static char const * DefaultName = "None";
 struct MaterialCombo {
 	static bool choices (void * data, int index, char const ** outName)
 	{
-		std::vector<std::pair<std::string, Material*>> * materials = (std::vector<std::pair<std::string, Material*>>*)data;
+		std::vector<std::pair<std::string, struct Scene::MaterialInfo>> * materials = (std::vector<std::pair<std::string, struct Scene::MaterialInfo>>*)data;
 		*outName = (*materials)[index].first.c_str();
 		return true;
 	}
 
-	static int indexForMaterial(Material * material, std::vector<std::pair<std::string, Material*>>* materials)
+	static int indexForMaterial(Material * material, std::vector<std::pair<std::string, struct Scene::MaterialInfo>>* materials)
 	{
 		for (int i = 0; i < materials->size(); ++i)
 		{
-			if ((*materials)[i].second == material)
+			if ((*materials)[i].second.material == material)
 				return i;
 		}
 
@@ -48,16 +48,16 @@ struct MaterialCombo {
 struct MeshCombo {
 	static bool choices(void * data, int index, char const ** outName)
 	{
-		std::vector<std::pair<std::string, Mesh*>> *meshes = (std::vector<std::pair<std::string, Mesh*>>*)data;
+		std::vector<std::pair<std::string, struct Scene::MeshInfo>> *meshes = (std::vector<std::pair<std::string, struct Scene::MeshInfo>>*)data;
 		*outName = (*meshes)[index].first.c_str();
 		return true;
 	}
 
-	static int indexForMesh(Mesh * mesh, std::vector<std::pair<std::string, Mesh*>>* meshes)
+	static int indexForMesh(Mesh * mesh, std::vector<std::pair<std::string, struct Scene::MeshInfo>>* meshes)
 	{
 		for (int i = 0; i < meshes->size(); ++i)
 		{
-			if ((*meshes)[i].second == mesh)
+			if ((*meshes)[i].second.mesh == mesh)
 				return i;
 		}
 
@@ -156,7 +156,9 @@ void GUI::TraverseNode(Node * node, Scene & scene)
 			int currentMesh = MeshCombo::indexForMesh(object->m_mesh, &scene.m_meshes);
 			if (ImGui::Combo("", &currentMesh, MeshCombo::choices, &scene.m_meshes, scene.m_meshes.size()))
 			{
-				object->m_mesh = scene.m_meshes[currentMesh].second;
+				scene.DecrementReference(object->m_mesh);
+				object->m_mesh = scene.m_meshes[currentMesh].second.mesh;
+				scene.m_meshes[currentMesh].second.referenceCount++;
 			}
 			ImGui::PopID();
 			ImGui::PopItemWidth();
@@ -170,7 +172,9 @@ void GUI::TraverseNode(Node * node, Scene & scene)
 			int currentMaterial = MaterialCombo::indexForMaterial(object->m_material, &scene.m_materials);
 			if (ImGui::Combo("", &currentMaterial, MaterialCombo::choices, &scene.m_materials, scene.m_materials.size()))
 			{
-				object->m_material = scene.m_materials[currentMaterial].second;
+				scene.DecrementReference(object->m_material);
+				object->m_material = scene.m_materials[currentMaterial].second.material;
+				scene.m_materials[currentMaterial].second.referenceCount++;
 			}
 			ImGui::PopID();
 			ImGui::PopItemWidth();
@@ -273,7 +277,6 @@ void GUI::MaterialEditor(Material * material, Scene & scene)
 	ImGui::Text("D(H): "); ImGui::SameLine();
 	ImGui::PlotLines("D(H)", Grapher::graph, material, 70, 0, NULL, 0.0f, 500.0f, ImVec2(0, 60));
 	ImGui::PopItemWidth();
-	
 	ImGui::Spacing();
 
 	ImGui::Columns(3);
@@ -283,11 +286,14 @@ void GUI::MaterialEditor(Material * material, Scene & scene)
 	int currentDiffuse = TextureCombo::indexForTexture(material->m_diffuseMap, &scene.m_textures);
 	if (ImGui::Combo("", &currentDiffuse, TextureCombo::choices, &scene.m_textures, scene.m_textures.size() + 1))
 	{
-		//swtich diffuse textures
+		scene.DecrementReference(material->m_diffuseMap);
 		if (currentDiffuse == 0)
 			material->m_diffuseMap = nullptr;
 		else
+		{
 			material->m_diffuseMap = scene.m_textures[currentDiffuse - 1].second.texture;
+			scene.m_textures[currentDiffuse - 1].second.referenceCount++;
+		}
 	}
 	ImGui::PopID();
 	if (material->HasDiffuseMap())
@@ -303,10 +309,14 @@ void GUI::MaterialEditor(Material * material, Scene & scene)
 	int currentNormal = TextureCombo::indexForTexture(material->m_normalMap, &scene.m_textures);
 	if (ImGui::Combo("", &currentNormal, TextureCombo::choices, &scene.m_textures, scene.m_textures.size() + 1))
 	{
+		scene.DecrementReference(material->m_normalMap);
 		if (currentNormal == 0)
 			material->m_normalMap = nullptr;
 		else
+		{
 			material->m_normalMap = scene.m_textures[currentNormal - 1].second.texture;
+			scene.m_textures[currentNormal - 1].second.referenceCount++;
+		}
 	}
 	ImGui::PopID();
 	if (material->HasNormalMap())
@@ -322,10 +332,14 @@ void GUI::MaterialEditor(Material * material, Scene & scene)
 	int currentSpecular = TextureCombo::indexForTexture(material->m_specularMap, &scene.m_textures);
 	if (ImGui::Combo("", &currentSpecular, TextureCombo::choices, &scene.m_textures, scene.m_textures.size() + 1))
 	{
+		scene.DecrementReference(material->m_specularMap);
 		if (currentSpecular == 0)
 			material->m_specularMap = nullptr;
 		else
+		{
 			material->m_specularMap = scene.m_textures[currentSpecular - 1].second.texture;
+			scene.m_textures[currentSpecular - 1].second.referenceCount++;
+		}
 	}
 	ImGui::PopID();
 	if (material->HasSpecularMap())
@@ -435,11 +449,11 @@ void GUI::GenerateGUI(Scene & scene)
 
 	if (ImGui::CollapsingHeader("Materials"))
 	{
-		for (auto materialPair : scene.m_materials)
+		for (auto & materialPair : scene.m_materials)
 		{
-			if (ImGui::TreeNode(materialPair.first.c_str()))
+			if (ImGui::TreeNode(materialPair.first.c_str(), "%s (%i)", materialPair.first.c_str(), materialPair.second.referenceCount))
 			{
-				MaterialEditor(materialPair.second, scene);
+				MaterialEditor(materialPair.second.material, scene);
 				ImGui::TreePop();
 			}
 			ImGui::Separator();
@@ -448,7 +462,15 @@ void GUI::GenerateGUI(Scene & scene)
 
 	if (ImGui::CollapsingHeader("Meshes"))
 	{
-
+		for (auto & meshPair : scene.m_meshes)
+		{
+			if (ImGui::TreeNode(meshPair.first.c_str(), "%s (%i)", meshPair.first.c_str(), meshPair.second.referenceCount))
+			{
+				
+				ImGui::TreePop();
+			}
+			ImGui::Separator();
+		}
 	}
 
 	if(ImGui::CollapsingHeader("Textures"))
@@ -465,6 +487,7 @@ void GUI::GenerateGUI(Scene & scene)
 				ImGui::BeginTooltip();
 				ImGui::Text("Size: %i x %i", texturePair.second.texture->GetWidth(), texturePair.second.texture->GetHeight());
 				ImGui::Text("Path: %s", texturePair.second.path.c_str());
+				ImGui::Text("Referenced: %i", texturePair.second.referenceCount);
 				ImGui::EndTooltip();
 			}
 			ImGui::Text(texturePair.first.c_str());
