@@ -161,7 +161,6 @@ void GUI::TraverseNode(Node * node, Scene & scene)
 		}
 		else if (node->GetNodeType() == Node::LOCAL_LIGHT_NODE)
 		{
-			//LocalLightEditor(dynamic_cast<LocalLight*>(node), true);
 			LocalLight * localLight = dynamic_cast<LocalLight*>(node);
 
 			ImGui::Text("Intensity:");
@@ -297,6 +296,81 @@ void GUI::GenerateGUI(Scene & scene)
 	{
 		ImGui::End();
 		return;
+	}
+
+	ImGui::Columns(2);
+
+	ImGui::Text("Scene Size:");
+	ImGui::NextColumn();
+
+	ImGui::PushItemWidth(-1);
+	ImGui::PushID(300);
+	ImGui::InputFloat3("", &scene.m_sceneSize[0]);
+	ImGui::PopID();
+	ImGui::PopItemWidth();
+	ImGui::NextColumn();
+
+	ImGui::Text("Ambient Intensity:");
+	ImGui::NextColumn();
+
+	ImGui::PushItemWidth(-1);
+	ImGui::PushID(301);
+	ImGui::InputFloat3("", &scene.m_ambientIntensity[0]);
+	ImGui::PopID();
+	ImGui::PopItemWidth();
+	ImGui::NextColumn();
+
+	ImGui::Columns(1);
+	ImGui::Spacing();
+
+	if (ImGui::CollapsingHeader("Camera"))
+	{
+		ImGui::Columns(2);
+		ImGui::Text("Position:");
+		ImGui::NextColumn();
+
+		ImGui::PushItemWidth(-1);
+		ImGui::PushID(200);
+		if (ImGui::InputFloat2("", &scene.m_camera.m_position[0]))
+			scene.m_camera.UpdateViewMatrix();
+		ImGui::PopID();
+		ImGui::PopItemWidth();
+		ImGui::NextColumn();
+
+		ImGui::Text("Zoom:");
+		ImGui::NextColumn();
+
+		ImGui::PushItemWidth(-1);
+		ImGui::PushID(203);
+		if (ImGui::InputFloat("", &scene.m_camera.m_zoom))
+			scene.m_camera.UpdateViewMatrix();
+		ImGui::PopID();
+		ImGui::PopItemWidth;
+		ImGui::NextColumn();
+
+		ImGui::Text("Spin:");
+		ImGui::NextColumn();
+
+		ImGui::PushItemWidth(-1);
+		ImGui::PushID(201);
+		if (ImGui::DragFloat("", &scene.m_camera.m_spin, 0.01f, 0.0f, 2 * M_PI))
+			scene.m_camera.UpdateViewMatrix();
+		ImGui::PopID();
+		ImGui::PopItemWidth();
+		ImGui::NextColumn();
+
+		ImGui::Text("Tilt:");
+		ImGui::NextColumn();
+
+		ImGui::PushItemWidth(-1);
+		ImGui::PushID(202);
+		if (ImGui::DragFloat("", &scene.m_camera.m_tilt, 0.01f, 0.0f, 2 * M_PI))
+			scene.m_camera.UpdateViewMatrix();
+		ImGui::PopID();
+		ImGui::PopItemWidth();
+
+		ImGui::Columns(1);
+
 	}
 
 	if (ImGui::CollapsingHeader("Scene Graph"))

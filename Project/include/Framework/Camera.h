@@ -6,6 +6,8 @@ class Camera
 {
 public:
 
+	friend class GUI;
+
 	Camera(glm::mat4 & viewMatrix);
 	~Camera();
 
