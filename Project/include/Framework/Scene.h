@@ -18,6 +18,12 @@ class Scene
 
 public:
 
+	struct TextureInfo
+	{
+		std::string path;
+		Texture * texture;
+	};
+
 	friend class IRenderer;
 	friend class GUI;
 
@@ -32,7 +38,6 @@ public:
 	glm::mat4 const & GetViewMatrix() const;
 	glm::vec3 const & GetSceneSize() const;
 	glm::vec3 const & GetAmbientIntensity() const;
-	char const * GetMaterialName(int index) const;
 
 	//setters
 	void SetProjection(float const & ry, float const & front, float const & back);
@@ -60,16 +65,10 @@ private:
 
 	Camera m_camera;
 
-	std::map<std::string, Mesh *> m_meshes;
-	std::map<std::string, Material *> m_materials;
+	std::vector<std::pair<std::string, Mesh*>> m_meshes;
+	std::vector < std::pair<std::string, Material *>> m_materials;
 
-	struct TextureInfo
-	{
-		std::string path;
-		Texture * texture;
-	};
-
-	std::map<std::string, struct TextureInfo> m_textures;
+	std::vector<std::pair<std::string, struct TextureInfo>> m_textures;
 
 	glm::mat4 m_projectionMatrix;
 	glm::mat4 m_viewMatrix;

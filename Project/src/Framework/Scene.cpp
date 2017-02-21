@@ -54,15 +54,6 @@ glm::vec3 const & Scene::GetAmbientIntensity() const
 	return m_ambientIntensity;
 }
 
-char const * Scene::GetMaterialName(int index) const
-{
-	int i = 0;
-	for (auto it = m_materials.cbegin(); it != m_materials.cend(); ++it, ++i)
-		if (i == index)
-			return it->first.c_str();
-	return "";
-}
-
 #pragma endregion
 
 #pragma region "Setters"
@@ -112,7 +103,7 @@ Mesh * Scene::CreateMesh(std::string const & name, std::string const & path)
 	//process the object
 	aiMesh * assimpMesh = scene->mMeshes[0];
 	Mesh * mesh = new Mesh(assimpMesh->mNumFaces, assimpMesh->mFaces, assimpMesh->mVertices, assimpMesh->mNormals, assimpMesh->mTangents, assimpMesh->mTextureCoords);
-	m_meshes[name] = mesh;
+	m_meshes.push_back(std::make_pair(name, mesh));
 
 	return mesh;
 }
@@ -120,13 +111,13 @@ Mesh * Scene::CreateMesh(std::string const & name, std::string const & path)
 Material * Scene::CreateMaterial(std::string const & name, glm::vec3 const & kd, glm::vec3 const & ks, float const & alpha)
 {
 	Material * material = new Material(kd, ks, alpha);
-	m_materials[name] = material;
+	m_materials.push_back(std::make_pair(name, material));
 	return material;
 }
 
 Texture * Scene::CreateTexture(std::string const & name, std::string const & path, bool gamma)
 {
-	m_textures[name] = { path, new Texture(7, Texture::NONE) };
+	Texture * texture = new Texture(7, Texture::NONE);
 
 	png_byte header[8];
 
@@ -242,7 +233,7 @@ Texture * Scene::CreateTexture(std::string const & name, std::string const & pat
 	png_read_image(png_ptr, row_pointers);
 
 	// initialize texture object
-	m_textures[name].texture->Initialize(temp_width, temp_height, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, image_data);
+	texture->Initialize(temp_width, temp_height, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, image_data);
 
 	// clean up
 	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
@@ -250,7 +241,9 @@ Texture * Scene::CreateTexture(std::string const & name, std::string const & pat
 	free(row_pointers);
 	fclose(fp);
 
-	return m_textures[name].texture;
+	struct TextureInfo info = { name, texture };
+	m_textures.push_back(std::make_pair(name, info));
+	return texture;
 }
 
 void Scene::AddNode(Node * node)

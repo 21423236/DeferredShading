@@ -34,9 +34,23 @@ struct MaterialCombo {
 			return true;
 		}
 
-		Scene * scene = (Scene*)data;
-		*outName = scene->GetMaterialName(index-1);
+		std::vector<std::pair<std::string, Material*>> * materials = (std::vector<std::pair<std::string, Material*>>*)data;
+		*outName = (*materials)[index-1].first.c_str();
 		return true;
+	}
+
+	static int indexForMaterial(Material * material, std::vector<std::pair<std::string, Material*>>* materials)
+	{
+		if (!material)
+			return 0;
+
+		for (int i = 1; i <= materials->size(); ++i)
+		{
+			if ((*materials)[i - 1].second == material)
+				return i;
+		}
+
+		return 0;
 	}
 };
 
@@ -49,9 +63,52 @@ struct MeshCombo {
 			return true;
 		}
 
-		Scene * scene = (Scene*)data;
-		*outName = scene->GetMaterialName(index-1);
+		std::vector<std::pair<std::string, Mesh*>> *meshes = (std::vector<std::pair<std::string, Mesh*>>*)data;
+		*outName = (*meshes)[index - 1].first.c_str();
 		return true;
+	}
+
+	static int indexForMesh(Mesh * mesh, std::vector<std::pair<std::string, Mesh*>>* meshes)
+	{
+		if (!mesh)
+			return 0;
+
+		for (int i = 1; i <= meshes->size(); ++i)
+		{
+			if ((*meshes)[i - 1].second == mesh)
+				return i;
+		}
+
+		return 0;
+	}
+};
+
+struct TextureCombo {
+	static bool choices(void * data, int index, char const ** outName)
+	{
+		if (index == 0)
+		{
+			*outName = DefaultName;
+			return true;
+		}
+
+		std::vector<std::pair<std::string, struct Scene::TextureInfo>>* textures = (std::vector<std::pair<std::string, struct Scene::TextureInfo>>*)data;
+		*outName = (*textures)[index-1].first.c_str();
+		return true;
+	}
+
+	static int indexForTexture(Texture const * texture, std::vector<std::pair<std::string, struct Scene::TextureInfo>>* textures)
+	{
+		if (!texture)
+			return 0;
+
+		for (int i = 1; i <= textures->size(); ++i)
+		{
+			if ((*textures)[i - 1].second.texture == texture)
+				return i;
+		}
+
+		return 0;
 	}
 };
 
@@ -114,8 +171,8 @@ void GUI::TraverseNode(Node * node, Scene & scene)
 			
 			ImGui::PushItemWidth(-1);
 			ImGui::PushID(0);
-			int currentMesh = 0;
-			if (ImGui::Combo("", &currentMesh, MeshCombo::choices, &scene, scene.m_meshes.size()+1))
+			int currentMesh = MeshCombo::indexForMesh(object->m_mesh, &scene.m_meshes);
+			if (ImGui::Combo("", &currentMesh, MeshCombo::choices, &scene.m_meshes, scene.m_meshes.size()+1))
 			{
 
 			}
@@ -128,8 +185,8 @@ void GUI::TraverseNode(Node * node, Scene & scene)
 			
 			ImGui::PushItemWidth(-1);
 			ImGui::PushID(1);
-			int currentMaterial = 0;
-			if (ImGui::Combo("", &currentMaterial, MaterialCombo::choices, &scene, scene.m_materials.size()+1))
+			int currentMaterial = MaterialCombo::indexForMaterial(object->m_material, &scene.m_materials);
+			if (ImGui::Combo("", &currentMaterial, MaterialCombo::choices, &scene.m_materials, scene.m_materials.size()+1))
 			{
 
 			}
@@ -240,11 +297,15 @@ void GUI::MaterialEditor(Material * material, Scene & scene)
 	ImGui::Columns(3);
 	ImGui::Text("D:");
 	ImGui::SameLine();
-	int currentDiffuse = 0;
 	ImGui::PushID(100);
-	if (ImGui::Combo("", &currentDiffuse, MaterialCombo::choices, &scene, scene.m_materials.size() + 1))
+	int currentDiffuse = TextureCombo::indexForTexture(material->m_diffuseMap, &scene.m_textures);
+	if (ImGui::Combo("", &currentDiffuse, TextureCombo::choices, &scene.m_textures, scene.m_textures.size() + 1))
 	{
-
+		//swtich diffuse textures
+		if (currentDiffuse == 0)
+			material->m_diffuseMap = nullptr;
+		else
+			material->m_diffuseMap = scene.m_textures[currentDiffuse - 1].second.texture;
 	}
 	ImGui::PopID();
 	if (material->HasDiffuseMap())
@@ -256,11 +317,14 @@ void GUI::MaterialEditor(Material * material, Scene & scene)
 	ImGui::NextColumn();
 	ImGui::Text("N:");
 	ImGui::SameLine();
-	int currentNormal = 0;
 	ImGui::PushID(101);
-	if (ImGui::Combo("", &currentNormal, MaterialCombo::choices, &scene, scene.m_materials.size() + 1))
+	int currentNormal = TextureCombo::indexForTexture(material->m_normalMap, &scene.m_textures);
+	if (ImGui::Combo("", &currentNormal, TextureCombo::choices, &scene.m_textures, scene.m_textures.size() + 1))
 	{
-
+		if (currentNormal == 0)
+			material->m_normalMap = nullptr;
+		else
+			material->m_normalMap = scene.m_textures[currentNormal - 1].second.texture;
 	}
 	ImGui::PopID();
 	if (material->HasNormalMap())
@@ -272,11 +336,14 @@ void GUI::MaterialEditor(Material * material, Scene & scene)
 	ImGui::NextColumn();
 	ImGui::Text("S:");
 	ImGui::SameLine();
-	int currentSpecular = 0;
 	ImGui::PushID(102);
-	if (ImGui::Combo("", &currentSpecular, MaterialCombo::choices, &scene, scene.m_materials.size() + 1))
+	int currentSpecular = TextureCombo::indexForTexture(material->m_specularMap, &scene.m_textures);
+	if (ImGui::Combo("", &currentSpecular, TextureCombo::choices, &scene.m_textures, scene.m_textures.size() + 1))
 	{
-
+		if (currentSpecular == 0)
+			material->m_specularMap = nullptr;
+		else
+			material->m_specularMap = scene.m_textures[currentSpecular - 1].second.texture;
 	}
 	ImGui::PopID();
 	if (material->HasSpecularMap())
