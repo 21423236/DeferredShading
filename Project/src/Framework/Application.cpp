@@ -140,8 +140,8 @@ float Application::dt() const
 
 void Application::Initialize()
 {
-	Mesh * bunnyMesh = m_scene->CreateMesh("bunny", "Resources/Meshes/dragon.obj");
-	Material * bunnyMaterial = m_scene->CreateMaterial("bunny", glm::vec3(1, 1, 1), glm::vec3(0.04f, 0.04f, 0.04f), 2);
+	Mesh * bunnyMesh = m_scene->CreateMesh("dragon_mesh", "Resources/Meshes/dragon.obj");
+	Material * bunnyMaterial = m_scene->CreateMaterial("bunny_material", glm::vec3(1, 1, 1), glm::vec3(0.04f, 0.04f, 0.04f), 2);
 
 	Object * bunnyObject1 = new Object("bunny1", bunnyMesh, bunnyMaterial);
 	m_scene->IncrementReference(bunnyMesh);
@@ -159,10 +159,10 @@ void Application::Initialize()
 	bunnyObject3->SetTranslation(glm::vec3(2.0f, 0.0f, 0));
 	bunnyObject3->SetScale(glm::vec3(1.0f, 1.0f, 1.0f));
 
-	Mesh * planeMesh = m_scene->CreateMesh("plane", "Resources/Meshes/plane.obj");
+	Mesh * planeMesh = m_scene->CreateMesh("plane_mesh", "Resources/Meshes/plane.obj");
 	Texture * diffuseMap = m_scene->CreateTexture("diffuse", "Resources/Textures/ground_COLOR.png", true);
 	Texture * normalMap = m_scene->CreateTexture("normal", "Resources/Textures/ground_NRM.png", true);
-	Material * planeMaterial = m_scene->CreateMaterial("plane", glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.02f, 0.02f, 0.02f), 20);
+	Material * planeMaterial = m_scene->CreateMaterial("plane_material", glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.02f, 0.02f, 0.02f), 20);
 	planeMaterial->SetDiffuseMap(diffuseMap);
 	planeMaterial->SetNormalMap(normalMap);
 

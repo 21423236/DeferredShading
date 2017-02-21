@@ -192,6 +192,14 @@ Texture * Scene::CreateTexture(std::string const & name, std::string const & pat
 	png_get_IHDR(png_ptr, info_ptr, &temp_width, &temp_height, &bit_depth, &color_type,
 		NULL, NULL, NULL);
 
+	if (color_type == PNG_COLOR_TYPE_RGB)
+		png_set_filler(png_ptr, 0xFF, PNG_FILLER_AFTER);
+
+	if (gamma)
+	{
+		png_set_gamma(png_ptr, 2.2, 0.45455);
+	}
+
 	// Update the png info struct.
 	png_read_update_info(png_ptr, info_ptr);
 
@@ -232,6 +240,8 @@ Texture * Scene::CreateTexture(std::string const & name, std::string const & pat
 
 	// read the png into image_data through row_pointers
 	png_read_image(png_ptr, row_pointers);
+
+	
 
 	// initialize texture object
 	texture->Initialize(temp_width, temp_height, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, image_data);

@@ -462,15 +462,38 @@ void GUI::GenerateGUI(Scene & scene)
 
 	if (ImGui::CollapsingHeader("Meshes"))
 	{
+		ImGui::Columns(4);
+		ImGui::Text("Name");
+		ImGui::NextColumn();
+		ImGui::Text("Path");
+		ImGui::NextColumn();
+		ImGui::Text("Referenced");
+		ImGui::NextColumn();
+		ImGui::Text("Actions");
+		ImGui::NextColumn();
+		ImGui::Separator();
 		for (auto & meshPair : scene.m_meshes)
 		{
-			if (ImGui::TreeNode(meshPair.first.c_str(), "%s (%i)", meshPair.first.c_str(), meshPair.second.referenceCount))
+			ImGui::Text(meshPair.first.c_str());
+			ImGui::NextColumn();
+			ImGui::Text(meshPair.second.path.c_str());
+			ImGui::NextColumn();
+			ImGui::Text("%i", meshPair.second.referenceCount);
+			ImGui::NextColumn();
+			if (ImGui::Button("Delete"))
 			{
-				
-				ImGui::TreePop();
+
 			}
+			ImGui::NextColumn();
 			ImGui::Separator();
 		}
+		ImGui::Columns(1);
+		ImGui::Spacing();
+		if (ImGui::Button("Load Mesh"))
+		{
+
+		}
+		ImGui::Spacing();
 	}
 
 	if(ImGui::CollapsingHeader("Textures"))
@@ -495,24 +518,31 @@ void GUI::GenerateGUI(Scene & scene)
 		}
 		ImGui::Columns(1);
 		ImGui::Spacing();
-		if (ImGui::Button("Load Texture..."))
+		
+		if (ImGui::Button("Load Texture"))
 		{
-			ImGui::OpenPopup("Load Texture...");
+			ImGui::OpenPopup("Load from file");
 		}
 
-		if(ImGui::BeginPopupModal("Load Texture..."))
+		ImGui::SetNextWindowSize(ImVec2(300, 150));
+		if (ImGui::BeginPopupModal("Load from file", 0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings))
 		{
-			ImGui::Text("Path: ");
-			ImGui::SameLine();
 			static char pathBuffer[500];
-			ImGui::InputText("", pathBuffer, 500);
+			static char nameBuffer[128];
+
+			ImGui::InputText("File Path", pathBuffer, 500);
+			ImGui::InputText("Texture Name", nameBuffer, 128);
+
 			if (ImGui::Button("Load"))
 			{
+				scene.CreateTexture(std::string(nameBuffer), std::string(pathBuffer), true);
 				ImGui::CloseCurrentPopup();
 			}
 			ImGui::SameLine();
 			if (ImGui::Button("Cancel"))
+			{
 				ImGui::CloseCurrentPopup();
+			}
 			ImGui::EndPopup();
 		}
 
