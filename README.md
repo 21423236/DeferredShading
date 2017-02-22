@@ -6,38 +6,36 @@
 
 ## Overview
 
-When beginning this project I decided to start writing a 3D RenderingSystem completely from scratch as I figured that on top of learningthe Deferred Rendering Algorithm, it would be a good exercise. Indesigning my system, I wanted to abstract the notion of a Rendererand a Render Pass in order to accommodate for future extensions tothe project. The application and the scene it contains are completelyagnostic to how the final image is produced. Thus making it extremelysimple to exchange Renderers (Forward Lighting, Visibility Buffer,etc.) on the fly.
+When beginning this project I decided to start writing a 3D Rendering System completely from scratch as I figured that on top of learning the Deferred Rendering Algorithm, it would be a good exercise. In designing my system, I wanted to abstract the notion of a Renderer and a Render Pass in order to accommodate for future extensions to the project. The application and the scene it contains are completely agnostic to how the final image is produced. Thus making it extremely simple to exchange Renderers (Forward Lighting, Visibility Buffer,etc.) on the fly.
 
-Asit currently stands, each frame is rendered by the Deferred Rendererin four subsequent passes, each contributing its portion to the imagedisplayed on the screen. The first pass, which I called GeometryPass,  traverses the Scene Graph and fills the G-Buffer with allinformation necessary to perform the BRDF lighting calculation whilealso creating a collection of global and local lights used insubsequent passes. The second pass, which I termed Shadow Pass, takesthe collection of global lights collected during the Geometry Passand produces a shadow map for each. The third pass, which I calledAmbient Pass, uses the G-Buffer’s Kd Render Target and a constantenvironment value to produce the base to which other lighting passesaccumulate. The fourth pass, called the Lighting Pass, is actuallytwo distinct passes that process global lights and local lightsrespectively. The last and final pass, the Tone Mapping Pass,performs the HDR to LDR conversion as well as the Gamma correction.
+A sit currently stands, each frame is rendered by the Deferred Renderer in four subsequent passes, each contributing its portion to the imaged isplayed on the screen. The first pass, which I called GeometryPass,  traverses the Scene Graph and fills the G-Buffer with all information necessary to perform the BRDF lighting calculation while also creating a collection of global and local lights used in subsequent passes. The second pass, which I termed Shadow Pass, takes the collection of global lights collected during the Geometry Pass and produces a shadow map for each. The Ambient Pass, uses the G-Buffer’s Kd Render Target and a constant environment value to produce the base to which other lighting passes accumulate. The fourth pass, called the Lighting Pass, is actually two distinct passes that process global lights and local lights, respectively. The last and final pass, the Tone Mapping Pass, performs the HDR to LDR conversion as well as the Gamma correction.
 
 ## Specifications
 
 ### Geometry Pass (Pass1):
 
-Aspreviously mentioned, the Geometry Pass’ responsibility is  collectall necessary surface information into the G-Buffer whilesimultaneously creating collections of Global Lights and Local Lightsfrom the Scene. The Deferred Renderer maintains the G-Buffer which iscomprised of four color render targets plus one depth. 
+As previously mentioned, the Geometry Pass’ responsibility is  collect all necessary surface information into the G-Buffer while simultaneously creating collections of Global Lights and Local Lights from the Scene. The Deferred Renderer maintains the G-Buffer which is comprised of four color render targets plus one depth. 
 
 1.   The first color buffer holds the world position’s x, y, z, and w	components in their respective r, g, b, and a channels:
 
      ![color1](/images/color1.png?raw=true)
 
-2.   The second color buffer of the G-Buffer contains the transformednormals’ x, y, and z components in the buffers r, g, and b channelsleaving the alpha channel permanently set to 1:
+2.   The second color buffer of the G-Buffer contains the transformed normals’ x, y, and z components in the buffers r, g, and b channels leaving the alpha channel permanently set to 1:
 
        ![color2](/images/color2.png?raw=true)
 
-(Although the plane on which the dragons stand appears to be a complexgeometry, it has a normal map applied creating the illusion ofcontour)
-
-3.  The third color buffer contains the surface material’s Kd r, g,and b values in the buffer’s r, g, and b channels also leaving thealpha channel permanently set to 1:
+3.  The third color buffer contains the surface material’s Kd r, g,and b values in the buffer’s r, g, and b channels also leaving the alpha channel permanently set to 1:
 
     ![color3](/images/color3.png?raw=true)
 
-4.  The fourth and final color buffer contains the surface material’sKs r, g, and b values in the buffer’s r, g, and b channels whilestoring the material’s alpha value in the buffer’s alpha channel:
+4.  The fourth and final color buffer contains the surface material’sKs r, g, and b values in the buffer’s r, g, and b channels while storing the material’s alpha value in the buffer’s alpha channel:
 
      ![color4](/images/color4.png?raw=true)
 
 
 ### Shadow Pass (Pass 2):
 
-The second pass generates a shadow map for each Global Light contained inthe scene by rendering the Scene from the perspective of the lightsources and storing the depths of the all visible objects in theShadow Buffer’s render target. The scene that is being used toillustrate the various stages of the Deferred Renderer’s pipelinecontains two global lights.
+The second pass generates a shadow map for each Global Light contained in the scene by rendering the Scene from the perspective of the light sources and storing the depths of the all visible objects in the Shadow Buffer’s render target. The scene that is being used to illustrate the various stages of the Deferred Renderer’s pipeline contains two global lights.
 
 |         Global Light 1         |         Global Light 2         |
 | :----------------------------: | :----------------------------: |
@@ -45,17 +43,17 @@ The second pass generates a shadow map for each Global Light contained inthe sce
 
 ### Ambient Pass (Pass 3):
 
-Theambient pass lays the groundwork for all subsequent lighting passes.It is the first  of three passes to additively blend their resultsinto the Light Accumulation Buffer. There are two reasons I separatedthe ambient term in the lighting equation from the Global and Locallight passes. Since at this stage we consider the ambient light to bea constant within the scene, it would not make sense to have it bedependent on the number of lights contained in the scene and so itmust be separate. Second, I figured with Ambient Occlusion on thehorizon it would make everything easier to implement this newfeature. Although at this point it is anticlimactic, below is thestate of the Light Accumulation Buffer after the Ambient Pass.   
+The Ambient pass lays the groundwork for all subsequent lighting passes.It is the first  of three passes to additively blend their results into the Light Accumulation Buffer. There are two reasons I separated the ambient term in the lighting equation from the Global and Local light passes. Since at this stage we consider the ambient light to bea constant within the scene, it would not make sense to have it be dependent on the number of lights contained in the scene and so it must be separate. Second, I plan to include Ambient Occlusion and figured it would make it easier to implement this new feature. Although at this point it is anticlimactic, below is the state of the Light Accumulation Buffer after the Ambient Pass.   
 
 ![ambient](/images/ambient.png?raw=true)
 
 ### Lighting Pass (Pass 3):
 
-As the name would indicate, this is where most of the magic happens. Asindicated before, this pass is split into two consecutive passes; onefor global lights and one for local.
+As the name would indicate, this is where most of the magic happens. As stated before, this pass is split into two consecutive passes; one for global lights and one for local.
 
 #### Global Lighting Pass (Pass 3a):
 
-Forevery Global Light in the scene, this pass renders a Full ScreenQuadrilateral and takes the world position, world normal, kd, ks, andalpha values from the G-Buffer as input and uses them to perform theBRDF lighting calculation. Additionally, the shader program takes theShadow Map, generated by the Shadow Pass, as input to determinewhether a given pixel is illuminated by its global light source.Below are the states of the Light Accumulation Buffer after the twoglobal lights in the example scene:
+For every Global Light in the scene, this pass renders a Full-Screen-Quadrilateral and takes the world position, world normal, kd, ks, and alpha values from the G-Buffer as input and uses them to perform the BRDF lighting calculation. Additionally, the shader program takes the Shadow Map, generated by the Shadow Pass, as input to determine whether a given pixel is illuminated by its global light source. Below are the states of the Light Accumulation Buffer after the two global lights in the example scene:
 
 |         Global Light 1         |         Global Light 2         |
 | :----------------------------: | :----------------------------: |
@@ -65,13 +63,13 @@ Forevery Global Light in the scene, this pass renders a Full ScreenQuadrilateral
 
 #### Local Lighting Pass (Pass 3b):
 
-Thispass is the final of the lighting passes and must be capable ofrendering thousands and up to tens-of-thousands of lights. In orderto achieve this, this Deferred Renderer employs OpenGL’s built-incapability of instanced rendering. The idea behind it is that ifthere is a need to render a certain mesh many times during a frame,having to call a glDraw* function for each instance is wasteful dueto the repeated overhead. Instead, it is encouraged to store allnecessary data associated with each instance in the GPU’s memory toallow it to optimize rendering however it sees fit. I created anobject that maintains a buffer of all local lighting information (thelight’s position, intensity, and influence radius) that is uploadedonto the GPU which is then used to render all local lights in asingle API draw call. The geometric object used to render the lightvolumes is an icosahedron. I decided that it would be computationallycheaper to render a rougher approximation of a sphere rather than atraditional UV-sphere, especially when considering that 40,000 mightbe have to transformed per frame. Additionally, the shader programthat processes the pixels generated by the icosahedrons uses anattenuation factor to weaken the influence of the light as itapproaches the limit of its influence.
+This pass is the final of the lighting passes and must be capable of rendering thousands and up to tens-of-thousands of lights. In order to achieve this, this Deferred Renderer employs OpenGL’s built-incapability of instanced rendering. The idea behind it is that if there is a need to render a certain mesh many times during a frame, having to call a glDraw* function for each instance is wasteful due to the repeated overhead. Instead, it is encouraged to store allnecessary data associated with each instance in the GPU’s memory toallow it to optimize rendering however it sees fit. I created anobject that maintains a buffer of all local lighting information (the light’s position, intensity, and influence radius) that is uploaded onto the GPU which is then used to render all local lights in asingle API draw call. The geometric object used to render the lightvolumes is an icosahedron. I decided that it would be computationally cheaper to render a rougher approximation of a sphere rather than a traditional UV-sphere, especially when considering that 40,000 might have to transformed per frame. Additionally, the shader program that processes the pixels generated by the icosahedrons uses an attenuation factor to weaken the influence of the light as itapproaches the limit of its influence.
 
 ![local](/images/local.png?raw=true) 
 
 ### Tone Mapping Pass(Pass 4):
 
-Asis evident from the results of the last pass, the frame produced upto this point appears heavily over exposed and must go through afinal processing step that accomplishes two things: converting a highdynamic range image to a low dynamic range, and calculate the gammacorrection expected by the hardware’s pipeline. This pass producesthe final output:
+As is evident from the results of the last pass, the frame produced upto this point appears heavily over exposed and must go through a final processing step that accomplishes two things: converting a highdynamic range image to a low dynamic range, and calculate the gamma correction expected by the hardware’s pipeline. This pass produces the final output:
 
 ![tone](/images/tone.png?raw=true)
 
@@ -79,7 +77,7 @@ Asis evident from the results of the last pass, the frame produced upto this poi
 
 ## Capabilities
 
-Thescene which I’m using the demonstrate the rendering system iscontained within a cube that is 4 x 4 x 4. The system can easilyrender up to 5,000 local lights with medium to large radii ofinfluence and maintain real-time standards. Beyond this points, itcan handle 10,000 to 40,000 local lights with small to medium radiiof influence.
+The scene which I’m using the demonstrate the rendering system is contained within a cube that is 4 x 4 x 4. The system can easily render up to 5,000 local lights with medium to large radii of influence and maintain real-time standards. Beyond this points, it can handle 10,000 to 40,000 local lights with small to medium radii of influence.
 
 10,000 Local Lights:
 
@@ -95,13 +93,13 @@ Thescene which I’m using the demonstrate the rendering system iscontained with
 
 ## Optimizations
 
-Aswas briefly mentioned in my report, I employed a couple ofoptimizations available through the OpenGL API. After having writtena couple of shader programs for the different passes, I grew annoyedwith having to resubmit the same Uniform data to different programs.After a little research online, I starting using OpenGL’s UniformBuffer Objects that conveniently allow the sharing of uniform databetween various programs while only having to send it to the GPUonce. I also made use of Shader Storage Buffers in order to enablethe use of instancing. I created a buffer object in the GPU’smemory that holds all local light information (world position,intensity, and radius of influence) which greatly reduces the copyoperations overhead by a factor of the number of lights. In thefuture I plan to optimize this system further by tracking whichlights have changed since the last frame in order to only have toupdate small chunks in the buffer object.
+As was briefly mentioned in my report, I employed a couple of optimizations available through the OpenGL API. After having written a couple of shader programs for the different passes, I grew annoyed with having to resubmit the same Uniform data to different programs. After a little research online, I starting using OpenGL’s Uniform Buffer Objects that conveniently allow the sharing of uniform data between various programs while only having to send it to the GPU once. I also made use of Shader Storage Buffers in order to enable the use of instancing. I created a buffer object in the GPU’s memory that holds all local light information (world position,intensity, and radius of influence) which greatly reduces the copy operations overhead by a factor of the number of lights. In the future I plan to optimize this system further by tracking which lights have changed since the last frame in order to only have to update small chunks in the buffer object.
 
 
 
 ## Other Features
 
-Asidefrom the Deferred Rendering aspect, the application offers varioustypes of editors. A Scene Graph Editor, Material Editor, and TextureManager (picture below) to name a few.
+Aside from the Deferred Rendering aspect, the application offers various types of editors. A Scene Graph Editor, Material Editor, and TextureManager (picture below) to name a few. All GUI elements are created using dear ImGui.
 
 |          Scene Editor          |         Material Editor          |        Texture Manager         |
 | :----------------------------: | :------------------------------: | :----------------------------: |
