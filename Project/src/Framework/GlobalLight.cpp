@@ -4,12 +4,12 @@
 
 #pragma region "Constructors/Destructor"
 
-GlobalLight::GlobalLight(std::string const & name, glm::vec3 const & intensity, glm::vec3 const & translation, glm::quat const & orientation) : Node(name, translation, orientation), m_intensity(intensity), m_shadowMatrix(1.0f), m_shadowMap(5, Texture::DEPTH)
+GlobalLight::GlobalLight(std::string const & name, glm::vec3 const & intensity, glm::vec3 const & translation, glm::quat const & orientation) : Node(name, translation, orientation), m_intensity(intensity), m_shadowMatrix(1.0f), m_shadowMap(SHADOW_MAP_TEXTURE_UNIT, Texture::DEPTH)
 {
 	CreateHandle();
 }
 
-GlobalLight::GlobalLight(std::string const & name, glm::vec3 const & intensity) : Node(name), m_intensity(intensity), m_shadowMatrix(1.0f), m_shadowMap(5, Texture::DEPTH)
+GlobalLight::GlobalLight(std::string const & name, glm::vec3 const & intensity) : Node(name), m_intensity(intensity), m_shadowMatrix(1.0f), m_shadowMap(SHADOW_MAP_TEXTURE_UNIT, Texture::DEPTH)
 {
 	CreateHandle();
 }

@@ -29,8 +29,9 @@ public:
 	void GenerateGUI();
 
 	void BindGBuffer() const;
-	void BindDefaultFramebuffer() const;
 	void BindShadowBuffer(Texture const & shadowTexture) const;
+	void BindLightAccumulationBuffer() const;
+	void BindDefaultFramebuffer() const;
 	void BlitDepthBuffers() const;
 
 private:
@@ -39,6 +40,8 @@ private:
 	void FreeGBuffer();
 	void CreateShadowBuffer(int const & width, int const & height);
 	void FreeShadowBuffer();
+	void CreateLightAccumulationBuffer(int const & width, int const & height);
+	void FreeLightAccumulationBuffer();
 
 	struct gBuffer
 	{
@@ -47,7 +50,7 @@ private:
 		Texture colorBuffer1;
 		Texture colorBuffer2;
 		Texture colorBuffer3;
-		unsigned int depthBuffer;
+		Texture depthBuffer;
 		unsigned int width;
 		unsigned int height;
 		unsigned int drawBuffers[4];
@@ -61,6 +64,15 @@ private:
 		unsigned int height;
 		unsigned int drawBuffers;
 	} m_shadowBuffer;
+
+	struct LightAccumulationBuffer
+	{
+		unsigned int framebuffer;
+		Texture colorBuffer;
+		unsigned int width;
+		unsigned int height;
+		unsigned int drawBuffers;
+	} m_lightAccumulationBuffer;
 
 	struct DefaultFramebuffer
 	{

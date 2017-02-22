@@ -26,7 +26,7 @@ void Texture::Initialize(unsigned int width, unsigned int height, unsigned int i
 	m_height = height;
 
 	glGenTextures(1, &m_handle);
-	glActiveTexture(GL_TEXTURE0 + m_unit);
+	glActiveTexture(m_unit);
 	glBindTexture(GL_TEXTURE_2D, m_handle);
 	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, m_width, m_height, 0, format, type, pixels);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -35,7 +35,7 @@ void Texture::Initialize(unsigned int width, unsigned int height, unsigned int i
 
 void Texture::Bind() const
 {
-	glActiveTexture(GL_TEXTURE0 + m_unit);
+	glActiveTexture(m_unit);
 	glBindTexture(GL_TEXTURE_2D, m_handle);
 }
 

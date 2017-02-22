@@ -6,7 +6,7 @@ struct SceneInformation
 	mat4 ViewMatrix;
 	vec2 WindowSize;
 	vec3 SceneSize;
-	vec3 EyePosition;
+	vec3 EyePosition; 
 };
 
 layout(std140, binding = 0) uniform SceneBlock 

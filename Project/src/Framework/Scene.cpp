@@ -3,6 +3,7 @@
 #include <Framework/Mesh.h>
 #include <Framework/Material.h>
 #include <Framework/IRenderPass.h>
+#include <Framework/Defaults.h>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -119,7 +120,7 @@ Material * Scene::CreateMaterial(std::string const & name, glm::vec3 const & kd,
 
 Texture * Scene::CreateTexture(std::string const & name, std::string const & path, bool gamma)
 {
-	Texture * texture = new Texture(7, Texture::NONE);
+	Texture * texture = new Texture();
 
 	png_byte header[8];
 

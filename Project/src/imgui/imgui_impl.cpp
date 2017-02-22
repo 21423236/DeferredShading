@@ -3,8 +3,9 @@
 #include <GL/glew.h>
 #include <Windows.h>
 #include <Framework/Texture.h>
+#include <Framework/Defaults.h>
 
-static Texture      g_FontTexture(0, Texture::NONE);
+static Texture      g_FontTexture(IMGUI_TEXTURE_UNIT, Texture::NONE);
 static int          g_ShaderHandle = 0, g_VertHandle = 0, g_FragHandle = 0;
 static int          g_AttribLocationTex = 0, g_AttribLocationProjMtx = 0, g_AttribLocationCorrection = 0;
 static int          g_AttribLocationPosition = 0, g_AttribLocationUV = 0, g_AttribLocationColor = 0;
@@ -224,7 +225,7 @@ void ImGui_Impl_RenderDrawList(ImDrawData * draw_data)
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
 	glEnable(GL_SCISSOR_TEST);
-	glActiveTexture(GL_TEXTURE0);
+	glActiveTexture(IMGUI_TEXTURE_UNIT);
 
 	glViewport(0, 0, (GLsizei)fb_width, (GLsizei)fb_height);
 	float const ortho_projection[4][4] = {

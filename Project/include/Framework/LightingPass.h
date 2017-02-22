@@ -25,12 +25,19 @@ public:
 	void ProcessLocalLights(unsigned int const & lightsCount) const;
 	void Finalize();
 
+	//statistical information
+	unsigned int const & GetGlobalLightsCount() const;
+	unsigned int const & GetLocalLightsCount() const;
+
 protected:
 
 	IRenderer const * m_renderer;
 
 private:
-	
+
+	mutable std::vector<std::pair<GlobalLight const *, glm::vec3>> const * m_globalLights;
+	mutable unsigned int m_localLightsCount;
+
 	Program m_ambientLightProgram;
 	Program m_globalLightProgram;
 	Program m_localLightProgram;

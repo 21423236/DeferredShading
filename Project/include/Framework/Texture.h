@@ -16,7 +16,7 @@ public:
 	} DebugCorrectionType;
 
 	//constructors/destructor
-	Texture(unsigned int unit = 6, DebugCorrectionType correction = NONE);
+	Texture(unsigned int unit = 0x84CC, DebugCorrectionType correction = NONE);
 	~Texture();
 
 	//public methods

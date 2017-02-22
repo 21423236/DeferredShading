@@ -7,6 +7,8 @@
 #include <Framework/Material.h>
 #include <Framework/Mesh.h>
 
+#include <Framework/Defaults.h>
+
 #include <GL/glew.h>
 
 #pragma region "Constructors/Destructor"
@@ -30,9 +32,9 @@ void DeferredPass::Initialize()
 	m_deferredProgram.AttachShader(Program::FRAGMENT_SHADER_TYPE, "src/Shaders/DeferredPass.frag");
 	m_deferredProgram.Link();
 
-	m_deferredProgram.SetUniform("uMaterial.diffuseMap", 7);
-	m_deferredProgram.SetUniform("uMaterial.normalMap", 8);
-	m_deferredProgram.SetUniform("uMaterial.specularMap", 9);
+	m_deferredProgram.SetUniform("uMaterial.diffuseMap", DIFFUSE_MAP_TEXTURE_UNIT);
+	m_deferredProgram.SetUniform("uMaterial.normalMap", NORMAL_MAP_TEXTURE_UNIT);
+	m_deferredProgram.SetUniform("uMaterial.specularMap", SPECULAR_MAP_TEXTURE_UNIT);
 }
 
 void DeferredPass::Prepare(Scene const & scene) const
@@ -75,7 +77,7 @@ void DeferredPass::ProcessNode(Node const * const & node, glm::mat4 const & mode
 		if (object->GetMaterial()->HasDiffuseMap())
 		{
 			m_deferredProgram.SetUniform("uMaterial.hasDiffuseMap", true);
-			glActiveTexture(GL_TEXTURE7);
+			glActiveTexture(DIFFUSE_MAP_TEXTURE_UNIT);
 			glBindTexture(GL_TEXTURE_2D, object->GetMaterial()->GetDiffuseMap()->GetHandle());
 		}
 		else
@@ -84,7 +86,7 @@ void DeferredPass::ProcessNode(Node const * const & node, glm::mat4 const & mode
 		if (object->GetMaterial()->HasNormalMap())
 		{
 			m_deferredProgram.SetUniform("uMaterial.hasNormalMap", true);
-			glActiveTexture(GL_TEXTURE8);
+			glActiveTexture(NORMAL_MAP_TEXTURE_UNIT);
 			glBindTexture(GL_TEXTURE_2D, object->GetMaterial()->GetNormalMap()->GetHandle());
 		}
 		else
@@ -93,7 +95,7 @@ void DeferredPass::ProcessNode(Node const * const & node, glm::mat4 const & mode
 		if (object->GetMaterial()->HasSpecularMap())
 		{
 			m_deferredProgram.SetUniform("uMaterial.hasSpecularMap", true);
-			glActiveTexture(GL_TEXTURE9);
+			glActiveTexture(SPECULAR_MAP_TEXTURE_UNIT);
 			glBindTexture(GL_TEXTURE_2D, object->GetMaterial()->GetSpecularMap()->GetHandle());
 		}
 		else

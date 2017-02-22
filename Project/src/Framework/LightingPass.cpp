@@ -5,13 +5,14 @@
 #include <Framework/DeferredRenderer.h>
 #include <Framework/Scene.h>
 #include <Framework/Shape.h>
+#include <Framework/Defaults.h>
 
 #include <GL/glew.h>
 #include <cmath>
 
 #pragma region "Constructors/Destructor"
 
-LightingPass::LightingPass(IRenderer const * renderer) : m_renderer(renderer), m_globalLightProgram(), m_localLightProgram()
+LightingPass::LightingPass(IRenderer const * renderer) : m_renderer(renderer), m_globalLights(nullptr), m_localLightsCount(0), m_ambientLightProgram(), m_globalLightProgram(), m_localLightProgram()
 {
 }
 
@@ -41,7 +42,7 @@ void LightingPass::Initialize()
 	m_globalLightProgram.SetUniform("uColor1", 2);
 	m_globalLightProgram.SetUniform("uColor2", 3);
 	m_globalLightProgram.SetUniform("uColor3", 4);
-	m_globalLightProgram.SetUniform("uShadow.map", 5);
+	m_globalLightProgram.SetUniform("uShadow.map", 7);
 
 	m_localLightProgram.CreateHandle();
 	m_localLightProgram.AttachShader(Program::VERTEX_SHADER_TYPE, "src/Shaders/LocalLightPass.vert");
@@ -82,6 +83,7 @@ void LightingPass::ProcessAmbientLight() const
 
 void LightingPass::ProcessGlobalLights(std::vector<std::pair<GlobalLight const *,glm::vec3>> const & globalLights) const
 {
+	m_globalLights = &globalLights;
 	
 	m_globalLightProgram.Use();
 
@@ -102,6 +104,8 @@ void LightingPass::ProcessGlobalLights(std::vector<std::pair<GlobalLight const *
 
 void LightingPass::ProcessLocalLights(unsigned int const & lightsCount) const
 {
+	m_localLightsCount = lightsCount;
+
 	glEnable(GL_DEPTH_TEST);
 
 	m_localLightProgram.Use();
@@ -121,6 +125,22 @@ void LightingPass::Finalize()
 	m_localLightProgram.DestroyHandle();
 	m_globalLightProgram.DestroyHandle();
 	m_ambientLightProgram.DestroyHandle();
+}
+
+#pragma endregion
+
+#pragma region "Statistical Information"
+
+unsigned int const & LightingPass::GetGlobalLightsCount() const
+{
+	if(m_globalLights)
+		return m_globalLights->size();
+	return 0;
+}
+
+unsigned int const & LightingPass::GetLocalLightsCount() const
+{
+	return m_localLightsCount;
 }
 
 #pragma endregion

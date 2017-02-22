@@ -208,14 +208,18 @@ void Application::Initialize()
 
 	m_scene->AddNode(planeObject);
 
-	/*Node * lights = new Node("local_lights", glm::vec3(0, 0, 0), glm::quat());
-	for (int r = 0; r < 100; r++)
+/*
+#define ROWS 200
+#define COLUMNS 200
+
+	Node * lights = new Node("local_lights", glm::vec3(0, 0, 0), glm::quat());
+	for (int r = 0; r < ROWS; r++)
 	{
-		for (int c = 0; c < 10; c++)
+		for (int c = 0; c < COLUMNS; c++)
 		{
-			LocalLight * localLight = new LocalLight(std::to_string((r*100) + c), glm::vec3(sinf(c*r/1000.0f*M_PI)*5.0f, sinf(c/10.0f*M_PI)*2.5f, sinf(r/100.0f*M_PI)*5.0f), 1.0f);
-			localLight->SetTranslation(glm::vec3(-3.5 + (7.0f / 10.0f) * c, sinf(r/100.0f * M_PI)*0.05f, -3.5 + (7.0f / 100.0f) * r));
-			localLight->SetRadius(0.25f + sinf(r/100.0f * M_PI)*0.25f);
+			LocalLight * localLight = new LocalLight(std::to_string((r*ROWS) + c), glm::vec3(sinf(c*r/((float)(ROWS*COLUMNS)*M_PI)*5.0f, sinf(c/((float)COLUMNS))*M_PI)*2.5f, sinf(r/((float)ROWS)*M_PI)*5.0f), 1.0f);
+			localLight->SetTranslation(glm::vec3(-3.5 + (7.0f / ((float)COLUMNS)) * c, sinf(r/((float)ROWS) * M_PI)*0.05f, -3.5 + (7.0f / ((float)ROWS)) * r));
+			localLight->SetRadius(0.25f + sinf(r/((float)ROWS) * M_PI)*0.25f);
 			lights->AddChild(localLight);
 		}
 	}
