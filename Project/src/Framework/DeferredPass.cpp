@@ -32,9 +32,9 @@ void DeferredPass::Initialize()
 	m_deferredProgram.AttachShader(Program::FRAGMENT_SHADER_TYPE, "src/Shaders/DeferredPass.frag");
 	m_deferredProgram.Link();
 
-	m_deferredProgram.SetUniform("uMaterial.diffuseMap", DIFFUSE_MAP_TEXTURE_UNIT);
-	m_deferredProgram.SetUniform("uMaterial.normalMap", NORMAL_MAP_TEXTURE_UNIT);
-	m_deferredProgram.SetUniform("uMaterial.specularMap", SPECULAR_MAP_TEXTURE_UNIT);
+	m_deferredProgram.SetUniform("uMaterial.diffuseMap", 9);
+	m_deferredProgram.SetUniform("uMaterial.normalMap", 10);
+	m_deferredProgram.SetUniform("uMaterial.specularMap", 11);
 }
 
 void DeferredPass::Prepare(Scene const & scene) const

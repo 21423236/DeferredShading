@@ -168,6 +168,7 @@
     <ClCompile Include="src\Framework\Window.cpp" />
     <ClCompile Include="src\Framework\Texture.cpp" />
     <ClCompile Include="src\Framework\UniformBuffer.cpp" />
+    <ClCompile Include="src\Framework\ToneMappingPass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Framework\ShaderStorageBuffer.h" />
@@ -201,6 +202,7 @@
     <ClInclude Include="include\Framework\Shape.h" />
     <ClInclude Include="include\Framework\Texture.h" />
     <ClInclude Include="include\Framework\UniformBuffer.h" />
+    <ClInclude Include="include\Framework\ToneMappingPass.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\Shaders\AmbientLightPass.frag" />
@@ -217,6 +219,8 @@
     <None Include="src\Shaders\LocalLightPass.vert" />
     <None Include="src\Shaders\ShadowPass.frag" />
     <None Include="src\Shaders\ShadowPass.vert" />
+    <None Include="src\Shaders\ToneMappingPass.frag" />
+    <None Include="src\Shaders\ToneMappingPass.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

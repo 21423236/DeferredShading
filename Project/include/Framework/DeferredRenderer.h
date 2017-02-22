@@ -5,6 +5,7 @@
 #include <Framework/DeferredPass.h>
 #include <Framework/LightingPass.h>
 #include <Framework/ShadowPass.h>
+#include <Framework/ToneMappingPass.h>
 #include <Framework/Texture.h>
 #include <Framework/UniformBuffer.h>
 #include <Framework/ShaderStorageBuffer.h>
@@ -90,6 +91,8 @@ private:
 	DeferredPass m_deferredPass;
 	ShadowPass m_shadowPass;
 	LightingPass m_lightingPass;
+	ToneMappingPass m_toneMappingPass;
+
 
 	bool m_gatherStatistics;
 	bool m_displayLightVolumes;

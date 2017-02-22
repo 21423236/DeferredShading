@@ -59,8 +59,9 @@ void LightingPass::Initialize()
 void LightingPass::Prepare(Scene const & scene) const
 {
 	DeferredRenderer const * deferredRenderer = dynamic_cast<DeferredRenderer const *>(m_renderer);
-	deferredRenderer->BlitDepthBuffers();
-	deferredRenderer->BindDefaultFramebuffer();
+	//deferredRenderer->BlitDepthBuffers();
+	//deferredRenderer->BindDefaultFramebuffer();
+	deferredRenderer->BindLightAccumulationBuffer();
 	
 	glClear(GL_COLOR_BUFFER_BIT);
 	glEnable(GL_BLEND);

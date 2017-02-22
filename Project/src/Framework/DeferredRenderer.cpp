@@ -28,7 +28,8 @@ DeferredRenderer::DeferredRenderer() : m_gBuffer({ 0, Texture(GBUFFER_COLOR_BUFF
 										m_debugProgram(), 
 										m_deferredPass(this), 
 										m_shadowPass(this), 
-										m_lightingPass(this), 
+										m_lightingPass(this),
+										m_toneMappingPass(this),
 										m_gatherStatistics(false), 
 										m_displayLightVolumes(false)
 {
@@ -70,6 +71,8 @@ bool DeferredRenderer::Initialize()
 	m_deferredPass.Initialize();
 	m_shadowPass.Initialize();
 	m_lightingPass.Initialize();
+	m_toneMappingPass.Initialize();
+
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	glEnable(GL_CULL_FACE);
@@ -123,15 +126,10 @@ void DeferredRenderer::RenderScene(Scene const & scene) const
 
 	m_lightingPass.Prepare(scene);
 
-	//enable gamme correction
-	glEnable(GL_FRAMEBUFFER_SRGB);
-
 	m_lightingPass.ProcessAmbientLight();
 	m_lightingPass.ProcessGlobalLights(globalLights);
 	m_lightingPass.ProcessLocalLights(m_localLightsBuffer.m_buffer.size());
 	
-	//disable gamma correction
-	glDisable(GL_FRAMEBUFFER_SRGB);
 	
 //-------------------------------------------------------------------------------------------------------
 //FORWARD PASS (skydome, transparent objects)
@@ -143,7 +141,8 @@ void DeferredRenderer::RenderScene(Scene const & scene) const
 //GAMMA CORRECTION\TONE MAPPING PASS
 //-------------------------------------------------------------------------------------------------------
 
-
+	m_toneMappingPass.Prepare();
+	m_toneMappingPass.ProcessFrame();
 
 //-------------------------------------------------------------------------------------------------------
 //DEBUG DRAWING
@@ -151,6 +150,8 @@ void DeferredRenderer::RenderScene(Scene const & scene) const
 	
 	if (m_displayLightVolumes)
 	{
+		BlitDepthBuffers();
+
 		glDisable(GL_BLEND);
 		glEnable(GL_DEPTH_TEST);
 
@@ -172,6 +173,8 @@ void DeferredRenderer::Resize(int const & width, int const & height)
 	m_defaultFramebuffer.height = height;
 	FreeGBuffer();
 	CreateGBuffer(width, height);
+	FreeLightAccumulationBuffer();
+	CreateLightAccumulationBuffer(width, height);
 }
 
 void DeferredRenderer::GenerateGUI()
@@ -299,6 +302,12 @@ void DeferredRenderer::GenerateGUI()
 		ImGui::Separator();
 	}
 
+	if (ImGui::CollapsingHeader("Tone Mapping"))
+	{
+		ImGui::DragFloat("Gamma", &m_toneMappingPass.m_gamma, 0.01f, 0.0f, 10.0f);
+		ImGui::DragFloat("Expsoure", &m_toneMappingPass.m_exposure, 0.01f, 0.0f, 10.0f);
+	}
+
 	ImGui::End();
 	
 }
@@ -337,8 +346,6 @@ void DeferredRenderer::BindDefaultFramebuffer() const
 void DeferredRenderer::BlitDepthBuffers() const
 {
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, m_gBuffer.framebuffer);
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-	glClear(GL_DEPTH_BUFFER_BIT);
 	glBlitFramebuffer(0, 0, m_gBuffer.width, m_gBuffer.height, 0, 0, m_defaultFramebuffer.width, m_defaultFramebuffer.height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 }
 
@@ -372,11 +379,6 @@ void DeferredRenderer::CreateGBuffer(int const & width, int const & height)
 	m_gBuffer.colorBuffer3.Initialize(width, height, GL_RGBA32F, GL_RGBA, GL_FLOAT, 0);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, m_gBuffer.colorBuffer3.m_handle, 0);
 
-	/*glGenRenderbuffers(1, &m_gBuffer.depthBuffer);
-	glBindRenderbuffer(GL_RENDERBUFFER, m_gBuffer.depthBuffer);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT32, width, height);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_gBuffer.depthBuffer);
-	glBindRenderbuffer(GL_RENDERBUFFER, 0);*/
 	m_gBuffer.depthBuffer.Initialize(width, height, GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, 0);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_gBuffer.depthBuffer.GetHandle(), 0);
 

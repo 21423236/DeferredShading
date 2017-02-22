@@ -93,6 +93,9 @@
     <ClCompile Include="src\Framework\UniformBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Framework\ToneMappingPass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\Framework\Window.h">
@@ -188,6 +191,9 @@
     <ClInclude Include="include\Framework\ShaderStorageBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\Framework\ToneMappingPass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\Shaders\Basic.vert" />
@@ -204,5 +210,7 @@
     <None Include="src\Shaders\DebugPass.frag" />
     <None Include="src\Shaders\AmbientLightPass.vert" />
     <None Include="src\Shaders\AmbientLightPass.frag" />
+    <None Include="src\Shaders\ToneMappingPass.vert" />
+    <None Include="src\Shaders\ToneMappingPass.frag" />
   </ItemGroup>
 </Project>

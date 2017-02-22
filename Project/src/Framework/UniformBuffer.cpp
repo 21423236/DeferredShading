@@ -80,16 +80,7 @@ void UniformBuffer::Initialize()
 void UniformBuffer::UploadBuffer() const
 {
 	glBindBuffer(GL_UNIFORM_BUFFER, m_handle);
-	GLenum error = glGetError();
-	if (error != GL_NO_ERROR)
-	{
-		int blah = 45;
-	}
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, m_bufferSize, m_buffer);
-	error = glGetError();
-	if (error != GL_NO_ERROR) {
-		int blah = 45;
-	}
 }
 
 void UniformBuffer::Free()
