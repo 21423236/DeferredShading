@@ -18,7 +18,7 @@ Aspreviously mentioned, the Geometry Pass’ responsibility is  collectall neces
 
 1.   The first color buffer holds the world position’s x, y, z, and w	components in their respective r, g, b, and a channels:
 
-     ![color1](https://github.com/davidlwesten/DeferredShading/tree/master/images/color1.png)
+     ![color1](/images/color1.png?raw=true)
 
 2.   The second color buffer of the G-Buffer contains the transformednormals’ x, y, and z components in the buffers r, g, and b channelsleaving the alpha channel permanently set to 1:
 
