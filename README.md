@@ -1,4 +1,4 @@
-![Header Image](https://github.com/davidlwesten/DeferredShading/tree/master/images/title.png "Title")
+![Header Image](/images/title.png?raw=true "Title")
 
 # ***Deferred Shading***
 
